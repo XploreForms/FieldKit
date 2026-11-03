@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Field Kit</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#002B2B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Field Kit">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script src="toolkit.js" data-app="home"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: one phone column. Brand header, the current job as a 4-step work order card, then the two ways in: New Job and Inventory. */
+:root{
+  --bg:#002B2B;        /* North Shore Green */
+  --surface:#0B3A37;
+  --surface-2:#134640;
+  --line:rgba(200,240,225,.12);
+  --fg:#EAF4EF;
+  --muted:#9DBDB2;
+  --accent:#58C774;    /* Superior Green */
+  --accent-ink:#05230F;
+  --signal:#00FF57;    /* Solar Wind, for "done" ticks only */
+  --warn:#F2B84B;
+  --f-display:"Barlow Semi Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --r:14px;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --bg:#EEF4F1; --surface:#FFFFFF; --surface-2:#E1ECE7; --line:rgba(0,43,43,.12);
+  --fg:#0B2522; --muted:#4F6863; --accent:#1F8A44; --accent-ink:#FFFFFF; --signal:#1F8A44; --warn:#A8640E; color-scheme:light}}
+:root[data-theme="light"]{
+  --bg:#EEF4F1; --surface:#FFFFFF; --surface-2:#E1ECE7; --line:rgba(0,43,43,.12);
+  --fg:#0B2522; --muted:#4F6863; --accent:#1F8A44; --accent-ink:#FFFFFF; --signal:#1F8A44; --warn:#A8640E; color-scheme:light}
+
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{color:var(--fg);font:16px/1.45 var(--f-body);-webkit-text-size-adjust:100%}
+a{color:inherit}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:560px;margin:0 auto;padding-block:18px 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
+
+/* header */
+.head{display:flex;align-items:center;gap:12px}
+.logo{width:40px;height:40px;border-radius:11px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:none}
+.logo svg{width:22px;height:22px}
+.head h1{margin:0;font:700 1.6rem/1 var(--f-display);letter-spacing:.01em}
+.who{border:0;background:none;padding:2px 0 0;color:var(--muted);font-size:.9rem;text-align:left;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.head-txt{min-width:0;flex:1}
+
+.eyebrow{margin:0;font-size:.75rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+
+/* profile */
+.profile{background:var(--surface);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px}
+.profile h2{margin:0;font:700 1.25rem/1.2 var(--f-display)}
+.profile p{margin:0;color:var(--muted);font-size:.92rem}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:.82rem;font-weight:600;color:var(--muted)}
+.field input{width:100%;border:0;border-radius:10px;padding:12px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line)}
+.field input:focus{outline:none;box-shadow:inset 0 0 0 2px var(--accent)}
+.err{margin:0;color:var(--warn);font-size:.9rem}
+
+/* buttons */
+.btn{border:0;border-radius:11px;padding:13px 16px;font-weight:600;background:var(--surface-2);display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;cursor:pointer;white-space:nowrap}
+.btn svg{width:18px;height:18px;flex:none}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+
+/* current job: a work order with its four stages */
+.job{background:var(--surface);border-radius:var(--r);overflow:hidden}
+.job-top{padding:16px 16px 12px;display:flex;flex-direction:column;gap:4px}
+.sa{font:600 1.45rem/1.1 var(--f-mono);letter-spacing:.01em}
+.jtitle{color:var(--muted);font-size:.95rem;text-wrap:balance}
+.steps{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.step{border-bottom:1px solid var(--line)}
+.step a{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 16px;text-decoration:none}
+.step a:active{background:var(--surface-2)}
+.num{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:600 .85rem/1 var(--f-mono);background:var(--surface-2);color:var(--muted)}
+.step.done .num{background:var(--accent);color:var(--accent-ink)}
+.step.todo .num{box-shadow:inset 0 0 0 2px var(--warn);background:transparent;color:var(--warn)}
+.st-main{min-width:0;display:flex;flex-direction:column;gap:1px}
+.st-main b{font-weight:600}
+.st-main span{font-size:.85rem;color:var(--muted);overflow-wrap:anywhere}
+.chev{color:var(--muted);font-size:1.2rem}
+.job-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 16px 16px}
+
+/* ways in */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:var(--surface);border-radius:var(--r);padding:16px 14px;display:flex;flex-direction:column;gap:10px;text-decoration:none;min-width:0}
+.tile:active{background:var(--surface-2)}
+.tile i{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;background:var(--surface-2);color:var(--accent);font-style:normal}
+.tile i svg{width:22px;height:22px}
+.tile.main{background:var(--accent);color:var(--accent-ink)}
+.tile.main i{background:rgba(5,35,15,.14);color:var(--accent-ink)}
+:root[data-theme="light"] .tile.main i{background:rgba(255,255,255,.2)}
+.tile b{font:700 1.2rem/1.1 var(--f-display)}
+.tile span{font-size:.85rem;opacity:.8}
+.stats{display:flex;gap:14px;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+.stats b{font:600 1rem/1 var(--f-mono);color:var(--fg);font-variant-numeric:tabular-nums;margin-right:4px}
+
+.foot{color:var(--muted);font-size:.8rem;text-align:center;margin:4px 0 0}
+@media (max-width:360px){.tiles{grid-template-columns:1fr}.job-actions{grid-template-columns:1fr}}
+</style>
+
+<div class="wrap">
+  <header class="head">
+    <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></div>
+    <div class="head-txt">
+      <h1>Field Kit</h1>
+      <button class="who" id="who" type="button" hidden></button>
+    </div>
+  </header>
+
+  <form class="profile" id="profile" hidden>
+    <h2 id="profH">Set up Field Kit</h2>
+    <p>Your name and dealer go on every photo, stock entry and comment. You only enter them here once.</p>
+    <div class="field"><label for="pName">Your name</label><input id="pName" autocomplete="name" placeholder="First Last"></div>
+    <div class="field"><label for="pDealer">Dealer name</label><input id="pDealer" autocomplete="organization" placeholder="Dealer"></div>
+    <p class="err" id="pErr" hidden></p>
+    <button class="btn primary" type="submit">Save</button>
+  </form>
+
+  <section id="jobSec" hidden>
+    <p class="eyebrow" style="margin-bottom:8px">Current job</p>
+    <div class="job">
+      <div class="job-top"><div class="sa" id="jSa"></div><div class="jtitle" id="jTitle"></div></div>
+      <ol class="steps" id="steps"></ol>
+      <div class="job-actions">
+        <a class="btn primary" href="camera.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h4l2-3h6l2 3h4v12H3z"/><circle cx="12" cy="13" r="4"/></svg>Camera</a>
+        <a class="btn" href="comments.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H8l-4 4z"/><path d="M8 9h8M8 12h5"/></svg>Comments</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="tiles" aria-label="Start">
+    <a class="tile main" href="camera.html" id="newTile">
+      <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></i>
+      <b id="newT">Start New Job</b><span>SA-#, job type, then photos</span>
+    </a>
+    <a class="tile" href="stock.html">
+      <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg></i>
+      <b>Inventory</b><span>Receive, transfer, RMA, history</span>
+    </a>
+  </section>
+
+  <section class="stats" id="stats" aria-label="Stock on this phone"></section>
+
+  <p class="foot">Everything is saved on this phone. Stock backs up to your Excel file from Inventory.</p>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var T = window.Toolkit, $ = function (id) { return document.getElementById(id); };
+  function get(k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
+  var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); };
+  var plural = function (n, w) { return n + " " + w + (n === 1 ? "" : "s"); };
+
+  /* profile */
+  function paintProfile(forceEdit) {
+    var p = T ? T.profile() : { name: "", dealer: "" }, need = !p.name || !p.dealer;
+    $("profile").hidden = !(need || forceEdit);
+    $("profH").textContent = need ? "Set up Field Kit" : "Your details";
+    $("pName").value = p.name || ""; $("pDealer").value = p.dealer || "";
+    $("who").hidden = need;
+    $("who").textContent = [p.name, p.dealer].filter(Boolean).join(" · ");
+  }
+  $("who").addEventListener("click", function () { paintProfile(true); $("pName").focus(); });
+  $("profile").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var name = $("pName").value.trim().replace(/\s+/g, " "), dealer = $("pDealer").value.trim();
+    var miss = [!name && "your name", !dealer && "dealer name"].filter(Boolean);
+    if (miss.length) { $("pErr").textContent = "Still needed: " + miss.join(" and ") + "."; $("pErr").hidden = false; return; }
+    $("pErr").hidden = true;
+    if (T) T.setProfile({ name: name, dealer: dealer });
+    paintProfile(false);
+  });
+
+  /* current job */
+  var OUT = { OK: "Complete", CC: "Cannot Complete", NR: "Not Required" };
+  function paintJob() {
+    var j = T && T.currentJob();
+    $("jobSec").hidden = !j;
+    $("newT").textContent = j ? "New Job" : "Start New Job";
+    if (!j) return;
+    $("jSa").textContent = j.ref || "No SA-#";
+    $("jTitle").textContent = j.title || "Job";
+    var need = (j.missing || []).length, deployed = T.deployedOn(j.id).length, serials = (j.serials || []).length;
+    var unlogged = (j.serials || []).filter(function (s) { return !s.sku; }).length;
+    var draft = get("toolkit.commentsFor", "") === j.id && (function () { try { return !!localStorage.getItem("xplore_fsl_draft_fibre_existing_v16"); } catch (e) { return false; } })();
+    var steps = [
+      { href: "camera.html", state: j.ref ? "done" : "todo", t: "Job info", s: (j.outcome ? OUT[j.outcome] : "Outcome not set yet") },
+      { href: "camera.html", state: !j.photos ? "" : need ? "todo" : "done", t: "Photos",
+        s: j.photos ? plural(j.photos, "photo") + (need ? " · still needed: " + j.missing.join(", ") : " · all required taken") : "None yet" },
+      { href: "camera.html", state: !serials ? "" : unlogged ? "todo" : "done", t: "Equipment",
+        s: serials ? plural(deployed, "item") + " deployed in Stock" + (unlogged ? " · " + unlogged + " need a model picked" : "") : "Scan serials in Camera to deploy them" },
+      { href: "comments.html", state: draft ? "done" : "", t: "Comments",
+        s: !T.commentsFit(j) ? "Not built for this job type yet" : draft ? "Draft started" : "Generate when you're ready" }
+    ];
+    $("steps").innerHTML = steps.map(function (x, i) {
+      return '<li class="step ' + x.state + '"><a href="' + x.href + '"><span class="num">' + (x.state === "done" ? "✓" : i + 1) + '</span><span class="st-main"><b>' + esc(x.t) + '</b><span>' + esc(x.s) + '</span></span><span class="chev" aria-hidden="true">›</span></a></li>';
+    }).join("");
+  }
+
+  /* stock summary, worked out the same way Stock does: each serial's latest live entry */
+  function paintStats() {
+    var ev = get("techstock.events", []).filter(function (e) { return !e.voided; }).sort(function (a, b) { return a.ts - b.ts; });
+    var last = {}, dayStart = new Date(); dayStart.setHours(0, 0, 0, 0);
+    var today = 0;
+    ev.forEach(function (e) { if (e.serialKey) last[e.serialKey] = e.type; if (e.type === "deploy" && e.ts >= dayStart.getTime()) today++; });
+    var onHand = Object.keys(last).filter(function (k) { return last[k] === "receive"; }).length;
+    var bk = get("techstock.lastBackup", null);
+    var since = bk ? ev.filter(function (e) { return e.ts > (typeof bk === "number" ? bk : bk.ts || 0); }).length : ev.length;
+    $("stats").innerHTML = '<span><b>' + onHand + '</b>serialized on hand</span><span><b>' + today + '</b>deployed today</span>' +
+      (ev.length ? '<span><b>' + since + '</b>' + (bk ? "entries since last backup" : "entries, never backed up") + '</span>' : "");
+  }
+
+  function paint() { paintProfile(false); paintJob(); paintStats(); }
+  paint();
+  addEventListener("pageshow", paint);
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") paint(); });
+})();
+</script>
+
+</body>
+</html>
