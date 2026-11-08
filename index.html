@@ -139,6 +139,9 @@ h3{margin:0;font:700 1.1rem/1.2 var(--f-display)}
 
 /* job summary */
 .lhead{display:flex;flex-direction:column;gap:4px}
+/* job summary and new job: the way back and the title stay at the top while scrolling, like Field Stock and Field Notes */
+.lhead{position:sticky;top:0;z-index:30;background:var(--bg);margin:calc(-18px - env(safe-area-inset-top,0px)) calc(-1 * max(16px,env(safe-area-inset-right,0px))) 0 calc(-1 * max(16px,env(safe-area-inset-left,0px)));
+  padding:calc(10px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px));box-shadow:0 1px 0 var(--line)}
 .lhead .fk-title{font-family:var(--f-mono);font-size:1.3rem;font-weight:600}
 .lcard{gap:12px}
 .lcard .gs-line h3{flex:1}

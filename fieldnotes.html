@@ -726,7 +726,7 @@ h1,h2,.form-section-title,.preview-card h2{font-family:var(--fk-display);letter-
 .form-section-title{font-size:1.2rem;font-weight:700}
 html:root[data-fn-theme] .form-section-title{color:var(--fk-accent-text)}
 /* header: on the page like the menu and the other tools */
-html:root[data-fn-theme] header.app-header{background:var(--fk-bg);border-bottom:0;padding:calc(env(safe-area-inset-top,0px) + 4px) 0 12px;box-shadow:0 1px 0 var(--fk-line)}
+html:root[data-fn-theme] header.app-header{position:sticky;top:0;z-index:40;background:var(--fk-bg);border-bottom:0;padding:calc(env(safe-area-inset-top,0px) + 4px) 0 12px;box-shadow:0 1px 0 var(--fk-line)}
 html:root[data-fn-theme] header.app-header h1.fk-title{color:var(--fk-ink);font-size:1.5rem;margin:0;line-height:1.05}
 html:root[data-fn-theme] header.app-header p.fk-sub{color:var(--fk-muted);margin:3px 0 0;font-size:.88rem;white-space:normal}
 .app-header-inner{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
