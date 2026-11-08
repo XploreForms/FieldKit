@@ -1904,7 +1904,7 @@ $("setupForm").addEventListener("submit",e=>{
   $("setupErr").innerHTML=""; paintHeader(); showSetup();
 });
 function paintHeader(){
-  $("who").textContent = ME.name ? ME.name+(ME.dealer?" · "+ME.dealer:"") : "Saved on this phone";
+  $("who").textContent = ME.name || "Saved on this phone";   // name only, like the Field Kit menu (the dealer name doesn't fit on a phone)
 }
 
 /* ---------- Excel backup ---------- */
