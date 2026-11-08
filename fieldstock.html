@@ -1494,7 +1494,7 @@ $("ordSend").addEventListener("click",()=>{
   const body=`Manual Order Request
 
 Dealer: ${ME.dealer}
-SAP account #: ${ME.sap}
+SAP dealer account #: ${ME.sap}
 Salesforce dealer account #: ${ME.sf}
 Ship to: ${addrLine(ME)}${ME.shipHold?`\nDelivery: Hold for pickup at the nearest Purolator depot`:""}${ME.shipNotes?`\nShipping instructions: ${ME.shipNotes}`:""}
 
@@ -1752,9 +1752,9 @@ const PROFILE=[
    norm:v=>titleCase(v.replace(/[‒-―−]/g,"-").replace(/\s+-\s+.*$/,"").replace(/\s+/g," ").trim()).replace(/^xci\b/i,"XCI").replace(/\b(ns|nb|nl|pei|mb)\b/gi,m=>m.toUpperCase()),
    ok:v=>/[A-Za-zÀ-ÿ].*[A-Za-zÀ-ÿ]/.test(v) && v.length<=60,
    bad:"Enter your dealer name, e.g. XCI Example Tech."},
-  {k:"sap", label:"SAP Account #", ph:"", ex:"6 digits, e.g. 100123", im:"numeric", max:6,
+  {k:"sap", label:"SAP Dealer Account #", ph:"", ex:"6 digits, e.g. 100123", im:"numeric", max:6,
    hint:"6 digits, e.g. 100123",
-   norm:v=>v.replace(/\D/g,""), ok:v=>/^\d{6}$/.test(v), bad:"Your SAP account # is 6 digits, e.g. 100123."},
+   norm:v=>v.replace(/\D/g,""), ok:v=>/^\d{6}$/.test(v), bad:"Your SAP dealer account # is 6 digits, e.g. 100123."},
   {k:"sf", label:"Salesforce Dealer Account #", ph:"", ex:"7 digits, e.g. 1700123", im:"numeric", max:7,
    hint:"7 digits, e.g. 1700123",
    norm:v=>v.replace(/\D/g,""), ok:v=>/^\d{7}$/.test(v), bad:"Your Salesforce dealer account # is 7 digits, e.g. 1700123."},
@@ -1988,7 +1988,7 @@ function buildWorkbook(){
   ws["!autofilter"]={ref:XLSX.utils.encode_range({s:{r:0,c:0},e:{r:Math.max(1,aoa.length-1),c:COLS.length-1}})};
   const onHand=onHandRows();
   const ws2=XLSX.utils.aoa_to_sheet(onHand); ws2["!cols"]=[{wch:34},{wch:22},{wch:14}];
-  const info=XLSX.utils.aoa_to_sheet([["Technician",ME.name],["Dealer",ME.dealer],["SAP account #",ME.sap],["Salesforce dealer account #",ME.sf],["Shipping address",addrLine(ME)],["Saved",new Date().toLocaleString()],["Entries",Store.events.length],[],["Exported from Field Stock for your records."]]);
+  const info=XLSX.utils.aoa_to_sheet([["Technician",ME.name],["Dealer",ME.dealer],["SAP dealer account #",ME.sap],["Salesforce dealer account #",ME.sf],["Shipping address",addrLine(ME)],["Saved",new Date().toLocaleString()],["Entries",Store.events.length],[],["Exported from Field Stock for your records."]]);
   info["!cols"]=[{wch:14},{wch:40}];
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,"History"); XLSX.utils.book_append_sheet(wb,ws2,"On hand"); XLSX.utils.book_append_sheet(wb,info,"About");
@@ -2253,7 +2253,7 @@ function renderXCount(rows, L){
   const ok=rows.filter(r=>r.scanned&&r.onList), miss=rows.filter(r=>!r.scanned&&r.onList), extra=rows.filter(r=>r.scanned&&!r.onList);
   $("cs-ok").textContent=`${ok.length}/${x.serials.length}`; $("cs-ok-l").textContent="Found";
   $("cs-miss").textContent=miss.length; $("cs-miss-l").textContent="Not found yet";
-  const techWarn = x.techId && ME.sap && x.techId!==ME.sap ? `<div class="note warn">This list is for Tech ID ${esc(x.techId)}, but your SAP account # is ${esc(ME.sap)}. Check you have the right list.</div>` : "";
+  const techWarn = x.techId && ME.sap && x.techId!==ME.sap ? `<div class="note warn">This list is for Tech ID ${esc(x.techId)}, but your SAP dealer account # is ${esc(ME.sap)}. Check you have the right list.</div>` : "";
   $("listBox").innerHTML=`<div class="card"><div class="cmp-head"><h3>${esc(L.file)}</h3><button class="btn sm" type="button" data-pick-list>Replace</button></div>
     <div class="list-meta">${x.techId?`<span>Tech ID <b class="mono">${esc(x.techId)}</b></span>`:""}<span>${x.serials.length} serialized</span><span>${x.qty.length} non-serialized</span></div>${techWarn}</div>`;
   const cmRow=(r, ph)=>`<div class="crow-act"><input type="text" class="cm-in" data-cm="${esc(r.key)}" value="${esc(commentFor(r.key))}" placeholder="${esc(ph)}" aria-label="Comment for ${esc(r.serial)}" autocomplete="off"></div>`;
@@ -2439,7 +2439,7 @@ $("countExport").addEventListener("click",async()=>{
   const ws=XLSX.utils.aoa_to_sheet(aoa);
   ws["!cols"]=[22,32,30,8,20,10,...(hasList?[14]:[]),40].map(w=>({wch:w}));
   ws["!autofilter"]={ref:XLSX.utils.encode_range({s:{r:0,c:0},e:{r:Math.max(1,aoa.length-1),c:head.length-1}})};
-  const info=XLSX.utils.aoa_to_sheet([["Technician",ME.name],["Dealer",ME.dealer],["SAP account #",ME.sap],["Salesforce dealer account #",ME.sf],["Shipping address",addrLine(ME)],["Count started",new Date(COUNT.startedAt).toLocaleString()],["Saved",new Date().toLocaleString()],["Serials scanned",COUNT.items.length],["Compared with",hasList?COUNT.list.file:"My records only"]]);
+  const info=XLSX.utils.aoa_to_sheet([["Technician",ME.name],["Dealer",ME.dealer],["SAP dealer account #",ME.sap],["Salesforce dealer account #",ME.sf],["Shipping address",addrLine(ME)],["Count started",new Date(COUNT.startedAt).toLocaleString()],["Saved",new Date().toLocaleString()],["Serials scanned",COUNT.items.length],["Compared with",hasList?COUNT.list.file:"My records only"]]);
   info["!cols"]=[{wch:16},{wch:40}];
   const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Count"); XLSX.utils.book_append_sheet(wb,info,"About");
   const d=new Date(COUNT.startedAt), stamp=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
