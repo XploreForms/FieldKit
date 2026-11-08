@@ -654,8 +654,8 @@ html.fk-slim .top .netbar{flex-basis:100%}
     <div class="card">
       <div class="field"><label for="ordReason">Reason for Manual Order</label>
         <textarea id="ordReason" placeholder=""></textarea><small class="hint">e.g. Salesforce ordering is down</small></div>
-      <div class="field"><label for="ordNotes">Special Instructions <span class="muted">(Optional)</span></label>
-        <textarea id="ordNotes"></textarea><small class="hint">e.g. Leave at side door</small></div>
+      <div class="field"><label for="ordNotes">Special Instructions for This Order <span class="muted">(Optional)</span></label>
+        <textarea id="ordNotes"></textarea><small class="hint">Your default shipping instructions are added on their own (see Ships To).</small></div>
       <div class="field"><label for="ordMgr">Xplore Approver Email</label>
         <input type="email" id="ordMgr" inputmode="email" autocomplete="off" autocapitalize="off" spellcheck="false"><small class="hint">Saved for next time, e.g. first.last@xplore.ca</small>
         <small class="ferr" id="ordMgr_err" hidden></small></div>
@@ -899,7 +899,7 @@ if(sealMissing(Store.events)) lsSet(K.events, Store.events);
 // Ask the browser to keep this site's data (iPhone honours this best from the Home Screen)
 try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
 
-const ME = Object.assign({name:"", email:"", dealer:"", sap:"", sf:"", street:"", city:"", prov:"", postal:""}, lsGet(K.me, {}));
+const ME = Object.assign({name:"", email:"", dealer:"", sap:"", sf:"", street:"", city:"", prov:"", postal:"", shipHold:"", shipNotes:""}, lsGet(K.me, {}));
 
 /* ---------- derived stock ---------- */
 function computeStock(){
@@ -1462,7 +1462,10 @@ function renderOrder(){
   const lines=Object.values(ORD.qty).filter(n=>n>0).length, units=Object.values(ORD.qty).reduce((a,b)=>a+(b||0),0);
   $("ordCount").textContent = lines ? `Items (${units} selected)` : "Items";
   $("ordClear").hidden=!lines;
-  $("ordShip").innerHTML = profileDone() ? `${esc(ME.dealer)}<br>${esc(addrLine(ME))}<br><span class="help">Wrong address? Change it in Field Kit settings.</span>` : "Finish your details in Field Kit settings first.";
+  $("ordShip").innerHTML = profileDone() ? `${esc(ME.dealer)}<br>${esc(addrLine(ME))}`+
+    (ME.shipHold?`<br><b>Hold for pickup at the nearest Purolator depot</b>`:"")+
+    (ME.shipNotes?`<br>Shipping instructions: ${esc(ME.shipNotes).replace(/\n/g,"<br>")}`:"")+
+    `<br><span class="help">Change these in Field Kit settings.</span>` : "Finish your details in Field Kit settings first.";
 }
 $("ordList").addEventListener("click",e=>{ const b=e.target.closest("[data-oq]"); if(!b) return; const i=Number(b.dataset.oq), it=ORDER_ITEMS[i];
   ORD.qty[i]=Math.max(0,Math.min(it.max,(ORD.qty[i]||0)+Number(b.dataset.d))); if(!ORD.qty[i]) delete ORD.qty[i]; saveOrd(); $("ordErr").innerHTML=""; renderOrder(); });
@@ -1491,9 +1494,9 @@ $("ordSend").addEventListener("click",()=>{
 Dealer: ${ME.dealer}
 SAP account #: ${ME.sap}
 Salesforce account #: ${ME.sf}
-Ship to: ${addrLine(ME)}
+Ship to: ${addrLine(ME)}${ME.shipHold?`\nDelivery: Hold for pickup at the nearest Purolator depot`:""}${ME.shipNotes?`\nShipping instructions: ${ME.shipNotes}`:""}
 
-Reason for manual order: ${reason}${notes?`\nSpecial instructions: ${notes}`:""}
+Reason for manual order: ${reason}${notes?`\nSpecial instructions for this order: ${notes}`:""}
 
 Items (${units}):
 ${picked.map(x=>`- ${x.n} x ${x.it.label}`).join("\n")}

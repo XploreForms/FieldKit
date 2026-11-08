@@ -21,7 +21,8 @@
   var NOTES_FIRST = "xplore_fsl_tech_first_name", NOTES_LAST = "xplore_fsl_tech_last_name", NOTES_ASKED = "xplore_fsl_name_asked";
   // the details Field Stock keeps in its own record (techstock.me)
   var STOCK_FIELDS = ["name", "email", "dealer", "sap", "sf", "street", "city", "prov", "postal"];
-  var FIELDS = STOCK_FIELDS.concat(["phone", "manager"]);
+  var SHIP_FIELDS = ["shipHold", "shipNotes"];   // stock order shipping options (can be cleared, so always copied)
+  var FIELDS = STOCK_FIELDS.concat(["phone", "manager"], SHIP_FIELDS);
 
   // One-time carry-over from the Field Kit preview builds, which used "toolkit.*" keys
   if (!raw(K.setup) && raw("toolkit.setupDone")) setRaw(K.setup, raw("toolkit.setupDone"));
@@ -46,7 +47,7 @@
     var keep = {}; FIELDS.forEach(function (f) { keep[f] = str(p[f]); });
     keep.dealer = keep.dealer.replace(/\s+[-‒–—]\s+.*$/, "");   // dealer name is just the dealership, no "- First Last"
     set(K.profile, keep);
-    var stock = get("techstock.me", {}); STOCK_FIELDS.forEach(function (f) { if (keep[f]) stock[f] = keep[f]; }); set("techstock.me", stock);
+    var stock = get("techstock.me", {}); STOCK_FIELDS.forEach(function (f) { if (keep[f]) stock[f] = keep[f]; }); SHIP_FIELDS.forEach(function (f) { stock[f] = keep[f]; }); set("techstock.me", stock);
     if (keep.manager) set("techstock.manager", keep.manager);
     var cam = get("fieldcam.settings", {}); cam.name = keep.name; if (keep.dealer) cam.dealer = keep.dealer; set("fieldcam.settings", cam);
     var parts = keep.name.split(/\s+/); setRaw(NOTES_FIRST, parts.shift() || ""); setRaw(NOTES_LAST, parts.join(" ")); setRaw(NOTES_ASKED, "1");

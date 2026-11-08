@@ -222,6 +222,11 @@ html.fk-slim .lhead .fk-title{font:650 15px/1.2 var(--fk-body);flex:none}
 .field input,.field select{width:100%;border:0;border-radius:10px;padding:12px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line);min-width:0}
 .field input:focus,.field select:focus{outline:none;box-shadow:inset 0 0 0 2px var(--accent)}
 .field input.bad,.field select.bad{box-shadow:inset 0 0 0 2px var(--bad)}
+.field textarea{width:100%;border:0;border-radius:10px;padding:12px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line);min-width:0;font:inherit;color:inherit;resize:vertical;min-height:84px}
+.field textarea:focus{outline:none;box-shadow:inset 0 0 0 2px var(--accent)}
+.field textarea.bad{box-shadow:inset 0 0 0 2px var(--bad)}
+.chk{display:flex;align-items:flex-start;gap:12px;font-weight:600;cursor:pointer;color:var(--fg);text-transform:none;letter-spacing:0;font-size:1rem}
+.field .chk input{width:24px;height:24px;flex:none;margin:0;padding:0;box-shadow:none;accent-color:var(--btn)}
 .hint{font-size:.8rem;color:var(--muted)}
 .ferr{font-size:.85rem;color:var(--bad)}
 .pair{display:grid;grid-template-columns:minmax(0,1fr) 96px;gap:8px}
@@ -815,11 +820,13 @@ details.grp .btn{margin-bottom:12px}
       norm: titleCase, ok: function (v) { return /^[A-Za-zÀ-ÿ'’.-]+( [A-Za-zÀ-ÿ'’.-]+)+$/.test(v); }, bad: "Enter your first and last name, e.g. Jane Smith." },
     email: { label: "Work Email", ac: "email", type: "email",
       norm: function (v) { return v.replace(/\s+/g, "").toLowerCase(); }, ok: function (v) { return validEmail(v) && isWorkEmail(v); }, bad: "Enter your @xplore.ca work email, e.g. jane.smith@xplore.ca." },
-    dealer: { label: "Dealer Name", hint: "Your dealership, e.g. XCI Example Tech", ac: "organization", cap: "words",
+    dealer: { label: "Dealer Name", hint: "Location XCI Tech, e.g. Cambridge XCI Tech", ph: "Location XCI Tech", ac: "organization", cap: "words",
       // a name added after a dash ("XCI Example Tech - Jane Smith") is dropped: the dealer name is just the dealership
       norm: function (v) { var x = v.replace(/[‒-―−]/g, "-").replace(/\s+-\s+.*$/, "").replace(/\s+/g, " ").trim();
-        return titleCase(x).replace(/^xci\b/i, "XCI").replace(/\b(ns|nb|nl|pei|mb)\b/gi, function (m) { return m.toUpperCase(); }); },
-      ok: function (v) { return /[A-Za-zÀ-ÿ].*[A-Za-zÀ-ÿ]/.test(v) && v.length <= 60; }, bad: "Enter your dealer name, e.g. XCI Example Tech." },
+        return titleCase(x).replace(/\bxci\b/gi, "XCI").replace(/\b(ns|nb|nl|pei|mb)\b/gi, function (m) { return m.toUpperCase(); }); },
+      // always "Location XCI Tech"
+      ok: function (v) { return /^[A-Za-zÀ-ÿ'’.\- ]+ XCI Tech$/.test(v) && v.length <= 60; }, bad: "Use the format Location XCI Tech, e.g. Cambridge XCI Tech.",
+      saved: function (v) { return /[A-Za-zÀ-ÿ].*[A-Za-zÀ-ÿ]/.test(v); } },   // a name saved before this format isn't sent back through setup; it's fixed next time details are saved
     phone: { label: "Mobile Number", ac: "tel", type: "tel", im: "tel",
       norm: function (v) { var d = phoneDigits(v); return d.length === 10 ? d.slice(0, 3) + "-" + d.slice(3, 6) + "-" + d.slice(6) : v.trim(); },
       ok: function (v) { return phoneDigits(v).length === 10; }, bad: "Enter a 10-digit number, e.g. 519-555-0123." },
@@ -835,13 +842,20 @@ details.grp .btn{margin-bottom:12px}
       norm: function (v) { return v; }, ok: function (v) { return PROVS.indexOf(v) >= 0; }, bad: "Choose your province." },
     postal: { label: "Postal Code", hint: "e.g. A1A 1A1", ac: "shipping postal-code", cap: "characters",
       norm: function (v) { return normPostal(v) || v.trim().toUpperCase(); }, ok: function (v) { return !!normPostal(v); }, bad: "Enter a postal code like A1A 1A1." },
+    // shipping options for stock orders, saved once and added to every order
+    shipHold: { label: "Ship to a Purolator depot and hold for pickup", check: true, optional: true, hint: "Every order goes to the Purolator depot nearest your address instead of being delivered.",
+      norm: function (v) { return v ? "yes" : ""; }, ok: function () { return true; } },
+    shipNotes: { label: "Default Shipping Instructions", area: true, optional: true, hint: "Added to every order. Gate codes, unit numbers, where to leave it.",
+      norm: function (v) { return v.replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim(); }, ok: function (v) { return v.length <= 300; }, bad: "Keep it under 300 characters." },
     manager: { label: "Xplore Approver Email", type: "email",
       norm: function (v) { return v.replace(/\s+/g, "").toLowerCase(); }, ok: validEmail, bad: "Enter a full email address, e.g. first.last@xplore.ca." }
   };
-  var ABOUT = ["name", "email", "phone", "manager"], ACCT = ["dealer", "sap", "sf", "street", "cityprov", "postal"];
+  var ABOUT = ["name", "email", "phone", "manager"], ACCT = ["dealer", "sap", "sf", "street", "cityprov", "postal", "shipHold", "shipNotes"];
 
   function inputHTML(pre, k) {
     var f = F[k], id = pre + "_" + k;
+    if (f.check) return '<input id="' + id + '" data-k="' + k + '" type="checkbox">';
+    if (f.area) return '<textarea id="' + id + '" data-k="' + k + '" rows="3" maxlength="300" autocapitalize="sentences"></textarea>';
     if (f.select) return '<select id="' + id + '" data-k="' + k + '" autocomplete="' + f.ac + '" aria-label="' + f.label + '"><option value="">Prov.</option>' + f.select.map(function (v) { return "<option>" + v + "</option>"; }).join("") + "</select>";
     return '<input id="' + id + '" data-k="' + k + '" type="' + (f.type || "text") + '"' + (f.ph ? ' placeholder="' + esc(f.ph) + '"' : "") + (f.ac ? ' autocomplete="' + f.ac + '"' : "") +
       (f.im ? ' inputmode="' + f.im + '"' : "") + ' autocapitalize="' + (f.cap || "off") + '"' + (f.type === "email" ? ' spellcheck="false"' : "") + ">";
@@ -850,15 +864,18 @@ details.grp .btn{margin-bottom:12px}
     if (k === "cityprov") return '<div class="field"><label for="' + pre + '_city">City and Province</label><div class="pair">' + inputHTML(pre, "city") + inputHTML(pre, "prov") +
       '</div><small class="ferr" id="' + pre + '_city_err" hidden></small><small class="ferr" id="' + pre + '_prov_err" hidden></small></div>';
     var f = F[k];
+    if (f.check) return '<div class="field"><label class="chk" for="' + pre + "_" + k + '">' + inputHTML(pre, k) + "<span>" + esc(f.label) + "</span></label>" +
+      (f.hint ? '<small class="hint">' + esc(f.hint) + "</small>" : "") + "</div>";
     return '<div class="field"><label for="' + pre + "_" + k + '">' + esc(f.label) + (f.optional ? " <em>(optional)</em>" : "") + "</label>" + inputHTML(pre, k) +
       (f.hint ? '<small class="hint">' + esc(f.hint) + "</small>" : "") + '<small class="ferr" id="' + pre + "_" + k + '_err" hidden></small></div>';
   }
   var keysOf = function (list) { return list.reduce(function (a, k) { return a.concat(k === "cityprov" ? ["city", "prov"] : [k]); }, []); };
-  function fill(pre, keys) { var p = FK.profile(); keys.forEach(function (k) { var el = $(pre + "_" + k); if (el) el.value = p[k] || ""; }); }
+  function fill(pre, keys) { var p = FK.profile(); keys.forEach(function (k) { var el = $(pre + "_" + k); if (!el) return; if (el.type === "checkbox") el.checked = !!p[k]; else el.value = p[k] || ""; }); }
   function showErr(pre, k, msg) { var el = $(pre + "_" + k), e = $(pre + "_" + k + "_err"); if (!el || !e) return; el.classList.toggle("bad", !!msg); e.hidden = !msg; e.textContent = msg || ""; }
   // tidy and check one box; returns the clean value, "" for an empty optional box, or null when it needs fixing
   function check(pre, k) {
     var f = F[k], el = $(pre + "_" + k); if (!el) return null;
+    if (f.check) return f.norm(el.checked);
     var v = f.norm(el.value || "");
     if (!f.select && v !== el.value) el.value = v;
     if (!v && f.optional) { showErr(pre, k, ""); return ""; }
@@ -879,7 +896,7 @@ details.grp .btn{margin-bottom:12px}
     box.addEventListener("change", function (e) { var k = e.target.dataset && e.target.dataset.k; if (k && e.target.tagName === "SELECT") check(pre, k); });
   }
   function detailsDone(p) {
-    return keysOf(ABOUT.concat(ACCT)).every(function (k) { var f = F[k], v = p[k] || ""; return f.optional ? (!v || f.ok(v)) : (!!v && f.ok(f.norm(v))); }) && !postalProvError(p.prov, p.postal);
+    return keysOf(ABOUT.concat(ACCT)).every(function (k) { var f = F[k], v = p[k] || ""; return f.optional ? (!v || f.ok(v)) : (!!v && (f.saved || f.ok)(f.norm(v))); }) && !postalProvError(p.prov, p.postal);
   }
 
   /* appearance controls (setup step 3 and settings) */
