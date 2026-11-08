@@ -1397,7 +1397,9 @@ ${kv("From Dealer",esc(fromDealer))}${fromEmail?kv("From Email",esc(fromEmail)):
 ${items.map(i=>`<tr><td style="${td}">${esc(i.name)}<br><span style="font-size:12px;color:#5A6F69">${esc(i.part)}</span></td><td style="${td}font-family:Consolas,Menlo,monospace;white-space:nowrap">${i.serial?esc(i.serial):"Qty "+i.qty}</td></tr>`).join("")}
 </table>
 <p style="margin:0">Thank you,</p></div>`;
-  return {subject, body, html, cc:[fromEmail,toEmail].filter(Boolean)};
+  const approver=String(lsGet("techstock.manager","")||"").trim();   // the tech's Xplore approver (Field Kit setup) is CC'd too
+  const cc=[fromEmail,toEmail,approver].filter(Boolean).filter((e,i,a)=>a.findIndex(x=>x.toLowerCase()===e.toLowerCase())===i);
+  return {subject, body, html, cc};
 }
 function openMailSheet(o){   // {title, note, to, subject, body, extra}
   const cc=(o.cc||[]).join(",");
