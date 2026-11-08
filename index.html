@@ -830,10 +830,10 @@ details.grp .btn{margin-bottom:12px}
     phone: { label: "Work Phone Number", ac: "tel", type: "tel", im: "tel",
       norm: function (v) { var d = phoneDigits(v); return d.length === 10 ? d.slice(0, 3) + "-" + d.slice(3, 6) + "-" + d.slice(6) : v.trim(); },
       ok: function (v) { return phoneDigits(v).length === 10; }, bad: "Enter a 10-digit number, e.g. 519-555-0123." },
-    sap: { label: "SAP Account #", hint: "6 digits, e.g. 100123", im: "numeric",
+    sap: { label: "SAP Account #", hint: "6 digits, e.g. 100123", im: "numeric", max: 6,
       norm: function (v) { return v.replace(/\D/g, ""); }, ok: function (v) { return /^\d{6}$/.test(v); }, bad: "Your SAP account # is 6 digits, e.g. 100123." },
-    sf: { label: "Salesforce Account #", hint: "7 digits, e.g. 1700123", im: "numeric",
-      norm: function (v) { return v.replace(/\D/g, ""); }, ok: function (v) { return /^\d{7}$/.test(v); }, bad: "Your Salesforce account # is 7 digits, e.g. 1700123." },
+    sf: { label: "Salesforce Dealer Account #", hint: "7 digits, e.g. 1700123", im: "numeric", max: 7,
+      norm: function (v) { return v.replace(/\D/g, ""); }, ok: function (v) { return /^\d{7}$/.test(v); }, bad: "Your Salesforce dealer account # is 7 digits, e.g. 1700123." },
     street: { label: "Shipping Address", hint: "Street and unit, e.g. 123 Main St #4", ph: "Street and unit", ac: "shipping street-address", cap: "words",
       norm: function (v) { return titleCase(v.replace(/\s*,\s*/g, ", ")); }, ok: function (v) { return streetError(v) === ""; }, bad: function (v) { return streetError(v); } },
     city: { label: "City", ph: "City", ac: "shipping address-level2", cap: "words",
@@ -892,6 +892,9 @@ details.grp .btn{margin-bottom:12px}
     return out;
   }
   function wire(box, pre) {
+    // number-only boxes (SAP 6 digits, Salesforce 7): keep digits only and stop at the limit as the tech types or pastes
+    box.addEventListener("input", function (e) { var k = e.target.dataset && e.target.dataset.k, f = k && F[k]; if (!f || !f.max) return;
+      var d = e.target.value.replace(/\D/g, "").slice(0, f.max); if (d !== e.target.value) e.target.value = d; });
     box.addEventListener("blur", function (e) { var k = e.target.dataset && e.target.dataset.k; if (k && e.target.value) check(pre, k); }, true);
     box.addEventListener("change", function (e) { var k = e.target.dataset && e.target.dataset.k; if (k && e.target.tagName === "SELECT") check(pre, k); });
   }
