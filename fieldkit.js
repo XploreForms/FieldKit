@@ -143,19 +143,6 @@
     if (y > 0 && APP !== "home") setTimeout(function () { window.scrollTo(0, y); }, 250);
   });
 
-  /* Pinned top bars go slim once the page is scrolled down (title smaller, tile smaller, line under the title hidden),
-     and full size again back at the top. A gap between the two points stops it flickering. */
-  if (APP === "notes" || APP === "stock" || APP === "home") {
-    var slim = false;
-    var onScroll = function () {
-      var y = window.scrollY || 0;
-      if (!slim && y > 60) { slim = true; document.documentElement.classList.add("fk-slim"); }
-      else if (slim && y < 6) { slim = false; document.documentElement.classList.remove("fk-slim"); }
-    };
-    addEventListener("scroll", onScroll, { passive: true });
-    addEventListener("load", onScroll);
-  }
-
   /* ---------- updates: nobody stays on an old version ----------
      Checks for a new version when a page opens, whenever Field Kit comes back on screen, when signal returns,
      and every 5 minutes. A new version is put in place straight away on the menu, in the first few seconds
