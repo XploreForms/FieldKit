@@ -417,6 +417,11 @@ html:root[data-theme]{--bg:var(--fk-bg);--surface:var(--fk-surface);--surface-2:
 body::before{background:var(--bg)}
 .top-in{padding-top:2px;padding-bottom:12px}
 .top .mark{width:42px;height:42px;border-radius:11px}
+html.fk-slim .top{display:flex;flex-wrap:wrap;align-items:center;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+html.fk-slim .top .fk-bar{padding:0;margin:0;max-width:none}
+html.fk-slim .top-in{flex:1;min-width:0;margin:0;padding:4px 0 4px 6px;justify-content:flex-end;min-height:36px}
+html.fk-slim .top-txt{position:absolute;left:96px;right:96px;top:calc(env(safe-area-inset-top,0px) + 19px);transform:translateY(-50%);text-align:center;pointer-events:none}
+html.fk-slim .top .netbar{flex-basis:100%}
 .top .mark svg{width:24px;height:24px}
 .top h1{font:700 1.5rem/1.05 var(--f-display);letter-spacing:.01em}
 .top .who{opacity:1;color:var(--muted);font-size:.88rem;margin-top:3px}
