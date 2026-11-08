@@ -97,22 +97,27 @@
     return SLOT_CACHE;
   }
   function slotIds(src) {
-    if (!src || (src.work !== "INS" && src.work !== "CON")) return [];
+    if (!src || (src.work !== "INS" && src.work !== "CON" && src.work !== "REP")) return [];
     var p = src.plat || "";
+    if (p === "Fibre") return ["drop", "nid", "ont", "router", "xwh", "xtv"];   // repairs: Fibre has no drop type, so every fibre slot
     if (p === "Fixed Wireless") return ["mount", "surge", "radio", "router", "xwh", "xtv"];
     if (p === "Fibre (Existing Drop)") return ["nid", "ont", "router", "xwh", "xtv"];
     if (p === "Fibre (Drop Required)" || p === "Fibre (Drop Only)") return ["drop", "nid", "ont", "router", "xwh", "xtv"];
     if (p === "Satellite") return ["trimast", "azel", "dish", "modem", "tria"];
     return [];
   }
+  // conversions and repairs can also recover equipment from the customer
+  function canRecover(src) { return !!src && (src.work === "CON" || src.work === "REP"); }
   function unitsWanted(ns, key) { if (!ns || ns[key] == null || ns[key] === "") return null; return ns[key] === "None" ? 0 : (parseInt(ns[key], 10) || 0); }
   // src: {work, plat, serials, slots}; ns: Field Notes answers (for how many XWH / XTV)
   function slotModel(src, ns) {
     // Cannot Complete / Not Required: nothing is deployed, so no slots (scanned serials are kept in case it changes back)
     if (src && src.outcome && src.outcome !== "OK") return { rows: [], extras: [], total: 0, done: 0, has: false, off: true };
-    var D = slotSet(), ids = slotIds(src), picks = (src && src.slots) || {}, got = {}, extras = [], rows = [];
+    var D = slotSet(), ids = slotIds(src), picks = (src && src.slots) || {}, got = {}, extras = [], rows = [], recovered = [];
+    var maybe = !!src && src.work === "REP";   // repairs: same slots, but deploying anything is the exception, so nothing is required
     ids.forEach(function (id) { got[id] = []; });
     ((src && src.serials) || []).forEach(function (s) {
+      if (s.rec) { recovered.push(s); return; }
       var to = null;
       if (s.sku) for (var i = 0; i < ids.length; i++) { var d = D[ids[i]]; if (d.skus && d.skus.indexOf(s.sku) >= 0 && (d.multi || !got[ids[i]].length)) { to = ids[i]; break; } }
       if (to) got[to].push(s); else extras.push(s);
@@ -120,17 +125,21 @@
     ids.forEach(function (id) {
       var d = D[id];
       if (d.opts) {
-        var v = picks[id] || d.def || "";
-        v = ({ Yes: "Deployed", No: "Not Needed" })[v] || v;   // answers saved before the wording changed if (v && !d.opts.some(function (o) { return o[0] === v; })) v = d.def || "";
-        rows.push({ id: id, kind: "choice", name: d.name, opts: d.opts.map(function (o) { return o[0]; }), value: v, done: !!v }); return;
+        var opts = d.opts.map(function (o) { return o[0]; }), def = maybe ? "" : (d.def || "");
+        if (maybe && opts.indexOf("Not Needed") < 0) opts = opts.concat(["Not Needed"]);   // Surge on a repair isn't a given
+        var v = picks[id] || def;
+        v = ({ Yes: "Deployed", No: "Not Needed" })[v] || v;   // answers saved before the wording changed
+        if (v && opts.indexOf(v) < 0) v = def;
+        rows.push({ id: id, kind: "choice", name: d.name, opts: opts, value: v, done: !!v, optional: maybe }); return;
       }
-      if (!d.multi) { rows.push({ id: id, kind: "serial", name: d.name, item: got[id][0] || null, done: !!got[id][0] }); return; }
+      if (!d.multi) { rows.push({ id: id, kind: "serial", name: d.name, item: got[id][0] || null, done: !!got[id][0], optional: maybe, hint: maybe && !got[id][0] ? "If deployed" : "" }); return; }
       var want = unitsWanted(ns, d.multi), have = got[id], n = Math.max(want || 0, have.length);
-      for (var k = 0; k < n; k++) rows.push({ id: id, kind: "serial", name: n > 1 ? d.name + " " + (k + 1) : d.name, item: have[k] || null, done: !!have[k] });
+      for (var k = 0; k < n; k++) rows.push({ id: id, kind: "serial", name: n > 1 ? d.name + " " + (k + 1) : d.name, item: have[k] || null, done: !!have[k], optional: maybe });
       if (want === null && !have.length) rows.push({ id: id, kind: "serial", name: d.name, item: null, done: false, optional: true, hint: "If installed. Field Notes sets how many" });
     });
     var need = rows.filter(function (r) { return !r.optional; });
-    return { rows: rows, extras: extras, total: need.length, done: need.filter(function (r) { return r.done; }).length, has: ids.length > 0 };
+    return { rows: rows, extras: extras, recovered: recovered, canRecover: canRecover(src), total: need.length, done: need.filter(function (r) { return r.done; }).length,
+      deployedCount: rows.filter(function (r) { return r.kind === "serial" ? !!r.item : r.value && r.value !== "Not Needed" && r.value !== "Reused existing"; }).length + extras.length, has: ids.length > 0 };
   }
   // the items a job's choice slots deploy: [{slot, sku}]
   function slotItems(src) {
@@ -148,10 +157,10 @@
     var code = keyOf(text).replace(/^(S\/?N|SN)[:#]?/, "");
     if (code.length < 5) return Promise.resolve({ error: "That serial number looks too short." });
     if (((src && src.serials) || []).some(function (x) { return keyOf(x.code) === code; })) return Promise.resolve({ error: code + " is already on this job." });
-    var d = slotSet()[slotId], skus = (d && d.skus) || [];
-    var fits = modelsFor(code).filter(function (id) { return skus.indexOf(id) >= 0; }), cand = fits.length ? fits : skus;
+    var rec = slotId === "__rec", d = slotSet()[slotId], skus = (d && d.skus) || [];
+    var all = modelsFor(code), fits = rec ? all : all.filter(function (id) { return skus.indexOf(id) >= 0; }), cand = rec ? fits : (fits.length ? fits : skus);
     var pick = cand.length === 1 ? Promise.resolve(cand[0]) : pickModel(code, cand);
-    return pick.then(function (sku) { return { code: code, sku: sku || "", item: sku && SKU[sku] ? SKU[sku].name : "" }; });
+    return pick.then(function (sku) { var r = { code: code, sku: sku || "", item: sku && SKU[sku] ? SKU[sku].name : "" }; if (rec) r.rec = true; return r; });
   }
   /* Paste button: puts what's on the clipboard in the box. Typed serials go in when the tech taps Done / away. */
   function pasteInto(inp) {
@@ -160,10 +169,10 @@
   }
   // add a serial from the job summary: onto the Field Cam job too, so Field Cam doesn't drop it
   function addSerial(job, entry) {
-    var s = { code: entry.code, item: entry.item || "", sku: entry.sku || "" };
+    var s = { code: entry.code, item: entry.item || "", sku: entry.sku || "" }; if (entry.rec) s.rec = true;
     job.serials = (job.serials || []).concat([s]);
     var camJobs = get("fieldcam.jobs", {}) || {}, cj = job.camJobId && camJobs[job.camJobId];
-    if (cj) { cj.serials = (cj.serials || []).concat([{ code: s.code, item: s.item, sku: s.sku }]); set("fieldcam.jobs", camJobs); }
+    if (cj) { cj.serials = (cj.serials || []).concat([Object.assign({}, s)]); set("fieldcam.jobs", camJobs); }
     save(job); return syncDeploys(job);
   }
   // the job's choices live on its Field Cam job too, so Field Cam and the job summary always agree
@@ -184,7 +193,7 @@
         if (r.opts.length === 1) return '<div class="fkj-slot fkj-row"><div class="fkj-sh">' + tick + '<b>' + esc(r.name) + '</b></div><span class="fkj-val">' + esc(r.value) + '</span></div>';
         // 6-column grid: up to 3 choices share a row equally; otherwise short ones go 3 to a row, long ones 2
         var span = function (v) { return r.opts.length <= 3 ? 6 / r.opts.length : v.length > 10 ? 3 : 2; };
-        return '<div class="fkj-slot"><div class="fkj-sh">' + (r.done ? tick : dot) + '<b>' + esc(r.name) + '</b></div><div class="fkj-seg" role="group" aria-label="' + esc(r.name) + '">' +
+        return '<div class="fkj-slot"><div class="fkj-sh">' + (r.done ? tick : r.optional ? '<i class="fkj-need fkj-maybe" aria-hidden="true"></i>' : dot) + '<b>' + esc(r.name) + '</b></div><div class="fkj-seg" role="group" aria-label="' + esc(r.name) + '">' +
           r.opts.map(function (v) { return '<button type="button" style="grid-column:span ' + span(v) + '" data-slot-set="' + esc(r.id) + '" data-v="' + esc(v) + '" aria-pressed="' + (r.value === v) + '">' + esc(v) + '</button>'; }).join("") + '</div></div>';
       }
       if (r.item) {
@@ -201,6 +210,16 @@
           (o.status ? o.status(s.code, s) : "") + '</div></div><div class="fkj-btns">' + (o.pick && !s.sku ? '<button type="button" class="fkj-btn" data-pick="' + esc(s.code) + '">Pick Item</button>' : "") +
           '<button type="button" class="fkj-btn" data-slot-rm="' + esc(s.code) + '">Remove</button></div></div>';
       }).join("");
+    }
+    if (model.canRecover) {
+      html += '<p class="fkj-grp fkj-recgrp">Recovered from the customer</p>' + model.recovered.map(function (s) {
+        return '<div class="fkj-slot fkj-row"><div class="fkj-sh"><i class="fkj-ok fkj-rec" aria-hidden="true">↩</i><div class="fkj-txt"><b>' + esc(s.item || (s.sku && SKU[s.sku] && SKU[s.sku].name) || "Unknown item") + '</b><span class="fkj-snum">' + esc(s.code) + '</span>' +
+          (o.status ? o.status(s.code, s) : "") + '</div></div><div class="fkj-btns">' + (o.pick && !s.sku ? '<button type="button" class="fkj-btn" data-pick="' + esc(s.code) + '">Pick Item</button>' : "") +
+          '<button type="button" class="fkj-btn" data-slot-rm="' + esc(s.code) + '">Remove</button></div></div>';
+      }).join("") +
+        '<div class="fkj-slot"><div class="fkj-add"><input type="text" data-slot-in="__rec" placeholder="Recovered S/N" aria-label="Recovered equipment serial number" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="done">' +
+        '<button type="button" class="fkj-btn" data-slot-paste="__rec">Paste</button>' + (o.scanRec || "") + '</div>' +
+        (model.recovered.length ? "" : '<small class="fkj-recnote">Only if you took equipment back. It goes into your stock in Field Stock.</small>') + '</div>';
     }
     return html + '</div>';
   }
@@ -359,12 +378,15 @@
     if (!job) return { added: 0, voided: 0 };
     var list = events(), tag = "fk-" + job.id, ts = Date.now();
     var okRef = /^SA-\d{7}$/.test(job.sa || ""), okOutcome = !job.outcome || job.outcome === "OK";
-    var want = okRef && okOutcome ? (job.serials || []).filter(function (s) { return s.sku && SKU[s.sku]; }) : [];
+    var want = okRef && okOutcome ? (job.serials || []).filter(function (s) { return !s.rec && s.sku && SKU[s.sku]; }) : [];
+    // recovered equipment goes into the tech's stock: received, from Recovery, on the job's SA-# (same as Field Stock's own Receive)
+    var wantRec = okRef && okOutcome && canRecover(job) ? (job.serials || []).filter(function (s) { return s.rec && s.sku && SKU[s.sku]; }) : [];
     var wantItems = okRef && okOutcome ? slotItems(job).filter(function (x) { return SKU[x.sku]; }) : [];
-    var mine = list.filter(function (e) { return e.type === "deploy" && e.jobId === tag && !e.voided; });
+    var mine = list.filter(function (e) { return (e.type === "deploy" || e.type === "receive") && e.jobId === tag && !e.voided; });
     var added = 0, voided = 0;
     mine.forEach(function (e) {
-      if (e.sa === job.sa && !e.serialKey && wantItems.some(function (x) { return x.sku === e.sku && x.slot === e.slot; })) return;
+      if (e.type === "receive") { if (e.sa === job.sa && wantRec.some(function (s) { return keyOf(s.code) === e.serialKey && s.sku === e.sku; })) return; }
+      else if (e.sa === job.sa && !e.serialKey && wantItems.some(function (x) { return x.sku === e.sku && x.slot === e.slot; })) return;
       if (e.sa === job.sa && e.serialKey && want.some(function (s) { return keyOf(s.code) === e.serialKey && s.sku === e.sku; })) return;
       e.voided = true; e.voidedAt = ts;
       e.voidReason = e.sa !== job.sa ? "SA-# changed in the job" : !okOutcome ? "Job outcome changed" : e.serialKey ? "Taken off the job" : "Changed in the job";
@@ -372,14 +394,22 @@
     });
     want.forEach(function (s) {
       var k = keyOf(s.code);
-      if (mine.some(function (e) { return !e.voided && e.serialKey === k && e.sku === s.sku && e.sa === job.sa; })) return;
+      if (mine.some(function (e) { return e.type === "deploy" && !e.voided && e.serialKey === k && e.sku === s.sku && e.sa === job.sa; })) return;
       var e = { type: "deploy", ts: ts + added, jobId: tag, sa: job.sa, account: "", accountKey: "", toTech: "", from: "", rma: "", note: "Logged from a Field Kit job",
         lat: lastPos ? lastPos.latitude : null, lng: lastPos ? lastPos.longitude : null, acc: lastPos ? lastPos.accuracy : null,
         voided: false, sku: s.sku, skuName: SKU[s.sku].name, serial: s.code, serialKey: k, qty: 1, src: "fieldkit-job" };
       e.id = newId(); sealEntry(e, list); list.push(e); added++;
     });
+    wantRec.forEach(function (s) {
+      var k = keyOf(s.code);
+      if (mine.some(function (e) { return e.type === "receive" && !e.voided && e.serialKey === k && e.sku === s.sku && e.sa === job.sa; })) return;
+      var e = { type: "receive", ts: ts + added, jobId: tag, sa: job.sa, account: "", accountKey: "", toTech: "", from: "Recovery", rma: "", note: "Recovered on a Field Kit job",
+        lat: lastPos ? lastPos.latitude : null, lng: lastPos ? lastPos.longitude : null, acc: lastPos ? lastPos.accuracy : null,
+        voided: false, sku: s.sku, skuName: SKU[s.sku].name, serial: s.code, serialKey: k, qty: 1, src: "fieldkit-job" };
+      e.id = newId(); sealEntry(e, list); list.push(e); added++;
+    });
     wantItems.forEach(function (x) {
-      if (mine.some(function (e) { return !e.voided && !e.serialKey && e.sku === x.sku && e.slot === x.slot && e.sa === job.sa; })) return;
+      if (mine.some(function (e) { return e.type === "deploy" && !e.voided && !e.serialKey && e.sku === x.sku && e.slot === x.slot && e.sa === job.sa; })) return;
       var e = { type: "deploy", ts: ts + added, jobId: tag, sa: job.sa, account: "", accountKey: "", toTech: "", from: "", rma: "", note: "Logged from a Field Kit job",
         lat: lastPos ? lastPos.latitude : null, lng: lastPos ? lastPos.longitude : null, acc: lastPos ? lastPos.accuracy : null,
         voided: false, sku: x.sku, skuName: SKU[x.sku].name, serial: "", serialKey: "", qty: 1, src: "fieldkit-job", slot: x.slot };
@@ -392,6 +422,7 @@
     return { added: added, voided: voided };
   }
   function deployed(job) { var tag = "fk-" + job.id; return events().filter(function (e) { return e.type === "deploy" && e.jobId === tag && !e.voided; }); }
+  function recoveredEvents(job) { var tag = "fk-" + job.id; return events().filter(function (e) { return e.type === "receive" && e.jobId === tag && !e.voided; }); }
   // take a serial off a job (from the job summary): off the Field Cam job too, so they stay in step
   function removeSerial(job, code) {
     var k = keyOf(code);
@@ -444,6 +475,7 @@
       ".fkj-val{flex:none;font-weight:600;color:var(--fk-accent-text,#23864A)}" +
       ".fkj-add{display:flex;gap:6px}.fkj-add input{flex:1;min-width:0;border:0;border-radius:10px;padding:0 12px;min-height:44px;background:var(--fk-surface-2,#E6EDE9);box-shadow:inset 0 0 0 1px var(--fk-line,rgba(0,43,43,.09));color:inherit;font:500 15px var(--fk-mono,monospace);text-transform:uppercase}" +
       ".fkj-add input::placeholder{font-family:var(--fk-body,sans-serif);text-transform:none;color:var(--fk-muted,#5A6F69)}.fkj-add input:focus{outline:none;box-shadow:inset 0 0 0 2px var(--fk-accent-text,#23864A)}.fkj-add .fkj-btn{min-height:44px}" +
+      ".fkj-rec{background:var(--fk-surface-2,#E6EDE9)!important;color:var(--fk-ink,#0E2A27)!important;font-size:.85rem!important}.fkj-recgrp{margin-top:14px!important}.fkj-recnote{display:block;margin-top:6px;font-size:.8rem;color:var(--fk-muted,#5A6F69)}" +
       ".fkj-err{margin:0;font-size:.85rem;color:var(--fk-warn,#B4400E);font-weight:600}" +
       ".fkj-seg button[aria-pressed=\"true\"]{background:var(--fk-accent,#58C774);color:var(--fk-accent-ink,#06301A)}" +
       ".fkj-btns{display:flex;gap:6px;flex:none}.fkj-btn{flex:none;border:0;border-radius:10px;min-height:40px;padding:8px 12px;background:var(--fk-surface-2,#E6EDE9);color:inherit;font:600 .88rem/1 var(--fk-body,sans-serif);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}" +
@@ -477,6 +509,6 @@
   FK.job = {
     inMode: function () { return jobMode; }, active: active, get: byId, list: list, start: start, complete: complete, open: open, save: save, setActive: setActive,
     fromCam: fromCam, modelsFor: modelsFor, modelName: function (id) { return SKU[id] ? SKU[id].name : ""; }, pickModel: pickModel, stockNote: stockNote,
-    deployed: deployed, removeSerial: removeSerial, slotModel: slotModel, slotsHTML: slotsHTML, setSlot: setSlot, setOutcome: setOutcome, slotEntry: slotEntry, addSerial: addSerial, pasteInto: pasteInto, hasSlots: function (src) { return slotIds(src).length > 0; }, syncDeploys: syncDeploys, notesCopied: notesCopied, setStep: setStep, keepDays: 7
+    deployed: deployed, recoveredEvents: recoveredEvents, canRecover: canRecover, removeSerial: removeSerial, slotModel: slotModel, slotsHTML: slotsHTML, setSlot: setSlot, setOutcome: setOutcome, slotEntry: slotEntry, addSerial: addSerial, pasteInto: pasteInto, hasSlots: function (src) { return slotIds(src).length > 0; }, syncDeploys: syncDeploys, notesCopied: notesCopied, setStep: setStep, keepDays: 7
   };
 })();

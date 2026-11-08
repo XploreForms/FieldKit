@@ -2896,6 +2896,23 @@ function renderAll(){ STOCK=computeStock(); renderStock(); renderHistory(); sync
 paintHeader(); showSetup(); paintLoc(); setType("receive"); renderAll();   // deploying is mostly done from Field Cam, so Receive is the default
 if(GS.connected && gsAvailable()){ if(gsTokenOk() && gsPending()) gsSync(); else if(!gsTokenOk()){ gsErr="auth"; paintGoogle(); } }
 setTab(/^#order/.test(location.hash) ? "order" : "log");
+/* Field Kit settings' Sync Now opens fieldstock.html#sync: sync with Google Sheets, then straight back to settings */
+async function fkSyncAndReturn(){
+  const ov=document.createElement("div");
+  ov.style.cssText="position:fixed;inset:0;z-index:99999;background:var(--bg,#F2F5F3);color:var(--fg,#0E2A27);display:grid;place-items:center;font:600 17px var(--f-body,system-ui,sans-serif)";
+  ov.textContent="Syncing with Google Sheets…"; document.body.appendChild(ov);
+  let res="";
+  if(!gsAvailable() || !GS.connected) res="Google Sheets isn't connected.";
+  else if(!gsTokenOk()) res="Google sign-in expired. Tap Sync Now and sign in again.";
+  else {
+    for(let i=0; gsBusy && i<300; i++) await new Promise(r=>setTimeout(r,100));   // a sync already running on open
+    gsErr=""; await gsSync();
+    res = !gsErr ? "ok" : "Couldn't sync: " + (gsErr==="offline" ? "no signal. Try again when you're back online." : gsErr==="auth" ? "Google sign-in expired. Tap Sync Now and sign in again." : gsErr);
+  }
+  try{ sessionStorage.setItem("fieldkit.syncResult", res); }catch(e){}
+  location.replace("index.html#backup");
+}
+if(/^#sync/.test(location.hash)) fkSyncAndReturn();
 /* Field Kit: items in the Logs form that aren't saved yet stay there when the tech leaves for another tool,
    until they're saved or cleared. The tab they were on comes back too. The menu shows "In progress". */
 const DRAFT_KEY="techstock.draft";

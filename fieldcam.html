@@ -131,6 +131,11 @@ html[data-grid="on"] .grid3{display:block}
 .hud.scan .tiltbox,.hud.scan .zeroline,.hud.scan .reticle{display:none}
 .scantop{position:absolute;left:10px;right:66px;top:10px;z-index:6;display:flex;align-items:center;gap:8px;padding:5px 5px 5px 12px;border-radius:12px;background:rgba(10,18,17,.78);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);font-size:13px;line-height:1.3}
 .scantop span{flex:1;min-width:0}
+/* Field Kit jobs: conversions and repairs can mark a scan as recovered equipment instead of deployed */
+.scanmode{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:6;display:flex;gap:4px;padding:4px;border-radius:99px;background:rgba(10,18,17,.78);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.scanmode button{border:0;border-radius:99px;min-height:38px;padding:0 16px;background:none;color:#E4EFEA;font:600 14px var(--body,system-ui,sans-serif);cursor:pointer}
+.scanmode button[aria-pressed="true"]{background:var(--signal,#58C774);color:#06301A}
+.scanmode button[data-sm="rec"][aria-pressed="true"]{background:#F3B27A;color:#3B1A06}
 .scantop b{font:700 13px var(--mono);color:var(--signal);word-break:break-all}
 .scantop .bad{color:var(--warn)}
 .scantop .btn{flex:none;min-height:34px}
@@ -542,6 +547,7 @@ html:root[data-theme] .start{background:var(--ink)}
       <button id="torchBtn" aria-label="Flashlight" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></button>
     </div>
     <div class="zoombar" id="zoomBar" role="group" aria-label="Zoom"></div>
+    <div class="scanmode" id="fkScanMode" role="group" aria-label="This scan is" hidden><button type="button" data-sm="dep" aria-pressed="true">Deploy</button><button type="button" data-sm="rec" aria-pressed="false">Recovery</button></div>
     <div class="scantop" id="scanTop" hidden><span id="scanMsg"></span><button class="btn sm" id="scanCancel">Done</button></div>
     <div class="notebar" id="otherBar" hidden><input id="inOther" maxlength="40" autocomplete="off" autocapitalize="words" placeholder="What is this photo of?"><button class="btn" id="otherCancel">Cancel</button><button class="btn primary" id="otherDone">Use</button></div>
     <div class="snack" id="snack" aria-live="polite"><img id="snImg" alt=""><div><b id="snTitle"></b><span id="snText"></span></div><button class="btn" id="snRetake">Retake</button><button class="btn" id="snAct">Change</button></div>
@@ -2322,6 +2328,7 @@ function requestSave(items) {
 }
 // Whole job saved, nothing missing, nothing to label: offer the next job
 function afterSave() {
+  if (fkJob()) return;   // in a Field Kit job, saving moves on to Field Notes instead
   const ps = curPhotos();
   if (!current || !ps.length || ps.some(p => !p.downloaded || isUnl(p)) || missingShots().length) return;
   const j = curJob();
@@ -2462,11 +2469,12 @@ async function startScan() {
   if (SC.bd && !SC.reader) loadZXing().then(ok => { if (ok) makeZX(); });   // backup reader, loaded quietly
   SC.on = true; $("aim").hidden = false; $("scanTop").hidden = false; $("hud").classList.add("scan");
   $("shutter").classList.add("scanmode"); $("shutter").setAttribute("aria-label", "Scan barcode"); $("snBtn").classList.add("on");
-  const fkLeft = fkJob() && curJob() ? fkSlotsLeft(curJob()) : [];
+  const fkLeft = fkJob() && curJob() && !fkScanRec ? fkSlotsLeft(curJob()) : [];
+  fkModeShow();
   scanMsg("Red line on the <b style=\"font:inherit;color:inherit\">S/N</b> barcode, then tap the red button" + (fkLeft.length ? `<br><small>To do: ${esc(fkLeft.join(", "))}</small>` : ""));
 }
 function stopScan() {
-  SC.on = false; SC.busy = false; $("aim").hidden = true; $("scanTop").hidden = true; $("hud").classList.remove("scan");
+  SC.on = false; SC.busy = false; $("aim").hidden = true; $("scanTop").hidden = true; $("hud").classList.remove("scan"); $("fkScanMode").hidden = true;
   const sh = $("shutter"); sh.classList.remove("scanmode", "busy"); sh.setAttribute("aria-label", "Take photo"); $("snBtn").classList.remove("on");
 }
 const scanMsg = html => { $("scanMsg").innerHTML = html; };
@@ -2534,7 +2542,7 @@ async function snPhoto(code, item) {
   return rec;
 }
 $("scanCancel").addEventListener("click", stopScan);
-$("snBtn").addEventListener("click", () => SC.on ? stopScan() : startScan());
+$("snBtn").addEventListener("click", () => { if (!SC.on) fkScanRec = false; SC.on ? stopScan() : startScan(); });   // a fresh scan always starts on Deploy
 function renderSerials() {
   const j = curJob(), list = (j && j.serials) || [], show = !!j && (scanAllowed() || list.length);
   $("snBtn").hidden = !scanAllowed();
@@ -2794,6 +2802,7 @@ function renderLabels() {
   $("hqBtn").setAttribute("aria-pressed", full);
   const unl = curPhotos().filter(isUnl).length;
   $("toLabelBtn").hidden = !unl; $("toLabelBtn").textContent = `To label (${unl})`;
+  $("newBtn").hidden = fkJob();   // a Field Kit job has one Field Cam job; a new job starts from the Field Kit menu
   const ob = $("outBtn"); ob.hidden = !j;
   if (j) {
     const set = outcomeSet(j);
@@ -3250,9 +3259,7 @@ function fkJob() { return !!(window.FieldKit && FieldKit.job && FieldKit.job.inM
   downloadPhotos = async function (items) {
     const ok = await origDownload(items);
     if (ok && fkJob() && curPhotos().length && curPhotos().every(p => p.downloaded)) {
-      fkSession();
-      const left = curJob() ? fkSlotsLeft(curJob()) : [];
-      if (left.length) { renderSerials(); $("jobBtn").click(); setTimeout(() => { const b = $("fkSlots"); b && b.scrollIntoView({ block: "start" }); }, 250); toast(`Photos saved. Fill in the equipment (${left.join(", ")}), then Go to Field Notes.`, 4200); return ok; }
+      fkSession(); closeSheets();
       FieldKit.job.setStep("notes");
       toast("Photos saved. Opening Field Notes…", 1600);
       setTimeout(() => { location.href = "fieldnotes.html#job"; }, 1300);
@@ -3268,10 +3275,11 @@ function fkRenderSlots(j) {
   if (!fkJob() || !j) { box.hidden = true; return false; }
   const m = fkModel(j), allSaved = curPhotos().length && curPhotos().every(p => p.downloaded);
   if (m.off) { box.hidden = false; box.innerHTML = `<label>Equipment Deployed</label><p class="hint">None. Equipment is only deployed on Complete jobs.</p>`; return true; }
-  if (!m.has && !m.extras.length) { box.hidden = true; return true; }
+  if (!m.has && !m.extras.length && !m.canRecover) { box.hidden = true; return true; }
   box.hidden = false;
-  box.innerHTML = `<label>Equipment Deployed${m.total ? ` · ${m.done} of ${m.total}` : ""}</label>` +
-    FieldKit.job.slotsHTML(m, { scan: scanAllowed() ? '<button type="button" class="fkj-btn" data-slot-scan>Scan</button>' : "" }) +
+  box.innerHTML = `<label>Equipment${m.canRecover ? "" : " Deployed"}${m.total ? ` · ${m.done} of ${m.total}` : ""}</label>` +
+    FieldKit.job.slotsHTML(m, { scan: scanAllowed() ? '<button type="button" class="fkj-btn" data-slot-scan>Scan</button>' : "",
+      scanRec: scanAllowed() ? '<button type="button" class="fkj-btn" data-slot-scan data-rec>Scan</button>' : "" }) +
     (allSaved ? '<a class="btn primary" href="fieldnotes.html#job" style="margin-top:6px;text-decoration:none;display:flex;justify-content:center">Go to Field Notes ›</a>' : "");
   return true;
 }
@@ -3282,7 +3290,8 @@ $("fkSlots").addEventListener("click", e => {
   if (set) { j.slots = { ...(j.slots || {}), [set.dataset.slotSet]: set.dataset.v }; save(); renderSerials(); return; }
   const rm = e.target.closest("[data-slot-rm]");
   if (rm) { if (!arm(rm, "Tap again")) return; j.serials = (j.serials || []).filter(x => x.code !== rm.dataset.slotRm); jobChanged(); renderSerials(); return; }
-  if (e.target.closest("[data-slot-scan]")) { closeSheets(); startScan(); return; }
+  const sc = e.target.closest("[data-slot-scan]");
+  if (sc) { fkScanRec = "rec" in sc.dataset; closeSheets(); startScan(); return; }
   const ps = e.target.closest("[data-slot-paste]");
   if (ps) { const row = ps.closest(".fkj-add"); FieldKit.job.pasteInto(row.querySelector("input")).then(ok => { if (ok) fkTyped(row, ps.dataset.slotPaste); else toast("Nothing to paste. Copy the S/N first, or type it in.", 2600); }); }
 });
@@ -3300,19 +3309,36 @@ async function fkTypedNow(row, slotId, j, inp) {
   if (snIsMac(inp.value)) return err("That’s the MAC address. Use the S/N.");
   const r = await FieldKit.job.slotEntry(j, slotId, inp.value);
   if (r.error) return err(r.error);
-  j.serials = [...(j.serials || []), { code: r.code, item: r.item, sku: r.sku }];
+  j.serials = [...(j.serials || []), { code: r.code, item: r.item, sku: r.sku, ...(r.rec ? { rec: true } : {}) }];
   jobChanged(); renderSerials();
   toast(`Added ${r.code}${r.sku ? "" : " (not logged in Field Stock)"}`, 2200);
 }
 function fkSlotsLeft(j) { return fkModel(j).rows.filter(r => !r.done && !r.optional).map(r => r.name); }
 // a scanned serial in a job is logged in Field Stock as deployed: work out which item it is (asks when it can't tell)
+/* Deploy or Recovery: installs always deploy. Conversions and repairs deploy by default; the switch at the bottom
+   of the scanner (or Scan in the Recovered section) marks scans as equipment taken back from the customer. */
+let fkScanRec = false;
+function fkCanRec() { return fkJob() && !!curJob() && FieldKit.job.canRecover(curJob()); }
+function fkModeShow() {
+  const el = $("fkScanMode"); if (!fkCanRec()) { fkScanRec = false; el.hidden = true; return; }
+  el.hidden = false; el.querySelectorAll("[data-sm]").forEach(b => b.setAttribute("aria-pressed", String((b.dataset.sm === "rec") === fkScanRec)));
+}
+$("fkScanMode").addEventListener("click", e => {
+  const b = e.target.closest("[data-sm]"); if (!b) return;
+  fkScanRec = b.dataset.sm === "rec"; fkModeShow();
+  scanMsg(fkScanRec ? "Scanning <b style=\"font:inherit;color:#F3B27A\">recovered</b> equipment. Red line on the S/N barcode" : "Scanning equipment you're <b style=\"font:inherit;color:inherit\">deploying</b>. Red line on the S/N barcode");
+});
 async function fkIdentify(code) {
   if (!fkJob()) return;
   const J = FieldKit.job, j = curJob(); if (!j) return;
+  const rec = fkScanRec && fkCanRec();
+  { const s0 = (j.serials || []).find(x => x.code === code); if (s0 && rec) { s0.rec = true; save(); } }
   let ids = J.modelsFor(code), sku = ids.length === 1 ? ids[0] : await J.pickModel(code, ids);
   const s = (j.serials || []).find(x => x.code === code); if (!s) return;
   if (sku) { s.sku = sku; if (!s.item) s.item = J.modelName(sku); }
+  if (rec) s.rec = true;
   save(); renderSerials();
+  if (rec) { if (SC.on) scanMsg(`Recovered <b>${esc(code)}</b>${s.item ? " · " + esc(s.item) : ""}. ${sku ? "Goes into your stock" : "Not logged in Field Stock"}. Scan another or tap Done`); return; }
   const note = J.stockNote(code, j.ref);
   const row = fkModel(j).rows.find(r => r.item && r.item.code === code), left = fkSlotsLeft(j);
   if (SC.on) scanMsg(`Added <b>${esc(code)}</b>${row ? " as " + esc(row.name) : s.item ? " · " + esc(s.item) : ""}. ${sku ? esc(note) : "Not logged in Field Stock"}. ${left.length ? "Still to do: " + esc(left.join(", ")) : "Scan another or tap Done"}`);
@@ -3328,7 +3354,7 @@ function fkSession() {
       FieldKit.job.fromCam({ camJobId: current.id, sa: j.ref || "", work: j.work || "", plat: j.plat || "", outcome: j.outcome || "", reason: j.reason || "", title: jobTitle(j),
         base: `${byId(JOB_TYPES, j.work).name} · ${platName(j)}`,
         outcomes: OUTCOMES.filter(o => outcomeOn(j, o.id)).map(o => ({ id: o.id, name: o.name, reasons: reasonsFor(j, o.id) })),
-        photos: ps.length, unsaved: ps.filter(p => !p.downloaded).length, labels: countLabels(), serials: (j.serials || []).map(x => ({ code: x.code, item: x.item || "", sku: x.sku || "" })), slots: j.slots || {} });
+        photos: ps.length, unsaved: ps.filter(p => !p.downloaded).length, labels: countLabels(), serials: (j.serials || []).map(x => ({ code: x.code, item: x.item || "", sku: x.sku || "", ...(x.rec ? { rec: true } : {}) })), slots: j.slots || {} });
       return;
     }
     FieldKit.setSession("cam", j ? { title: j.ref || "Job in progress", sub: jobTitle(j), detail: curPhotos().length ? plural(curPhotos().length, "photo") : "No photos yet" } : null);

@@ -61,7 +61,7 @@ h3{margin:0;font:700 1.1rem/1.2 var(--f-display)}
 .logo svg{width:24px;height:24px}
 .head h1{margin:0;font:700 1.5rem/1.05 var(--f-display);letter-spacing:.01em}
 .head-txt{min-width:0;flex:1}
-.who{margin:3px 0 0;color:var(--muted);font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.who{margin:3px 0 0;color:var(--muted);font-size:.9rem;line-height:1.3;overflow-wrap:anywhere}
 .iconbtn{width:44px;height:44px;border-radius:50%;border:0;background:var(--surface);box-shadow:var(--shadow);color:var(--muted);display:grid;place-items:center;cursor:pointer;flex:none}
 .iconbtn svg{width:22px;height:22px}
 
@@ -632,14 +632,19 @@ details.grp .btn{margin-bottom:12px}
       return;
     }
     var keyOf = function (c) { return String(c).replace(/\s+/g, "").toUpperCase(); };
-    var count = m.total + m.extras.length, done = m.done + m.extras.filter(function (s) { return s.sku; }).length;
+    var rec = J.recoveredEvents(j), extrasOk = m.extras.every(function (s) { return s.sku; });
     lobbyState.gearLeft = m.total - m.done;
-    var html = stepHead(3, "Equipment Deployed", count > 0 && done === count, count ? done + " of " + count : "None scanned", count && done === count ? "good" : count ? "warn" : "");
+    var pill, ok;
+    if (m.total) { pill = (m.done + m.extras.length) + " of " + (m.total + m.extras.length); ok = m.done === m.total && extrasOk; }
+    else { pill = m.deployedCount ? m.deployedCount + " deployed" : "None deployed"; ok = extrasOk; }   // repairs: nothing is required
+    if (m.recovered.length) pill += " · " + m.recovered.length + " recovered";
+    var html = stepHead(3, m.canRecover ? "Equipment" : "Equipment Deployed", ok && (m.total > 0 || m.deployedCount > 0 || m.recovered.length > 0 || m.has), pill, ok ? "good" : "warn");
     if (why && count) html += '<p class="help" style="color:var(--warn)">' + esc(why) + '</p>';
-    if (m.has || m.extras.length) {
+    if (m.has || m.extras.length || m.canRecover) {
       html += J.slotsHTML(m, {
-        scan: '<a class="fkj-btn" href="fieldcam.html#job">Scan</a>', pick: !why,
+        scan: '<a class="fkj-btn" href="fieldcam.html#job">Scan</a>', scanRec: '<a class="fkj-btn" href="fieldcam.html#job">Scan</a>', pick: !why,
         status: function (code, s) {
+          if (s && s.rec) { var rv = rec.filter(function (e) { return e.serialKey === keyOf(code); })[0]; return rv ? '<small class="ok">In your stock (recovered)</small>' : why ? "" : !s.sku ? '<small class="no">Not logged: pick which item it is</small>' : '<small class="no">Not logged yet</small>'; }
           var ev = dep.filter(function (e) { return e.serialKey === keyOf(code); })[0];
           return ev ? '<small class="ok">Logged in Field Stock</small>' : why ? "" : s && !s.sku ? '<small class="no">Not logged: pick which item it is</small>' : '<small class="no">Not logged yet</small>';
         }
@@ -649,7 +654,7 @@ details.grp .btn{margin-bottom:12px}
       var g = get("techstock.gs", null);
       if (dep.length && g && g.connected && g.rev > (g.synced || 0)) html += '<p class="help">Goes to your Google Sheet next time Field Stock is open.</p>';
     } else html += '<p class="help">Scan each serial number in Field Cam. They\'re logged in Field Stock as deployed on this SA-#.</p>';
-    html += '<a class="btn" href="fieldcam.html#job">' + (m.has || m.extras.length ? "Scan More in Field Cam" : "Scan in Field Cam") + '</a>';
+    html += '<a class="btn" href="fieldcam.html#job">' + (m.has || m.extras.length || m.recovered.length ? "Scan More in Field Cam" : "Scan in Field Cam") + '</a>';
     $("lbGear").innerHTML = html;
   }
   function paintLobbyWarn(j) {
@@ -735,7 +740,7 @@ details.grp .btn{margin-bottom:12px}
       if (r.error) return err(r.error);
       var jj = J.active(); if (!jj) return;
       J.addSerial(jj, r); paintLobbyGear(J.active());
-      toast(r.sku ? "Added and logged in Field Stock" : "Added (not logged in Field Stock)");
+      toast(!r.sku ? "Added (not logged in Field Stock)" : r.rec ? "Recovered: added to your stock" : "Added and logged in Field Stock");
     });
   }
   function selectCmt() { var el = $("lbCmt"); if (!el) return; var r = document.createRange(); r.selectNodeContents(el); var s = getSelection(); s.removeAllRanges(); s.addRange(r); toast("Selected. Press and hold, then tap Copy."); }
@@ -757,7 +762,7 @@ details.grp .btn{margin-bottom:12px}
   function paintMenu() {
     paintTools(); paintJobs();
     var p = FK.profile();
-    $("who").textContent = [p.name, p.dealer].filter(Boolean).join(" · ");
+    $("who").textContent = p.name || "";
     $("gsWarn").hidden = !gsAvailable() || gs().connected;
   }
   function verLine() {
@@ -1026,6 +1031,18 @@ details.grp .btn{margin-bottom:12px}
     var what = b.getAttribute("data-gs"), inSetup = !$("setup").hidden, errBox = inSetup ? $("stepErr") : $("sErr");
     if (what === "keep") { gsPut({ allowOther: true }); repaintGoogle(); return; }
     if (what === "disconnect") { gsDisconnect(); repaintGoogle(); toast("Google Sheets disconnected"); return; }
+    /* Sync Now: Field Stock does the syncing, so this signs back in if needed (it has to start from this tap),
+       then Field Stock syncs and comes straight back here with the result */
+    if (what === "sync" && !gsBusy) {
+      var g0 = gs();
+      if (!(g0.token && Date.now() < g0.exp - 60000)) {
+        gsBusy = true; b.disabled = true; errBox.innerHTML = "";
+        try { await gsAuth(""); }
+        catch (err) { errBox.innerHTML = '<div class="err">Google sign-in didn\'t finish. Tap Sync Now and try again.</div>'; gsBusy = false; b.disabled = false; return; }
+        gsBusy = false;
+      }
+      location.href = "fieldstock.html#sync"; return;
+    }
     if (what === "connect" && !gsBusy) {
       gsBusy = true; b.disabled = true; errBox.innerHTML = "";
       try { var msg = await gsConnect(); toast(gsReady() ? msg : "Connected, but that isn't an @" + WORK_DOMAIN + " account"); }
@@ -1055,10 +1072,10 @@ details.grp .btn{margin-bottom:12px}
     var waiting = g.rev > g.synced;
     pill.textContent = waiting ? "Waiting" : "Synced"; pill.classList.add(waiting ? "warn" : "good");
     box.innerHTML = '<p class="help" style="color:var(--fg)">Connected as <b>' + esc(g.email || "your Google account") + '</b></p>' +
-      '<p class="help">' + (waiting ? "Some entries aren't in your sheet yet. Open Field Stock with signal and they sync on their own." :
-        (g.lastSync ? "Up to date. Last synced " + new Date(g.lastSync).toLocaleString("en-CA", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + "." : "Field Stock backs up your entries whenever it's open.")) + "</p>" +
+      '<p class="help">' + (waiting ? "Some entries aren't in your sheet yet. Tap Sync Now." :
+        (g.lastSync ? "Up to date. Last synced " + new Date(g.lastSync).toLocaleString("en-CA", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).replace(/\.$/, "") + "." : "Field Stock backs up your entries whenever it's open.")) + "</p>" +
       '<div class="row">' + (g.sheetId ? '<a class="btn" href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(g.sheetId) + '/edit" target="_blank" rel="noopener">Open Sheet</a>' : "") +
-      '<a class="btn" href="fieldstock.html">Sync in Field Stock</a><button class="btn ghost" type="button" data-gs="connect">Switch Account</button></div>';
+      '<button class="btn primary" type="button" data-gs="sync">Sync Now</button><button class="btn ghost" type="button" data-gs="connect">Switch Account</button></div>';
   }
   $("saveDetails").addEventListener("click", function () {
     var vals = collect("a", keysOf(ABOUT.concat(ACCT)));
@@ -1081,7 +1098,12 @@ details.grp .btn{margin-bottom:12px}
       if (FK.setupDone()) step = Math.min(step, 1);
       renderStep(); showView("setup"); return;
     }
-    if (/^#backup/.test(location.hash)) { openSettings(true); return; }
+    if (/^#backup/.test(location.hash)) {
+      openSettings(true);
+      var sr = ""; try { sr = sessionStorage.getItem("fieldkit.syncResult") || ""; sessionStorage.removeItem("fieldkit.syncResult"); } catch (e) {}
+      if (sr === "ok") toast("Google Sheet is up to date"); else if (sr) $("sErr").innerHTML = '<div class="err">' + esc(sr) + '</div>';
+      return;
+    }
     if (/^#job/.test(location.hash) && J.active()) { paintLobby(); showView("lobby"); return; }
     if (/^#new-job/.test(location.hash)) { openNewJob(); return; }
     if (/^#job/.test(location.hash)) history.replaceState(null, "", location.pathname + location.search);
