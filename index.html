@@ -843,7 +843,7 @@ details.grp .btn{margin-bottom:12px}
     postal: { label: "Postal Code", hint: "e.g. A1A 1A1", ac: "shipping postal-code", cap: "characters",
       norm: function (v) { return normPostal(v) || v.trim().toUpperCase(); }, ok: function (v) { return !!normPostal(v); }, bad: "Enter a postal code like A1A 1A1." },
     // shipping options for stock orders, saved once and added to every order
-    shipHold: { label: "Ship to a Purolator depot and hold for pickup", check: true, optional: true, hint: "Every order goes to the Purolator depot nearest your address instead of being delivered.",
+    shipHold: { label: "Ship to Purolator depot hold for pickup", check: true, optional: true, hint: "Every order goes to the Purolator depot nearest your address instead of being delivered.",
       norm: function (v) { return v ? "yes" : ""; }, ok: function () { return true; } },
     shipNotes: { label: "Default Shipping Instructions", area: true, optional: true, hint: "Added to every order. Gate codes, unit numbers, where to leave it.",
       norm: function (v) { return v.replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim(); }, ok: function (v) { return v.length <= 300; }, bad: "Keep it under 300 characters." },
