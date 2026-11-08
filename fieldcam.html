@@ -2820,16 +2820,26 @@ $("lGrid").addEventListener("click", e => {
 });
 // Tap = pick. Right after a shot the first tap starts a new pick; more taps add or remove items (one photo, several items).
 function clearSel() { S.sel = []; S.fresh = false; if (current) { current.sel = []; save(); } }
-/* Fixed Wireless and Satellite: Install Overview, Line of Sight, CPE & Mount, Dish & Mount and Indoor Cable Run are always their
-   own photo, never combined with anything. Picking one with other labels (or another label with one of these)
-   starts a fresh pick. */
-const SOLO_SHOTS = ["Install Overview", "Line of Sight", "CPE & Mount", "Dish & Mount", "Indoor Cable Run"];
+/* Photos that are always on their own, or only go together with certain others. Picking a label that can't go with
+   what's already picked starts a fresh pick with it (and says why).
+   - Fixed Wireless and Satellite: Install Overview, Line of Sight, CPE & Mount, Dish & Mount, Indoor Cable Run are each their own photo.
+   - Fibre (Existing Drop): Indoor Cable Run is its own photo; ONT Placement and Router Placement only go with each other. */
+const PHOTO_RULES = {
+  "Fixed Wireless": { solo: ["Install Overview", "Line of Sight", "CPE & Mount", "Indoor Cable Run"] },
+  "Satellite": { solo: ["Install Overview", "Line of Sight", "Dish & Mount", "Indoor Cable Run"] },
+  "Fibre (Existing Drop)": { solo: ["Indoor Cable Run"], pairs: [["ONT Placement", "Router Placement"]] }
+};
 function addLabel(j, sel, l) {
-  const fam = j ? platFamily(j.plat || "") : "";
-  if (fam !== "Fixed Wireless" && fam !== "Satellite") return { sel: [...sel, l] };
-  const solo = SOLO_SHOTS.find(x => x === l || sel.includes(x));
+  const rule = j && (PHOTO_RULES[j.plat] || PHOTO_RULES[platFamily(j.plat || "")]);
+  if (!rule) return { sel: [...sel, l] };
+  const solo = (rule.solo || []).find(x => x === l || sel.includes(x));
   if (solo && sel.length) return { sel: [l], note: `${solo} is always its own photo` };
-  return { sel: [...sel, l] };
+  const all = [...sel, l];
+  for (const g of rule.pairs || []) {
+    if (all.some(x => g.includes(x)) && all.some(x => !g.includes(x)))
+      return { sel: [l], note: `${g.join(" and ")} only go together` };
+  }
+  return { sel: all };
 }
 function tapLabel(l, add = false) {
   let sel = S.fresh ? [] : [...S.sel];
