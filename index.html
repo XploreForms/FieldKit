@@ -59,7 +59,7 @@ h3{margin:0;font:700 1.1rem/1.2 var(--f-display)}
 /* header */
 .head{display:flex;align-items:center;gap:12px}
 .logo{width:42px;height:42px;border-radius:11px;background:var(--tile);color:var(--tile-ink);display:grid;place-items:center;flex:none}
-.logo svg{width:24px;height:24px}
+.logo svg{width:32px;height:32px}
 .head h1{margin:0;font:700 1.5rem/1.05 var(--f-display);letter-spacing:.01em}
 .head-txt{min-width:0;flex:1}
 .who{margin:3px 0 0;color:var(--muted);font-size:.9rem;line-height:1.3;overflow-wrap:anywhere}
@@ -79,6 +79,7 @@ h3{margin:0;font:700 1.1rem/1.2 var(--f-display)}
 .job{border-radius:var(--r);padding:12px 14px;display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;align-items:center;background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--line);border:0;width:100%;text-align:left;cursor:pointer}
 .job i{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--tile);color:var(--tile-ink);font-style:normal}
 .job i svg{width:24px;height:24px}
+.job i svg.fkglyph{width:32px;height:32px}
 .job b{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font:700 1.25rem/1.1 var(--f-display)}
 .job span{display:block;margin-top:2px;font-size:.88rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .jobwrap{position:relative}
@@ -254,7 +255,7 @@ details.grp .btn{margin-bottom:12px}
 <!-- ============ MENU ============ -->
 <div class="view" id="menu" hidden>
   <header class="head">
-    <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 8V6h6v2"/><path d="M5 8h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-4 3v-3a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z"/><circle cx="8.5" cy="14" r="2"/><path d="M13 14h.01M16 14h.01M19 14h.01" stroke-width="2.6"/></svg></div>
+    <div class="logo" aria-hidden="true"><svg viewBox="8 13.875 48 48"><path d="M24 23v-5h16v5" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><rect x="10" y="23" width="44" height="30" rx="5" fill="currentColor"/><path d="M15 52l-2 8 11-8z" fill="currentColor"/><circle cx="22" cy="38" r="7.5" fill="var(--tile)"/><circle cx="22" cy="38" r="2.8" fill="currentColor"/><circle cx="35" cy="38" r="3.3" fill="var(--tile)"/><circle cx="42.5" cy="38" r="3.3" fill="var(--tile)"/><circle cx="50" cy="38" r="3.3" fill="var(--tile)"/></svg></div>
     <div class="head-txt"><h1>Field Kit</h1><p class="who" id="who"></p></div>
     <button class="iconbtn" id="openSettings" type="button" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
   </header>
@@ -315,7 +316,7 @@ details.grp .btn{margin-bottom:12px}
 <!-- ============ FIRST-LAUNCH SETUP ============ -->
 <div class="view" id="setup" hidden>
   <header class="head">
-    <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 8V6h6v2"/><path d="M5 8h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-4 3v-3a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z"/><circle cx="8.5" cy="14" r="2"/><path d="M13 14h.01M16 14h.01M19 14h.01" stroke-width="2.6"/></svg></div>
+    <div class="logo" aria-hidden="true"><svg viewBox="8 13.875 48 48"><path d="M24 23v-5h16v5" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><rect x="10" y="23" width="44" height="30" rx="5" fill="currentColor"/><path d="M15 52l-2 8 11-8z" fill="currentColor"/><circle cx="22" cy="38" r="7.5" fill="var(--tile)"/><circle cx="22" cy="38" r="2.8" fill="currentColor"/><circle cx="35" cy="38" r="3.3" fill="var(--tile)"/><circle cx="42.5" cy="38" r="3.3" fill="var(--tile)"/><circle cx="50" cy="38" r="3.3" fill="var(--tile)"/></svg></div>
     <div class="head-txt"><h1>Welcome to Field Kit</h1><p class="help" style="margin-top:3px">Set up once. You won't type these again in any tool.</p></div>
   </header>
   <div class="steps" id="stepBar" aria-hidden="true"><i></i><i></i><i></i></div>
@@ -394,6 +395,8 @@ details.grp .btn{margin-bottom:12px}
     return out;
   }
   function ago(at) { var m = Math.max(1, Math.round((Date.now() - at) / 60000)); return m < 60 ? m + " min ago" : m < 1440 ? Math.round(m / 60) + " hr ago" : "over a day ago"; }
+  // the Field Kit app icon's shape, for the job in progress (a job runs through every tool)
+  var FK_GLYPH = '<svg class="fkglyph" viewBox="8 13.875 48 48"><path d="M24 23v-5h16v5" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><rect x="10" y="23" width="44" height="30" rx="5" fill="currentColor"/><path d="M15 52l-2 8 11-8z" fill="currentColor"/><circle cx="22" cy="38" r="7.5" fill="var(--tile)"/><circle cx="22" cy="38" r="2.8" fill="currentColor"/><circle cx="35" cy="38" r="3.3" fill="var(--tile)"/><circle cx="42.5" cy="38" r="3.3" fill="var(--tile)"/><circle cx="50" cy="38" r="3.3" fill="var(--tile)"/></svg>';
   var RESTART = svg('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>', 2.2);
   function paintTools() {
     var prog = inProgress();
@@ -512,7 +515,7 @@ details.grp .btn{margin-bottom:12px}
       $("jobArea").innerHTML = '<div class="jobwrap"><button class="job" type="button" id="jobStart"><i aria-hidden="true">' + PLUS + '</i><div><b>Start New Job</b><span>Photos, comments, job summary</span></div><em class="chev" aria-hidden="true">›</em></button></div>';
     } else {
       $("jobArea").innerHTML = '<div class="jobwrap busy"><button class="job" type="button" id="jobGo"><i aria-hidden="true">' +
-        svg('<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/>', 2.2) +
+        FK_GLYPH +
         '</i><div><b>' + esc(a.sa || "New job") + ' <em class="live">' + (a.status === "complete" ? "Reopened" : "In progress") + '</em></b><span>' + esc(a.title ? a.title.split(" · ").slice(0, 2).join(" · ") : "Job details not set yet") + '</span></div><em class="chev" aria-hidden="true">›</em></button>' +
         '<button class="newbtn" type="button" id="jobNew" aria-label="Replace with a new job. This one stays in Job history." title="Start over with a new job">' + RESTART + '</button></div>';
     }
