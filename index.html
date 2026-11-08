@@ -811,16 +811,16 @@ details.grp .btn{margin-bottom:12px}
   function phoneDigits(v) { var d = String(v || "").replace(/\D/g, ""); if (d.length === 11 && d[0] === "1") d = d.slice(1); return d; }
 
   var F = {
-    name: { label: "Your Name", hint: "First and last name, e.g. Jane Smith", ac: "name", cap: "words",
+    name: { label: "Your Name", ac: "name", cap: "words",
       norm: titleCase, ok: function (v) { return /^[A-Za-zÀ-ÿ'’.-]+( [A-Za-zÀ-ÿ'’.-]+)+$/.test(v); }, bad: "Enter your first and last name, e.g. Jane Smith." },
-    email: { label: "Work Email", hint: "Your @xplore.ca email, e.g. jane.smith@xplore.ca", ac: "email", type: "email",
+    email: { label: "Work Email", ac: "email", type: "email",
       norm: function (v) { return v.replace(/\s+/g, "").toLowerCase(); }, ok: function (v) { return validEmail(v) && isWorkEmail(v); }, bad: "Enter your @xplore.ca work email, e.g. jane.smith@xplore.ca." },
     dealer: { label: "Dealer Name", hint: "Your dealership, e.g. XCI Example Tech", ac: "organization", cap: "words",
       // a name added after a dash ("XCI Example Tech - Jane Smith") is dropped: the dealer name is just the dealership
       norm: function (v) { var x = v.replace(/[‒-―−]/g, "-").replace(/\s+-\s+.*$/, "").replace(/\s+/g, " ").trim();
         return titleCase(x).replace(/^xci\b/i, "XCI").replace(/\b(ns|nb|nl|pei|mb)\b/gi, function (m) { return m.toUpperCase(); }); },
       ok: function (v) { return /[A-Za-zÀ-ÿ].*[A-Za-zÀ-ÿ]/.test(v) && v.length <= 60; }, bad: "Enter your dealer name, e.g. XCI Example Tech." },
-    phone: { label: "Mobile Number", hint: "e.g. 519-555-0123", ac: "tel", type: "tel", im: "tel",
+    phone: { label: "Mobile Number", ac: "tel", type: "tel", im: "tel",
       norm: function (v) { var d = phoneDigits(v); return d.length === 10 ? d.slice(0, 3) + "-" + d.slice(3, 6) + "-" + d.slice(6) : v.trim(); },
       ok: function (v) { return phoneDigits(v).length === 10; }, bad: "Enter a 10-digit number, e.g. 519-555-0123." },
     sap: { label: "SAP Account #", hint: "6 digits, e.g. 100123", im: "numeric",
@@ -835,7 +835,7 @@ details.grp .btn{margin-bottom:12px}
       norm: function (v) { return v; }, ok: function (v) { return PROVS.indexOf(v) >= 0; }, bad: "Choose your province." },
     postal: { label: "Postal Code", hint: "e.g. A1A 1A1", ac: "shipping postal-code", cap: "characters",
       norm: function (v) { return normPostal(v) || v.trim().toUpperCase(); }, ok: function (v) { return !!normPostal(v); }, bad: "Enter a postal code like A1A 1A1." },
-    manager: { label: "Xplore Operations Manager", hint: "Their email, e.g. first.last@xplore.ca. Manual order requests go to them to approve.", type: "email",
+    manager: { label: "Xplore Approver Email", type: "email",
       norm: function (v) { return v.replace(/\s+/g, "").toLowerCase(); }, ok: validEmail, bad: "Enter a full email address, e.g. first.last@xplore.ca." }
   };
   var ABOUT = ["name", "email", "phone", "manager"], ACCT = ["dealer", "sap", "sf", "street", "cityprov", "postal"];

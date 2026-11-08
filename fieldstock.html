@@ -644,7 +644,7 @@ html.fk-slim .top .netbar{flex-basis:100%}
   <!-- MANUAL ORDER -->
   <section class="panel" id="p-order" hidden>
     <div><h2>Manual Order Request</h2>
-      <p class="help intro">Only use this when you can't order through Salesforce. Your Xplore Operations Manager gets the order by email to approve.</p></div>
+      <p class="help intro">Only use this when you can't order through Salesforce. Your Xplore approver gets the order by email to approve.</p></div>
     <div class="card">
       <div class="cmp-head"><h3 id="ordCount">Items</h3><button class="btn ghost" type="button" id="ordClear" hidden>Clear</button></div>
       <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
@@ -656,7 +656,7 @@ html.fk-slim .top .netbar{flex-basis:100%}
         <textarea id="ordReason" placeholder=""></textarea><small class="hint">e.g. Salesforce ordering is down</small></div>
       <div class="field"><label for="ordNotes">Special Instructions <span class="muted">(Optional)</span></label>
         <textarea id="ordNotes"></textarea><small class="hint">e.g. Leave at side door</small></div>
-      <div class="field"><label for="ordMgr">Xplore Operations Manager</label>
+      <div class="field"><label for="ordMgr">Xplore Approver Email</label>
         <input type="email" id="ordMgr" inputmode="email" autocomplete="off" autocapitalize="off" spellcheck="false"><small class="hint">Saved for next time, e.g. first.last@xplore.ca</small>
         <small class="ferr" id="ordMgr_err" hidden></small></div>
       <div class="field"><span class="lbl">Ships To</span>
