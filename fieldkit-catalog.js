@@ -55,6 +55,8 @@ var SKUS = [
   {"id": "FK-GABLE", "name": "Gable Mount", "group": "Mounts & surge", "serial": false},
   {"id": "FK-TRIPOD", "name": "Tripod Mount", "group": "Mounts & surge", "serial": false},
   {"id": "FK-POLE10", "name": "10ft Pole", "group": "Mounts & surge", "serial": false},
+  {"id": "FK-POLE5", "name": "5ft Pole", "group": "Mounts & surge", "serial": false},
+  {"id": "FK-SIDESTAYS", "name": "Side Stays", "group": "Mounts & surge", "serial": false},
   {"id": "FK-SATPOLE", "name": "Satellite Pole Mount", "group": "SurfBeam satellite", "serial": false},
   {"id": "fiber-drop", "name": "Fiber Drop Cable (older entries)", "group": "Fiber drops & NIDs", "serial": true, "hidden": true}
 ];

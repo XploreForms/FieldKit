@@ -79,7 +79,9 @@
     var inGroup = function () { var g = [].slice.call(arguments); return C.SKUS.filter(function (x) { return g.indexOf(x.group) >= 0 && x.serial && !x.hidden; }).map(function (x) { return x.id; }); };
     var DROPS = [["Not Needed", []], ["100m", ["00D101EB49R100MP"]], ["200m", ["00D101EB49R200MP"]], ["300m", ["00D101EB49R300MP"]], ["500m", ["00D101EB49R500MP"]], ["1000m", ["FK-DROP1000"]]];
     SLOT_CACHE = {
-      mount: { name: "Mount", opts: [["Not Needed", []], ["J-arm", ["PVJM-39"]], ["Bi-pod", ["FK-BIPOD"]], ["Gable mount + 10ft pole", ["FK-GABLE", "FK-POLE10"]], ["Tripod + 10ft pole", ["FK-TRIPOD", "FK-POLE10"]]] },
+      // same names as Field Notes' Mount Type
+      mount: { name: "Mount", opts: [["J-Arm", ["PVJM-39"]], ["J-Arm + Side Stays", ["PVJM-39", "FK-SIDESTAYS"]], ["Gable Mount + 10ft Pole", ["FK-GABLE", "FK-POLE10"]],
+        ["Bipod + 5ft Pole", ["FK-BIPOD", "FK-POLE5"]], ["Tripod + 10ft Pole", ["FK-TRIPOD", "FK-POLE10"]], ["Tower", []], ["Not Needed", []]] },
       surge: { name: "Surge", opts: [["Deployed", ["PVFWSURGE"]]], def: "Deployed" },
       nid: { name: "NID", opts: [["Deployed", ["FTH602A010XP"]], ["Not Needed", []]] },
       drop: { name: "Drop", opts: DROPS },
@@ -128,7 +130,7 @@
         var opts = d.opts.map(function (o) { return o[0]; }), def = maybe ? "" : (d.def || "");
         if (maybe && opts.indexOf("Not Needed") < 0) opts = opts.concat(["Not Needed"]);   // Surge on a repair isn't a given
         var v = picks[id] || def;
-        v = ({ Yes: "Deployed", No: "Not Needed" })[v] || v;   // answers saved before the wording changed
+        v = ({ Yes: "Deployed", No: "Not Needed", "J-arm": "J-Arm", "Bi-pod": "Bipod + 5ft Pole", "Gable mount + 10ft pole": "Gable Mount + 10ft Pole", "Tripod + 10ft pole": "Tripod + 10ft Pole" })[v] || v;   // answers saved before the wording changed
         if (v && opts.indexOf(v) < 0) v = def;
         rows.push({ id: id, kind: "choice", name: d.name, opts: opts, value: v, done: !!v, optional: maybe }); return;
       }
@@ -192,7 +194,8 @@
         // only one possible answer (Surge): just shows it
         if (r.opts.length === 1) return '<div class="fkj-slot fkj-row"><div class="fkj-sh">' + tick + '<b>' + esc(r.name) + '</b></div><span class="fkj-val">' + esc(r.value) + '</span></div>';
         // 6-column grid: up to 3 choices share a row equally; otherwise short ones go 3 to a row, long ones 2
-        var span = function (v) { return r.opts.length <= 3 ? 6 / r.opts.length : v.length > 10 ? 3 : 2; };
+        var long = r.opts.length > 3 && r.opts.some(function (v) { return v.length > 10; });   // long names (Mount): two to a row
+        var span = function (v) { return r.opts.length <= 3 ? 6 / r.opts.length : long ? 3 : 2; };
         return '<div class="fkj-slot"><div class="fkj-sh">' + (r.done ? tick : r.optional ? '<i class="fkj-need fkj-maybe" aria-hidden="true"></i>' : dot) + '<b>' + esc(r.name) + '</b></div><div class="fkj-seg" role="group" aria-label="' + esc(r.name) + '">' +
           r.opts.map(function (v) { return '<button type="button" style="grid-column:span ' + span(v) + '" data-slot-set="' + esc(r.id) + '" data-v="' + esc(v) + '" aria-pressed="' + (r.value === v) + '">' + esc(v) + '</button>'; }).join("") + '</div></div>';
       }
@@ -492,8 +495,8 @@
   }
   /* Answers in Field Notes that are also equipment slots: the drop length and the mount type.
      A slot follows Field Notes whenever that answer changes there; picking the slot by hand afterwards still sticks. */
-  var NOTES_MOUNT = { "J-Arm": "J-arm", "J-Arm + Side Stays": "J-arm", "Gable Mount + 10ft Pole": "Gable mount + 10ft pole", "Bipod + 5ft Pole": "Bi-pod",
-    "Tripod + 10ft Pole": "Tripod + 10ft pole", "Tower": "Not Needed", "Tower Leg": "Not Needed" };
+  var NOTES_MOUNT = { "J-Arm": "J-Arm", "J-Arm + Side Stays": "J-Arm + Side Stays", "Gable Mount + 10ft Pole": "Gable Mount + 10ft Pole", "Bipod + 5ft Pole": "Bipod + 5ft Pole",
+    "Tripod + 10ft Pole": "Tripod + 10ft Pole", "Tower": "Tower", "Tower Leg": "Tower" };
   function notesToSlots(j, st) {
     if (!j || !st) return;
     var ids = slotIds(j), D = slotSet(), seen = (j.notes && j.notes.applied) || {}, want = {};
