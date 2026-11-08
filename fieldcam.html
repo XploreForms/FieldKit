@@ -2820,11 +2820,27 @@ $("lGrid").addEventListener("click", e => {
 });
 // Tap = pick. Right after a shot the first tap starts a new pick; more taps add or remove items (one photo, several items).
 function clearSel() { S.sel = []; S.fresh = false; if (current) { current.sel = []; save(); } }
+/* Fixed Wireless and Satellite: some photos are always on their own.
+   - Line of Sight, CPE & Mount and Dish & Mount are never combined with anything.
+   - Indoor Cable Run only goes with PoE Placement (Satellite: Modem Placement) and Router Placement.
+   Picking a label that can't go with what's already picked starts a fresh pick with it. */
+const SOLO_SHOTS = ["Line of Sight", "CPE & Mount", "Dish & Mount"];
+function addLabel(j, sel, l) {
+  const fam = j ? platFamily(j.plat || "") : "";
+  if (fam !== "Fixed Wireless" && fam !== "Satellite") return { sel: [...sel, l] };
+  const solo = SOLO_SHOTS.find(x => x === l || sel.includes(x));
+  if (solo && sel.length) return { sel: [l], note: `${solo} is always its own photo` };
+  const icrWith = ["Indoor Cable Run", fam === "Satellite" ? "Modem Placement" : "PoE Placement", "Router Placement"];
+  const all = [...sel, l];
+  if (all.includes("Indoor Cable Run") && all.some(x => !icrWith.includes(x)))
+    return { sel: [l], note: `Indoor Cable Run only goes with ${icrWith[1]} and Router Placement` };
+  return { sel: all };
+}
 function tapLabel(l, add = false) {
   let sel = S.fresh ? [] : [...S.sel];
   if (S.fresh && S.sel.length === 1 && S.sel[0] === l && !add) sel = [];      // tap the lit tile again = no label
   else if (sel.includes(l)) { if (!add) sel = sel.filter(x => x !== l); }
-  else sel.push(l);
+  else { const r = addLabel(curJob(), sel, l); sel = r.sel; if (r.note) toast(r.note, 2200); }
   S.sel = sel; S.fresh = false;
   if (current) { current.sel = sel; save(); }
   renderLabels();
@@ -2887,8 +2903,9 @@ function renderSort() {
 $("sGrid").addEventListener("click", e => {
   const b = e.target.closest(".lt"); if (!b) return;
   const l = b.dataset.l;
-  if (l === OTHER) return askOther(t => { if (!SO.sel.includes(t)) SO.sel.push(t); renderSort(); });
-  SO.sel = SO.sel.includes(l) ? SO.sel.filter(x => x !== l) : [...SO.sel, l];
+  if (l === OTHER) return askOther(t => { if (!SO.sel.includes(t)) { const r = addLabel(curJob(), SO.sel, t); SO.sel = r.sel; if (r.note) toast(r.note, 2200); } renderSort(); });
+  if (SO.sel.includes(l)) SO.sel = SO.sel.filter(x => x !== l);
+  else { const r = addLabel(curJob(), SO.sel, l); SO.sel = r.sel; if (r.note) toast(r.note, 2200); }
   renderSort();
 });
 async function commitSort() {
