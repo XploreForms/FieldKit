@@ -827,7 +827,7 @@ details.grp .btn{margin-bottom:12px}
       // always "Location XCI Tech"
       ok: function (v) { return /^[A-Za-zÀ-ÿ'’.\- ]+ XCI Tech$/.test(v) && v.length <= 60; }, bad: "Use the format Location XCI Tech, e.g. Cambridge XCI Tech.",
       saved: function (v) { return /[A-Za-zÀ-ÿ].*[A-Za-zÀ-ÿ]/.test(v); } },   // a name saved before this format isn't sent back through setup; it's fixed next time details are saved
-    phone: { label: "Mobile Number", ac: "tel", type: "tel", im: "tel",
+    phone: { label: "Work Phone Number", ac: "tel", type: "tel", im: "tel",
       norm: function (v) { var d = phoneDigits(v); return d.length === 10 ? d.slice(0, 3) + "-" + d.slice(3, 6) + "-" + d.slice(6) : v.trim(); },
       ok: function (v) { return phoneDigits(v).length === 10; }, bad: "Enter a 10-digit number, e.g. 519-555-0123." },
     sap: { label: "SAP Account #", hint: "6 digits, e.g. 100123", im: "numeric",
