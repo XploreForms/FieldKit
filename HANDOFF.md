@@ -55,7 +55,7 @@ No build step. Edit files, bump `version.js`, push.
 
 **Look & layout**
 - One theme for all tools (light default; dark; black). Changed only in Field Kit settings.
-- Headers: page-colour, no green bar or Xplore logo, 560px column on desktop. Headers are pinned; once scrolled they go **slim with the title centred** and "‹ Field Kit" / "‹ Job" always visible.
+- Headers: page-colour, no green bar or Xplore logo, 560px column on desktop. Headers are pinned; once scrolled they go **slim with the title centred**. The switch is smooth: the page under the bar never moves (the bar keeps the height it gave up as space below it, and browser scroll anchoring is paused for the switch, which used to bounce the bar back to full size), and the bar morphs between sizes with a view transition where supported (`fieldkit.js` + bottom of `fieldkit.css`) and "‹ Field Kit" / "‹ Job" always visible.
 - Menu cards are a uniform 72px, two lines, nothing cut off. Home header shows **name only** (no dealer). Field Stock header also name only.
 - In-progress job card uses the **truck with work-order lines** icon; restart button is the circular arrow with a two-tap "Tap to start new".
 - No version numbers inside the tools; version only shows on the menu footer.

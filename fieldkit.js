@@ -145,13 +145,65 @@
   });
 
   /* Pinned top bars go slim once the page is scrolled down (title smaller, tile smaller, line under the title hidden),
-     and full size again back at the top. A gap between the two points stops it flickering. */
+     and full size again back at the top. A gap between the two points stops it flickering.
+     Smooth, not jarring:
+       1. The page under the bar never moves. The bar gets shorter, so it keeps the height it gave up as space
+          below itself (margin). Without this, everything jumped up and the browser could bounce back to full size.
+       2. Where the phone supports it (Chrome / Samsung Internet, Safari 18+), the bar morphs between its two sizes
+          (view transition); elsewhere it just switches. Reduce Motion turns the animation off. */
   if (APP === "notes" || APP === "stock" || APP === "home") {
-    var slim = false;
+    var slim = false, padded = null, anim = 0, root = document.documentElement;
+    var HDR = ".lhead, header.top, header.app-header";
+    var onScreen = function (el) { return !!el && el.getClientRects().length > 0; };
+    var bar = function () { var l = document.querySelectorAll(HDR); for (var i = 0; i < l.length; i++) if (onScreen(l[i])) return l[i]; return null; };
+    // the first thing after the bar that takes up room on the page
+    var after = function (h) {
+      for (var n = h.nextElementSibling; n; n = n.nextElementSibling) {
+        var cs = getComputedStyle(n);
+        if (cs.display !== "none" && cs.position !== "absolute" && cs.position !== "fixed" && onScreen(n)) return n;
+      }
+      return null;
+    };
+    var pageY = function (el) { return el.getBoundingClientRect().top + (window.scrollY || 0); };
+    var apply = function (on) {
+      if (!on) { root.classList.remove("fk-slim"); if (padded) { padded.style.marginBottom = ""; padded = null; } return; }
+      var h = bar(), nx = h && after(h), was = nx ? pageY(nx) : 0;
+      // the browser's own "keep my place" scrolling would pull the page up while the bar shrinks; we hold the place ourselves
+      root.style.overflowAnchor = document.body.style.overflowAnchor = "none";
+      requestAnimationFrame(function () { requestAnimationFrame(function () { root.style.overflowAnchor = document.body.style.overflowAnchor = ""; }); });
+      root.classList.add("fk-slim");
+      if (!nx) return;
+      var mb = parseFloat(getComputedStyle(h).marginBottom) || 0;
+      for (var i = 0; i < 2; i++) {   // twice: margins next to each other can share space
+        var gap = was - pageY(nx);
+        if (Math.abs(gap) < 0.5) break;
+        mb += gap; h.style.marginBottom = mb + "px"; padded = h;
+      }
+    };
+    var names = function (h, on) {
+      if (!h) return;
+      var back = h.querySelector(".fk-back");
+      h.style.viewTransitionName = on ? "fk-hdr" : "";
+      if (back && onScreen(back)) back.style.viewTransitionName = on ? "fk-hdr-back" : "";
+    };
+    var setSlim = function (on) {
+      if (on === slim) return;
+      slim = on;
+      var h = bar();
+      var still = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (!document.startViewTransition || still || !h || document.hidden) { apply(on); return; }
+      var me = ++anim;
+      names(h, true); root.classList.add("fk-anim");
+      var t;
+      try { t = document.startViewTransition(function () { apply(on); }); }
+      catch (e) { names(h, false); root.classList.remove("fk-anim"); apply(on); return; }
+      var done = function () { if (me !== anim) return; names(h, false); root.classList.remove("fk-anim"); };
+      t.finished.then(done, done);
+    };
     var onScroll = function () {
       var y = window.scrollY || 0;
-      if (!slim && y > 60) { slim = true; document.documentElement.classList.add("fk-slim"); }
-      else if (slim && y < 6) { slim = false; document.documentElement.classList.remove("fk-slim"); }
+      if (!slim && y > 60) setSlim(true);
+      else if (slim && y < 6) setSlim(false);
     };
     addEventListener("scroll", onScroll, { passive: true });
     addEventListener("load", onScroll);

@@ -69,3 +69,15 @@ html.fk-slim .fk-sub,html.fk-slim .top .who{display:none}
 html.fk-slim .fk-title,html.fk-slim .top h1{font:650 15px/1.2 var(--fk-body);letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 html.fk-slim .fk-back{min-height:36px;font-size:15px}
 html.fk-slim .fk-head{gap:0}
+
+/* the bar morphing between full and slim (fieldkit.js): only the bar animates; the page under it stays live */
+html.fk-anim::view-transition-old(root){display:none;animation:none}
+html.fk-anim::view-transition-new(root){animation:none}
+::view-transition-group(fk-hdr),::view-transition-group(fk-hdr-back){animation-duration:.24s;animation-timing-function:cubic-bezier(.2,.7,.2,1)}
+::view-transition-group(fk-hdr){background:var(--fk-bg)}   /* solid, so the page doesn't show through mid-change */
+::view-transition-image-pair(fk-hdr){overflow:hidden}
+::view-transition-old(fk-hdr),::view-transition-new(fk-hdr){height:auto;object-fit:none;object-position:top}
+::view-transition-old(fk-hdr){animation-duration:.14s}        /* the old bar fades out quickly, so the two don't double up */
+::view-transition-new(fk-hdr){animation-duration:.24s}
+::view-transition-old(fk-hdr-back),::view-transition-new(fk-hdr-back){animation-duration:.24s}
+
