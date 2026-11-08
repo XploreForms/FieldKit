@@ -515,7 +515,7 @@ details.grp .btn{margin-bottom:12px}
       $("jobArea").innerHTML = '<div class="jobwrap"><button class="job" type="button" id="jobStart"><i aria-hidden="true">' + PLUS + '</i><div><b>Start New Job</b><span>Photos, comments, job summary</span></div><em class="chev" aria-hidden="true">›</em></button></div>';
     } else {
       $("jobArea").innerHTML = '<div class="jobwrap busy"><button class="job" type="button" id="jobGo"><i aria-hidden="true">' +
-        FK_GLYPH +
+        svg('<path d="M4 17H2V5h12v12"/><path d="M8 17h7"/><path d="M19 17h3v-4.5L18.5 8H14"/><circle cx="6" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 9h6M5 12.5h4"/>', 2.2) +   // truck roll with its work order
         '</i><div><b>' + esc(a.sa || "New job") + ' <em class="live">' + (a.status === "complete" ? "Reopened" : "In progress") + '</em></b><span>' + esc(a.title ? a.title.split(" · ").slice(0, 2).join(" · ") : "Job details not set yet") + '</span></div><em class="chev" aria-hidden="true">›</em></button>' +
         '<button class="newbtn" type="button" id="jobNew" aria-label="Replace with a new job. This one stays in Job history." title="Start over with a new job">' + RESTART + '</button></div>';
     }
