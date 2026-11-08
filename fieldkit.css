@@ -60,3 +60,13 @@ html{background:var(--fk-bg)}
 .fk-head-txt{min-width:0;flex:1}
 .fk-title{margin:0;font:700 1.5rem/1.05 var(--fk-display);letter-spacing:.01em;color:var(--fk-ink)}
 .fk-sub{margin:3px 0 0;font:400 .88rem/1.3 var(--fk-body);color:var(--fk-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---------- pinned top bars: slim once scrolled down (fieldkit.js adds fk-slim to <html>) ---------- */
+.fk-tile,.fk-tile svg,.fk-title,.fk-sub,.top .mark,.top .mark svg,.top h1,.top .who{transition:width .18s ease,height .18s ease,font-size .18s ease,max-height .18s ease,opacity .15s ease,margin .18s ease,border-radius .18s ease}
+.fk-sub,.top .who{max-height:3em}
+html.fk-slim .fk-tile,html.fk-slim .top .mark{width:30px;height:30px;border-radius:8px}
+html.fk-slim .fk-tile svg,html.fk-slim .top .mark svg{width:18px;height:18px}
+html.fk-slim .fk-title,html.fk-slim .top h1{font-size:1.1rem}
+html.fk-slim .fk-sub,html.fk-slim .top .who{max-height:0;opacity:0;margin:0}
+html.fk-slim .fk-back{min-height:34px}
+@media (prefers-reduced-motion:reduce){.fk-tile,.fk-tile svg,.fk-title,.fk-sub,.top .mark,.top .mark svg,.top h1,.top .who{transition:none}}
