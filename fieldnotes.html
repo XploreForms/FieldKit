@@ -737,6 +737,9 @@ html:root[data-fn-theme] button.btn{border-radius:var(--fk-r-sm)}
 html:root[data-fn-theme] .sticky-bar{background:var(--fk-bg);box-shadow:0 -1px 0 var(--fk-line)}
 /* same column width as the rest of Field Kit */
 .wrap,.app-header-inner,.sticky-inner{max-width:var(--fk-max)}
+
+/* typing boxes: the focus ring stays inside the box, so it never runs over the dBm / dB next to it */
+html:root input:focus, html:root textarea:focus { outline: none !important; box-shadow: inset 0 0 0 2px var(--fk-accent-text) !important; }
 </style>
 <header class="app-header">
   <div class="app-header-inner">
@@ -1211,7 +1214,11 @@ function readingC(o) {
       var minus = o.sign === 'minus';
       var inp = el('input', { type: 'text', inputmode: 'numeric', pattern: '[0-9]*', maxlength: String(o.digits || 3), class: 'light-input' + (minus ? ' has-neg' : ''), 'aria-label': o.label + ', number only', autocomplete: 'off' });
       inp.value = clean(STATE[o.id]);
-      inp.addEventListener('input', function () { var c = clean(inp.value); if (inp.value !== c) inp.value = c; STATE[o.id] = c; changed(o.id, false); });
+      inp.addEventListener('input', function () {
+        var c = clean(inp.value); if (inp.value !== c) inp.value = c; STATE[o.id] = c; changed(o.id, false);
+        // RSRP (3 digits) and SINR (2 digits): the keyboard closes once the number is all there
+        if (/rsrp|sinr/.test(o.id) && c.length >= (o.digits || 3)) inp.blur();
+      });
       inp.addEventListener('focus', function () { if (inp.value) setTimeout(function () { try { inp.setSelectionRange(0, inp.value.length); } catch (e) {} }, 0); });
       var lead;
       if (o.sign === 'toggle') {
