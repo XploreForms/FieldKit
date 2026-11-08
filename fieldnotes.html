@@ -739,9 +739,12 @@ html:root[data-fn-theme] .sticky-bar{background:var(--fk-bg);box-shadow:0 -1px 0
 .wrap,.app-header-inner,.sticky-inner{max-width:var(--fk-max)}
 
 /* typing boxes: the focus ring stays inside the box, so it never runs over the dBm / dB next to it */
-html.fk-slim:root[data-fn-theme] header.app-header{padding-bottom:6px}
-html.fk-slim:root[data-fn-theme] header.app-header .fk-head{gap:10px}
-html.fk-slim:root[data-fn-theme] header.app-header .fk-title{font-size:1.1rem}
+html.fk-slim:root[data-fn-theme] header.app-header{padding-top:calc(env(safe-area-inset-top,0px) + 4px);padding-bottom:4px}
+html.fk-slim:root[data-fn-theme] header.app-header .app-header-inner{display:flex;align-items:center;gap:6px}
+html.fk-slim:root[data-fn-theme] header.app-header .fk-head{flex:1;min-width:0}
+html.fk-slim:root[data-fn-theme] header.app-header h1.fk-title{font:650 15px/1.2 var(--fk-body)}
+/* the footer's version number and name link: versions live on the Field Kit menu; the name is set in Field Kit settings */
+footer.app-footer .footer-text{display:none}
 html:root input:focus, html:root textarea:focus { outline: none !important; box-shadow: inset 0 0 0 2px var(--fk-accent-text) !important; }
 </style>
 <header class="app-header">

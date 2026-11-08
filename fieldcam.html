@@ -650,7 +650,7 @@ html:root[data-theme] .start{background:var(--ink)}
     <div><label>Stamped on every photo</label><p class="hint" style="margin:4px 0 0;color:var(--fg)"><b id="inName"></b><br><span id="inDealer"></span></p><p class="hint" style="margin-top:6px">To change these, open <a href="index.html#settings" style="color:var(--accent)">Field Kit settings</a>.</p></div>
     <div class="stats" id="storageStats"></div>
     <div class="install" id="installHelp"></div>
-    <div class="btnrow" style="align-items:center"><p class="stats" style="flex:1;margin:0">Field Cam v<span id="verTxt"></span> · compass corrected to true north when there’s a GPS fix</p><button class="btn sm" id="updCheck" style="flex:none">Check for updates</button></div>
+    <div class="btnrow" hidden style="align-items:center"><p class="stats" style="flex:1;margin:0">Field Cam v<span id="verTxt"></span> · compass corrected to true north when there’s a GPS fix</p><button class="btn sm" id="updCheck" style="flex:none">Check for updates</button></div>
   </div>
 </section>
 
@@ -715,7 +715,7 @@ html:root[data-theme] .start{background:var(--ink)}
     <div><label>Outcome <span style="text-transform:none;letter-spacing:0">(can be changed later)</span></label><button type="button" class="btn startout" id="startOutBtn" disabled>Select later</button></div>
     <div class="install" id="installTip" hidden></div>
     <div class="startbar"><p class="err" id="startErr" hidden></p><button class="btn primary big" id="startBtn">Start Job</button></div>
-    <p class="verline" id="verLine"></p>
+    <p class="verline" id="verLine" hidden></p>
   </div>
 </div>
 
