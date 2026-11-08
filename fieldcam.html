@@ -2820,21 +2820,16 @@ $("lGrid").addEventListener("click", e => {
 });
 // Tap = pick. Right after a shot the first tap starts a new pick; more taps add or remove items (one photo, several items).
 function clearSel() { S.sel = []; S.fresh = false; if (current) { current.sel = []; save(); } }
-/* Fixed Wireless and Satellite: some photos are always on their own.
-   - Line of Sight, CPE & Mount and Dish & Mount are never combined with anything.
-   - Indoor Cable Run only goes with PoE Placement (Satellite: Modem Placement) and Router Placement.
-   Picking a label that can't go with what's already picked starts a fresh pick with it. */
-const SOLO_SHOTS = ["Line of Sight", "CPE & Mount", "Dish & Mount"];
+/* Fixed Wireless and Satellite: Line of Sight, CPE & Mount, Dish & Mount and Indoor Cable Run are always their
+   own photo, never combined with anything. Picking one with other labels (or another label with one of these)
+   starts a fresh pick. */
+const SOLO_SHOTS = ["Line of Sight", "CPE & Mount", "Dish & Mount", "Indoor Cable Run"];
 function addLabel(j, sel, l) {
   const fam = j ? platFamily(j.plat || "") : "";
   if (fam !== "Fixed Wireless" && fam !== "Satellite") return { sel: [...sel, l] };
   const solo = SOLO_SHOTS.find(x => x === l || sel.includes(x));
   if (solo && sel.length) return { sel: [l], note: `${solo} is always its own photo` };
-  const icrWith = ["Indoor Cable Run", fam === "Satellite" ? "Modem Placement" : "PoE Placement", "Router Placement"];
-  const all = [...sel, l];
-  if (all.includes("Indoor Cable Run") && all.some(x => !icrWith.includes(x)))
-    return { sel: [l], note: `Indoor Cable Run only goes with ${icrWith[1]} and Router Placement` };
-  return { sel: all };
+  return { sel: [...sel, l] };
 }
 function tapLabel(l, add = false) {
   let sel = S.fresh ? [] : [...S.sel];
