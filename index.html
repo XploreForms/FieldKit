@@ -845,7 +845,7 @@ details.grp .btn{margin-bottom:12px}
     // shipping options for stock orders, saved once and added to every order
     shipHold: { label: "Ship to Purolator depot hold for pickup", check: true, optional: true,
       norm: function (v) { return v ? "yes" : ""; }, ok: function () { return true; } },
-    shipNotes: { label: "Default Shipping Instructions", area: true, optional: true, hint: "Added to every order. Gate codes, unit numbers, where to leave it.",
+    shipNotes: { label: "Default Shipping Instructions", area: true, optional: true,
       norm: function (v) { return v.replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim(); }, ok: function (v) { return v.length <= 300; }, bad: "Keep it under 300 characters." },
     manager: { label: "Xplore Approver Email", hint: "Approves your manual order requests and is CC'd on your transfer requests.", type: "email",
       norm: function (v) { return v.replace(/\s+/g, "").toLowerCase(); }, ok: validEmail, bad: "Enter a full email address, e.g. first.last@xplore.ca." }
