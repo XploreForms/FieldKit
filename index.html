@@ -884,8 +884,7 @@ details.grp .btn{margin-bottom:12px}
     var pr = FK.prefs();
     var seg = function (name, opts, cur) { return '<div class="seg" style="--n:' + opts.length + '" role="group" aria-label="' + name + '">' + opts.map(function (o) { return '<button type="button" data-' + pre + '-' + name + '="' + o[0] + '" aria-pressed="' + (o[0] === String(cur)) + '">' + o[1] + "</button>"; }).join("") + "</div>"; };
     return '<div class="field"><span class="lbl">Theme</span>' + seg("theme", [["light", "Light"], ["dark", "Dark"], ["black", "Black"]], pr.theme) +
-      '<small class="hint">Used in Field Kit, Field Cam, Field Stock and Field Notes. Black uses true black, which saves battery on most iPhones.</small></div>' +
-      '<div class="field"><span class="lbl">Field Cam Grid Lines</span>' + seg("grid", [["false", "Off"], ["true", "On"]], pr.grid) + '<small class="hint">A 3 × 3 grid over the camera to help line up shots.</small></div>';
+      '<small class="hint">Used in Field Kit, Field Cam, Field Stock and Field Notes. Black uses true black, which saves battery on most iPhones.</small></div>';   // grid lines: in Field Cam's own settings
   }
   function applyTheme(t) { document.documentElement.setAttribute("data-theme", t); }
   function wireLook(box, pre) {
@@ -1107,6 +1106,7 @@ details.grp .btn{margin-bottom:12px}
       if (FK.setupDone()) step = Math.min(step, 1);
       renderStep(); showView("setup"); return;
     }
+    if (/^#settings/.test(location.hash)) { openSettings(false); return; }
     if (/^#backup/.test(location.hash)) {
       openSettings(true);
       var sr = ""; try { sr = sessionStorage.getItem("fieldkit.syncResult") || ""; sessionStorage.removeItem("fieldkit.syncResult"); } catch (e) {}

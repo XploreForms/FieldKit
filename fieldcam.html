@@ -643,11 +643,11 @@ html:root[data-theme] .start{background:var(--ink)}
   <div class="body">
     <div hidden><label>Appearance</label><div class="seg two" id="themeSeg" role="group"><button type="button" data-t="dark"><b>Dark</b><span>Black, saves battery</span></button><button type="button" data-t="light"><b>Light</b><span>Easier in bright sun</span></button></div></div>
     <div><label>Photo size</label><div class="seg" id="sizeSeg" role="group"><button type="button" data-z="500"><b>500 KB</b><span>Best for low signal</span></button><button type="button" data-z="1000"><b>1 MB</b><span>More detail</span></button><button type="button" data-z="full"><b>Full quality</b><span>3–6 MB each</span></button></div><p class="hint" style="margin-top:6px">Applies to photos taken from now on. The HQ button still switches one job to full quality.</p></div>
-    <div hidden><label>Grid lines</label><div class="seg two" id="gridSeg" role="group"><button type="button" data-g="on"><b>On</b><span>Thirds, for straight, even framing</span></button><button type="button" data-g="off"><b>Off</b><span>Clear picture</span></button></div></div>
+    <div><label>Grid lines</label><div class="seg two" id="gridSeg" role="group"><button type="button" data-g="on"><b>On</b><span>Thirds, for straight, even framing</span></button><button type="button" data-g="off"><b>Off</b><span>Clear picture</span></button></div></div>
     <div><label>Job start &amp; end cards</label><div class="seg two" id="divSeg" role="group"><button type="button" data-d="on"><b>On</b><span>Saved around each job’s photos</span></button><button type="button" data-d="off"><b>Off</b><span>Photos only</span></button></div></div>
     <div><label>Text size</label><div class="seg two" id="textSeg" role="group"><button type="button" data-x="normal"><b>Normal</b></button><button type="button" data-x="large"><b>Large</b><span>Bigger text and buttons</span></button></div></div>
-    <div><label for="inName">Technician name</label><input id="inName" autocomplete="name" placeholder="First Last"></div>
-    <div><label for="inDealer">Dealer name</label><input id="inDealer" autocomplete="organization" placeholder="Location XCI Tech"><p class="hint" style="margin-top:6px">Both are stamped on every photo.</p></div>
+    <!-- name and dealer come from Field Kit settings (the menu), so they're the same in every tool -->
+    <div><label>Stamped on every photo</label><p class="hint" style="margin:4px 0 0;color:var(--fg)"><b id="inName"></b><br><span id="inDealer"></span></p><p class="hint" style="margin-top:6px">To change these, open <a href="index.html#settings" style="color:var(--accent)">Field Kit settings</a>.</p></div>
     <div class="stats" id="storageStats"></div>
     <div class="install" id="installHelp"></div>
     <div class="btnrow" style="align-items:center"><p class="stats" style="flex:1;margin:0">Field Cam v<span id="verTxt"></span> · compass corrected to true north when there’s a GPS fix</p><button class="btn sm" id="updCheck" style="flex:none">Check for updates</button></div>
@@ -2966,9 +2966,7 @@ async function camInfo() {
   const z0 = S.caps && S.caps.zoom ? `zoom ${+(S.caps.zoom.min || 1).toFixed(2)}–${+(S.caps.zoom.max || 1).toFixed(1)}` : "no hardware zoom";
   $("camInfo").textContent = `Cameras: ${names.join(", ") || "none listed"} · ${z0} · ultra-wide ${canUltra() ? (hwUltra() || (S.lenses && S.lenses.ultra && !S.lenses.alts.includes(S.lenses.ultra)) ? "available" : altPick() ? "set" : "to try") : "not available"}`;
 }
-$("setBtn").addEventListener("click", () => { camInfo(); $("inName").value = settings.name; $("inDealer").value = settings.dealer || ""; renderStorage(); openSheet("setSheet"); });
-$("inName").addEventListener("input", () => { settings.name = $("inName").value; save(); });
-$("inDealer").addEventListener("input", () => { settings.dealer = $("inDealer").value; save(); });
+$("setBtn").addEventListener("click", () => { camInfo(); $("inName").textContent = settings.name || "No name set"; $("inDealer").textContent = settings.dealer || ""; renderStorage(); openSheet("setSheet"); });
 $("sizeSeg").addEventListener("click", e => { const b = e.target.closest("[data-z]"); if (!b) return; settings.size = b.dataset.z; save(); applyTheme(); renderLabels(); });
 $("gridSeg").addEventListener("click", e => { const b = e.target.closest("[data-g]"); if (!b) return; settings.grid = b.dataset.g === "on"; save(); applyTheme(); });
 $("divSeg").addEventListener("click", e => { const b = e.target.closest("[data-d]"); if (!b) return; settings.dividers = b.dataset.d === "on"; save(); applyTheme(); });

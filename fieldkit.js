@@ -67,7 +67,7 @@
     if (THEMES.indexOf(p.theme) < 0) p.theme = "light";
     set(K.prefs, { theme: p.theme, grid: !!p.grid });
     setRaw("techstock.theme", p.theme);                                   // Field Stock: light | dark | black
-    var cam = get("fieldcam.settings", {}); cam.theme = p.theme; cam.grid = !!p.grid; set("fieldcam.settings", cam);   // Field Cam: same
+    var cam = get("fieldcam.settings", {}); cam.theme = p.theme; set("fieldcam.settings", cam);   // Field Cam: same (grid lines are set in Field Cam itself)
     setRaw("xplore_fsl_theme", p.theme === "light" ? "light" : "dark");   // Field Notes: black is dark with OLED on
     setRaw("xplore_fsl_oled", p.theme === "black" ? "on" : "off");
     keepTheme();
@@ -95,10 +95,7 @@
   function pullBack() {
     // Field Stock's manual order form can change the operations manager's email
     if (APP === "stock") { var m = str(get("techstock.manager", "")), pm = profile(); if (m && m !== pm.manager) setProfile({ manager: m }); return; }
-    if (APP !== "cam") return;
-    var cam = get("fieldcam.settings", {}), p = profile();
-    if (str(cam.name) && (str(cam.name) !== p.name || (str(cam.dealer) && str(cam.dealer) !== p.dealer)))
-      setProfile({ name: str(cam.name), dealer: str(cam.dealer) || p.dealer });
+    // name and dealer are only changed in Field Kit settings, so nothing comes back from Field Cam
   }
   addEventListener("pagehide", pullBack);
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") pullBack(); });
