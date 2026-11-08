@@ -11,6 +11,7 @@ One web app for Xplore field techs. **Start New Job** is the main way in: Field 
 | `fieldkit.js` | Shared by every page: the tech's details and appearance, copied into every tool; sends unfinished setups to the menu |
 | `fieldkit-jobs.js` | Start New Job: the job store and 7-day job history, handing the job between the tools, prefilling Field Notes, and logging scanned serials in Field Stock as deployed |
 | `fieldkit-catalog.js` | Equipment list and serial patterns, shared by Field Stock and jobs |
+| `manifest.webmanifest`, `icon-192.png`, `icon-512.png`, `icon-maskable-512.png` | What lets phones install Field Kit as an app (name, icons, opens full screen in portrait) |
 | `fieldkit.css` | The Field Kit look: colours (light, dark, black), fonts and the shared header. Each tool maps its own colour names to these in a `fk-look` style block |
 | `version.js` | Field Kit's version number and last-updated time. Change it on every release |
 | `sw.js` | Offline support and updates for every page |
