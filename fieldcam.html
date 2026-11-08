@@ -2820,10 +2820,10 @@ $("lGrid").addEventListener("click", e => {
 });
 // Tap = pick. Right after a shot the first tap starts a new pick; more taps add or remove items (one photo, several items).
 function clearSel() { S.sel = []; S.fresh = false; if (current) { current.sel = []; save(); } }
-/* Fixed Wireless and Satellite: Line of Sight, CPE & Mount, Dish & Mount and Indoor Cable Run are always their
+/* Fixed Wireless and Satellite: Install Overview, Line of Sight, CPE & Mount, Dish & Mount and Indoor Cable Run are always their
    own photo, never combined with anything. Picking one with other labels (or another label with one of these)
    starts a fresh pick. */
-const SOLO_SHOTS = ["Line of Sight", "CPE & Mount", "Dish & Mount", "Indoor Cable Run"];
+const SOLO_SHOTS = ["Install Overview", "Line of Sight", "CPE & Mount", "Dish & Mount", "Indoor Cable Run"];
 function addLabel(j, sel, l) {
   const fam = j ? platFamily(j.plat || "") : "";
   if (fam !== "Fixed Wireless" && fam !== "Satellite") return { sel: [...sel, l] };
