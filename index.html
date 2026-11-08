@@ -8,229 +8,1090 @@
 <body>
 <title>Field Kit</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="theme-color" content="#002B2B">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Field Kit">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script src="toolkit.js" data-app="home"></script>
+<link rel="stylesheet" href="fieldkit.css">
+<script src="version.js"></script>
+<script src="fieldkit.js" data-app="home"></script>
+<script src="fieldkit-catalog.js"></script>
+<script src="fieldkit-jobs.js"></script>
+<script>
+/* appearance before the first paint */
+(function () { try { document.documentElement.setAttribute("data-theme", window.FieldKit ? FieldKit.prefs().theme : "light"); } catch (e) {} })();
+</script>
+<script src="https://accounts.google.com/gsi/client" async></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
-/* Layout: one phone column. Brand header, the current job as a 4-step work order card, then the two ways in: New Job and Inventory. */
+/* Layout: one phone column with three views. Menu (tools, then smaller links), first-launch setup (4 steps), settings (same fields as setup). */
 :root{
-  --bg:#002B2B;        /* North Shore Green */
-  --surface:#0B3A37;
-  --surface-2:#134640;
-  --line:rgba(200,240,225,.12);
-  --fg:#EAF4EF;
-  --muted:#9DBDB2;
-  --accent:#58C774;    /* Superior Green */
-  --accent-ink:#05230F;
-  --signal:#00FF57;    /* Solar Wind, for "done" ticks only */
-  --warn:#F2B84B;
-  --f-display:"Barlow Semi Condensed","Arial Narrow",Arial,sans-serif;
-  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-  --r:14px;
-  color-scheme:dark;
+  /* colours come from fieldkit.css, shared by every tool */
+  --bg:var(--fk-bg); --surface:var(--fk-surface); --surface-2:var(--fk-surface-2); --line:var(--fk-line); --shadow:var(--fk-shadow);
+  --fg:var(--fk-ink); --muted:var(--fk-muted); --accent:var(--fk-accent-text);
+  --btn:var(--fk-accent); --btn-ink:var(--fk-accent-ink); --tile:var(--fk-accent); --tile-ink:var(--fk-accent-ink);
+  --warn:var(--fk-warn); --warn-bg:var(--fk-warn-bg); --bad:var(--fk-bad);
+  --f-display:var(--fk-display); --f-body:var(--fk-body); --f-mono:var(--fk-mono);
+  --r:var(--fk-r);
 }
-@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
-  --bg:#EEF4F1; --surface:#FFFFFF; --surface-2:#E1ECE7; --line:rgba(0,43,43,.12);
-  --fg:#0B2522; --muted:#4F6863; --accent:#1F8A44; --accent-ink:#FFFFFF; --signal:#1F8A44; --warn:#A8640E; color-scheme:light}}
-:root[data-theme="light"]{
-  --bg:#EEF4F1; --surface:#FFFFFF; --surface-2:#E1ECE7; --line:rgba(0,43,43,.12);
-  --fg:#0B2522; --muted:#4F6863; --accent:#1F8A44; --accent-ink:#FFFFFF; --signal:#1F8A44; --warn:#A8640E; color-scheme:light}
 
 *{box-sizing:border-box}
 html,body{background:var(--bg)}
 body{color:var(--fg);font:16px/1.45 var(--f-body);-webkit-text-size-adjust:100%}
 a{color:inherit}
-button,input{font:inherit;color:inherit}
+button,input,select{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.wrap{max-width:560px;margin:0 auto;padding-block:18px 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
+.view{max-width:var(--fk-max);margin:0 auto;padding-block:18px 36px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:20px}
+h2{margin:0;font:700 1.45rem/1.15 var(--f-display);text-wrap:balance}
+h3{margin:0;font:700 1.1rem/1.2 var(--f-display)}
+.eyebrow{margin:0;font-size:.75rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.help{margin:0;color:var(--muted);font-size:.9rem}
+.help a{color:var(--accent)}
 
 /* header */
 .head{display:flex;align-items:center;gap:12px}
-.logo{width:40px;height:40px;border-radius:11px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:none}
-.logo svg{width:22px;height:22px}
-.head h1{margin:0;font:700 1.6rem/1 var(--f-display);letter-spacing:.01em}
-.who{border:0;background:none;padding:2px 0 0;color:var(--muted);font-size:.9rem;text-align:left;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.logo{width:42px;height:42px;border-radius:11px;background:var(--tile);color:var(--tile-ink);display:grid;place-items:center;flex:none}
+.logo svg{width:24px;height:24px}
+.head h1{margin:0;font:700 1.5rem/1.05 var(--f-display);letter-spacing:.01em}
 .head-txt{min-width:0;flex:1}
-
-.eyebrow{margin:0;font-size:.75rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
-
-/* profile */
-.profile{background:var(--surface);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px}
-.profile h2{margin:0;font:700 1.25rem/1.2 var(--f-display)}
-.profile p{margin:0;color:var(--muted);font-size:.92rem}
-.field{display:flex;flex-direction:column;gap:5px}
-.field label{font-size:.82rem;font-weight:600;color:var(--muted)}
-.field input{width:100%;border:0;border-radius:10px;padding:12px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line)}
-.field input:focus{outline:none;box-shadow:inset 0 0 0 2px var(--accent)}
-.err{margin:0;color:var(--warn);font-size:.9rem}
+.who{margin:3px 0 0;color:var(--muted);font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.iconbtn{width:44px;height:44px;border-radius:50%;border:0;background:var(--surface);box-shadow:var(--shadow);color:var(--muted);display:grid;place-items:center;cursor:pointer;flex:none}
+.iconbtn svg{width:22px;height:22px}
 
 /* buttons */
-.btn{border:0;border-radius:11px;padding:13px 16px;font-weight:600;background:var(--surface-2);display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;cursor:pointer;white-space:nowrap}
-.btn svg{width:18px;height:18px;flex:none}
-.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn{border:0;border-radius:11px;padding:13px 16px;font-weight:600;background:var(--surface-2);display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;cursor:pointer;min-height:48px}
+.btn.primary{background:var(--btn);color:var(--btn-ink)}
+.btn.ghost{background:transparent;color:var(--muted)}
+.btn.block{width:100%}
+.btn:disabled{opacity:.55;cursor:default}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row .btn{flex:1 1 auto}
 
-/* current job: a work order with its four stages */
-.job{background:var(--surface);border-radius:var(--r);overflow:hidden}
-.job-top{padding:16px 16px 12px;display:flex;flex-direction:column;gap:4px}
-.sa{font:600 1.45rem/1.1 var(--f-mono);letter-spacing:.01em}
-.jtitle{color:var(--muted);font-size:.95rem;text-wrap:balance}
-.steps{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
-.step{border-bottom:1px solid var(--line)}
-.step a{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 16px;text-decoration:none}
-.step a:active{background:var(--surface-2)}
-.num{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:600 .85rem/1 var(--f-mono);background:var(--surface-2);color:var(--muted)}
-.step.done .num{background:var(--accent);color:var(--accent-ink)}
-.step.todo .num{box-shadow:inset 0 0 0 2px var(--warn);background:transparent;color:var(--warn)}
-.st-main{min-width:0;display:flex;flex-direction:column;gap:1px}
-.st-main b{font-weight:600}
-.st-main span{font-size:.85rem;color:var(--muted);overflow-wrap:anywhere}
-.chev{color:var(--muted);font-size:1.2rem}
-.job-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 16px 16px}
+/* Start New Job: the main way in */
+.job{border-radius:var(--r);padding:12px 14px;display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;align-items:center;background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--line);border:0;width:100%;text-align:left;cursor:pointer}
+.job i{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--tile);color:var(--tile-ink);font-style:normal}
+.job i svg{width:24px;height:24px}
+.job b{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font:700 1.25rem/1.1 var(--f-display)}
+.job span{display:block;margin-top:2px;font-size:.88rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jobwrap{position:relative}
+.job{grid-template-columns:44px minmax(0,1fr) auto;box-shadow:var(--shadow);text-decoration:none;color:inherit}
+.job:active{background:var(--surface-2)}
+.job b{flex-wrap:nowrap;white-space:nowrap}
+.jobwrap.busy .job{box-shadow:inset 0 0 0 2px var(--btn),var(--shadow);padding-right:62px}
+.jobwrap.busy .job .chev{display:none}
+.jobwrap .newbtn{position:absolute;right:12px;top:50%;transform:translateY(-50%);border:0;border-radius:99px;height:40px;min-width:40px;padding:0;display:grid;place-items:center;background:var(--surface-2);color:var(--fg);font:600 .78rem/1 var(--f-body);cursor:pointer;white-space:nowrap}
+.jobwrap .newbtn svg{width:18px;height:18px}
+.jobwrap .newbtn.sure{background:var(--warn-bg);color:var(--warn);padding:0 14px;box-shadow:var(--shadow)}
+.live{display:inline-block;padding:3px 6px;border-radius:99px;background:var(--btn);color:var(--btn-ink);font:600 .62rem/1 var(--f-body);font-style:normal;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+/* job history: last 7 days, quieter than the tools */
+.hist{list-style:none;margin:8px 0 0;padding:0;border-radius:var(--r);background:var(--surface);box-shadow:var(--shadow);overflow:hidden}
+.hist li+li{border-top:1px solid var(--line)}
+.hist button{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;width:100%;border:0;background:none;text-align:left;padding:10px 14px;min-height:56px;cursor:pointer}
+.hist button:active{background:var(--surface-2)}
+.hist b{display:block;font:600 .95rem/1.25 var(--f-mono);font-variant-numeric:tabular-nums}
+.hist small{display:block;color:var(--muted);font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist small.wrap{white-space:normal}
+.hist .st{font-weight:600;color:var(--accent)}
+.hist .st.open{color:var(--warn)}
+.histbtn{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;width:100%;border:0;border-radius:var(--r);background:var(--surface);box-shadow:var(--shadow);padding:11px 14px;min-height:52px;text-align:left;cursor:pointer}
+.histbtn b{display:block;font-weight:600;font-size:.95rem}.histbtn small{display:block;color:var(--muted);font-size:.8rem}
+.histbtn .chev{transition:transform .15s}.histbtn[aria-expanded="true"] .chev{transform:rotate(90deg)}
+.histbtn[aria-expanded="true"]{border-radius:var(--r) var(--r) 0 0}
+#histArea .hist{margin-top:0;border-radius:0 0 var(--r) var(--r);border-top:1px solid var(--line)}
+.histmore{margin-top:6px;border:0;background:none;color:var(--accent);font-weight:600;font-size:.9rem;padding:8px 2px;cursor:pointer}
+.eyerow{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.eyerow .help{font-size:.8rem}
 
-/* ways in */
-.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.tile{background:var(--surface);border-radius:var(--r);padding:16px 14px;display:flex;flex-direction:column;gap:10px;text-decoration:none;min-width:0}
-.tile:active{background:var(--surface-2)}
-.tile i{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;background:var(--surface-2);color:var(--accent);font-style:normal}
-.tile i svg{width:22px;height:22px}
-.tile.main{background:var(--accent);color:var(--accent-ink)}
-.tile.main i{background:rgba(5,35,15,.14);color:var(--accent-ink)}
-:root[data-theme="light"] .tile.main i{background:rgba(255,255,255,.2)}
-.tile b{font:700 1.2rem/1.1 var(--f-display)}
-.tile span{font-size:.85rem;opacity:.8}
-.stats{display:flex;gap:14px;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
-.stats b{font:600 1rem/1 var(--f-mono);color:var(--fg);font-variant-numeric:tabular-nums;margin-right:4px}
+/* new job: SA-# and job details, asked the same way as Field Cam and Field Notes */
+.njform{display:flex;flex-direction:column;gap:14px}
+.nj .seg{background:var(--surface);box-shadow:inset 0 0 0 1px var(--line)}
+.nj .seg button{white-space:nowrap;padding:11px 2px;font-size:.86rem;line-height:1.15;min-height:44px;color:var(--fg)}
+.nj .seg button[aria-pressed="true"]{background:var(--btn);color:var(--btn-ink);box-shadow:none}
+.nj .seg button:disabled{opacity:.35;cursor:default}
+.njref{display:flex;gap:8px}.njref input{flex:1;font:500 1.05rem var(--f-mono)}.njref .btn{min-height:46px;padding:0 14px}
+.njtitle{font-family:var(--f-display)!important;font-size:1.5rem!important;font-weight:700!important}
 
-.foot{color:var(--muted);font-size:.8rem;text-align:center;margin:4px 0 0}
-@media (max-width:360px){.tiles{grid-template-columns:1fr}.job-actions{grid-template-columns:1fr}}
+/* job summary: outcome */
+.lout{display:flex;align-items:center;gap:10px}
+.lout .ov{flex:1;min-width:0;font-weight:600}
+.lout .ov small{display:block;font-weight:400;color:var(--muted);font-size:.85rem}
+.odot{flex:none;width:10px;height:10px;border-radius:50%;background:var(--btn)}
+.odot.o-CC{background:var(--warn)}.odot.o-NR{background:var(--muted)}
+.olist2{display:flex;flex-direction:column;gap:10px}
+.ogrp2{display:flex;flex-direction:column;gap:6px}
+.ogrp2.has{background:var(--surface-2);padding:10px;border-radius:12px}
+.ogrp2.has h4{padding:0 2px 2px}
+.ogrp2.has button{background:var(--surface);box-shadow:inset 0 0 0 1px var(--line)}
+.ogrp2.has button[aria-pressed="true"]{background:var(--btn);box-shadow:none}
+.olist2 h4{margin:0;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.olist2 button{display:flex;align-items:center;gap:10px;width:100%;border:0;border-radius:10px;padding:11px 12px;min-height:46px;background:var(--surface-2);color:var(--fg);font-weight:600;text-align:left;cursor:pointer}
+.olist2 button[aria-pressed="true"]{background:var(--btn);color:var(--btn-ink)}
+.olist2 button .odot{width:8px;height:8px}
+
+/* job summary */
+.lhead{display:flex;flex-direction:column;gap:4px}
+.lhead .fk-title{font-family:var(--f-mono);font-size:1.3rem;font-weight:600}
+.lcard{gap:12px}
+.lcard .gs-line h3{flex:1}
+.lstep{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--surface-2);color:var(--muted);font:700 .8rem/1 var(--f-body);margin-right:8px;vertical-align:1px}
+.lstep.done{background:var(--btn);color:var(--btn-ink)}
+.thumbs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.thumbs span{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:var(--surface-2)}
+.thumbs img{width:100%;height:100%;object-fit:cover;display:block}
+.thumbs em{position:absolute;inset:auto 0 0 0;padding:10px 5px 4px;font:600 .62rem/1.1 var(--f-body);font-style:normal;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.65));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.thumbs .more{display:grid;place-items:center;font:600 .95rem var(--f-body);color:var(--muted)}
+.cmt{margin:0;max-height:220px;overflow:auto;padding:12px;border-radius:10px;background:var(--surface-2);font:400 .88rem/1.45 var(--f-body);white-space:pre-wrap;word-break:break-word}
+.gear{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.gear li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0}
+.gear li+li{border-top:1px solid var(--line)}
+.gear b{display:block;font-weight:600;font-size:.95rem}
+.gear .sn{display:block;font:500 .85rem/1.3 var(--f-mono);word-break:break-all}
+.gear small{display:block;font-size:.8rem;color:var(--muted)}
+.gear small.ok{color:var(--accent);font-weight:600}
+.gear small.no{color:var(--warn);font-weight:600}
+.btn.sm{min-height:40px;padding:8px 12px;font-size:.88rem}
+.btn.sure{background:var(--warn-bg);color:var(--warn)}
+.lfoot{display:flex;flex-direction:column;gap:8px}
+.lfoot .help{text-align:center}
+.soon{font:600 .7rem/1 var(--f-body);letter-spacing:.07em;text-transform:uppercase;padding:4px 7px;border-radius:99px;background:var(--surface-2);color:var(--muted)}
+
+/* tools: the main way in */
+.tools{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.tool a{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 14px;border-radius:var(--r);background:var(--surface);box-shadow:var(--shadow);text-decoration:none}
+.tool a:active{background:var(--surface-2)}
+.tool i{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--tile);color:var(--tile-ink);font-style:normal}
+.tool i svg{width:24px;height:24px}
+.tool b{display:block;font:700 1.2rem/1.1 var(--f-display)}
+.tool span{display:block;margin-top:2px;font-size:.88rem;color:var(--muted)}
+.tool .live{display:inline-block;margin:0 0 0 4px;padding:3px 6px;border-radius:99px;background:var(--btn);color:var(--btn-ink);font:600 .62rem/1 var(--f-body);font-style:normal;letter-spacing:.04em;text-transform:uppercase;vertical-align:3px;white-space:nowrap}
+.tool b{white-space:nowrap}
+.tool{position:relative}
+/* every tool card is the same height as the Start New Job card, in progress or not */
+.tool a,.job{min-height:72px}
+.job b .soon{display:inline-block;margin:0;font-size:.7rem;color:var(--muted)}
+
+.tool span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tool.busy a{box-shadow:inset 0 0 0 2px var(--btn),var(--shadow);padding-right:62px}
+.tool.busy a .chev{display:none}
+.tool .newbtn{position:absolute;right:12px;top:50%;transform:translateY(-50%);border:0;border-radius:99px;height:40px;min-width:40px;padding:0;display:grid;place-items:center;background:var(--surface-2);color:var(--fg);font:600 .78rem/1 var(--f-body);cursor:pointer;white-space:nowrap}
+.tool .newbtn svg{width:18px;height:18px}
+.tool .newbtn.sure{background:var(--warn-bg);color:var(--warn);padding:0 14px;box-shadow:var(--shadow)}
+.tool .cont{display:block;margin-top:2px;font-size:.8rem;line-height:1.3;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chev{font-style:normal;color:var(--muted);font-size:1.4rem;line-height:1}
+
+/* more: secondary links, deliberately quieter than the tools */
+.links{list-style:none;margin:8px 0 0;padding:0;border-radius:var(--r);background:var(--surface);box-shadow:var(--shadow);overflow:hidden}
+.links li+li{border-top:1px solid var(--line)}
+.links a{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 14px;text-decoration:none;min-height:52px}
+.links a:active{background:var(--surface-2)}
+.links svg{width:20px;height:20px;color:var(--muted)}
+.links b{display:block;font-weight:600;font-size:.95rem}
+.links small{display:block;color:var(--muted);font-size:.8rem}
+.links .out{width:16px;height:16px}
+
+.banner{display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:var(--r);background:var(--warn-bg);color:var(--fg)}
+.banner div{flex:1;min-width:0;font-size:.9rem}
+.banner b{display:block;color:var(--warn)}
+.banner .btn{min-height:40px;padding:8px 14px;flex:none}
+.stats{display:flex;gap:16px;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+.stats b{font:600 1rem/1 var(--f-mono);color:var(--fg);font-variant-numeric:tabular-nums;margin-right:5px}
+.foot{color:var(--muted);font-size:.8rem;text-align:center;margin:0}
+
+/* forms (setup and settings) */
+.card{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);padding:16px;display:flex;flex-direction:column;gap:14px}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field label,.lbl{font-size:.85rem;font-weight:600;color:var(--muted)}
+.field label em{font-style:normal;font-weight:400}
+.field input,.field select{width:100%;border:0;border-radius:10px;padding:12px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line);min-width:0}
+.field input:focus,.field select:focus{outline:none;box-shadow:inset 0 0 0 2px var(--accent)}
+.field input.bad,.field select.bad{box-shadow:inset 0 0 0 2px var(--bad)}
+.hint{font-size:.8rem;color:var(--muted)}
+.ferr{font-size:.85rem;color:var(--bad)}
+.pair{display:grid;grid-template-columns:minmax(0,1fr) 96px;gap:8px}
+.err{padding:10px 12px;border-radius:10px;background:var(--warn-bg);color:var(--fg);font-size:.9rem}
+.ok{color:var(--accent);font-weight:600}
+
+/* segmented choices */
+.seg{display:grid;grid-template-columns:repeat(var(--n,4),minmax(0,1fr));gap:4px;padding:4px;border-radius:12px;background:var(--surface-2)}
+.seg button{border:0;border-radius:9px;padding:10px 4px;background:transparent;color:var(--muted);font-weight:600;font-size:.9rem;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+
+/* setup */
+.steps{display:flex;gap:6px}
+.steps i{flex:1;height:4px;border-radius:2px;background:var(--surface-2)}
+.steps i.on{background:var(--btn)}
+.navrow{display:flex;gap:8px}
+.navrow .btn.primary{flex:1}
+.why{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.why li{font-size:.9rem;color:var(--muted)}
+.why b{display:block;color:var(--fg)}
+details.grp{border-radius:12px;background:var(--surface-2);padding:2px 14px}
+details.grp summary{cursor:pointer;padding:12px 0;font-weight:600;list-style:none}
+details.grp summary::-webkit-details-marker{display:none}
+details.grp summary small{display:block;font-weight:400;color:var(--muted);font-size:.82rem}
+details.grp ol{margin:0 0 12px;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:.9rem}
+details.grp .btn{margin-bottom:12px}
+
+/* settings */
+.sethead{display:flex;align-items:center;gap:10px}
+#sAbout,#sAcct,#sLook,#sGs{display:flex;flex-direction:column;gap:14px}
+.sethead h2{flex:1}
+.gs-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pill{font:600 .72rem/1 var(--f-body);letter-spacing:.06em;text-transform:uppercase;padding:5px 8px;border-radius:99px;background:var(--surface-2);color:var(--muted)}
+.pill.good{background:var(--btn);color:var(--btn-ink)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:99px;font-weight:600;font-size:.9rem;z-index:20;max-width:calc(100% - 32px)}
 </style>
 
-<div class="wrap">
+<!-- ============ MENU ============ -->
+<div class="view" id="menu" hidden>
   <header class="head">
-    <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></div>
-    <div class="head-txt">
-      <h1>Field Kit</h1>
-      <button class="who" id="who" type="button" hidden></button>
-    </div>
+    <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 8V6h6v2"/><path d="M5 8h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-4 3v-3a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z"/><circle cx="8.5" cy="14" r="2"/><path d="M13 14h.01M16 14h.01M19 14h.01" stroke-width="2.6"/></svg></div>
+    <div class="head-txt"><h1>Field Kit</h1><p class="who" id="who"></p></div>
+    <button class="iconbtn" id="openSettings" type="button" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
   </header>
 
-  <form class="profile" id="profile" hidden>
-    <h2 id="profH">Set up Field Kit</h2>
-    <p>Your name and dealer go on every photo, stock entry and comment. You only enter them here once.</p>
-    <div class="field"><label for="pName">Your name</label><input id="pName" autocomplete="name" placeholder="First Last"></div>
-    <div class="field"><label for="pDealer">Dealer name</label><input id="pDealer" autocomplete="organization" placeholder="Dealer"></div>
-    <p class="err" id="pErr" hidden></p>
-    <button class="btn primary" type="submit">Save</button>
-  </form>
+  <div class="banner" id="gsWarn" hidden><div><b>Google backup is off</b>Your stock isn't being backed up. Connect your @xplore.ca Google account.</div><button class="btn primary" type="button" data-open-backup>Connect</button></div>
 
-  <section id="jobSec" hidden>
-    <p class="eyebrow" style="margin-bottom:8px">Current job</p>
-    <div class="job">
-      <div class="job-top"><div class="sa" id="jSa"></div><div class="jtitle" id="jTitle"></div></div>
-      <ol class="steps" id="steps"></ol>
-      <div class="job-actions">
-        <a class="btn primary" href="camera.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h4l2-3h6l2 3h4v12H3z"/><circle cx="12" cy="13" r="4"/></svg>Camera</a>
-        <a class="btn" href="comments.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H8l-4 4z"/><path d="M8 9h8M8 12h5"/></svg>Comments</a>
-      </div>
-    </div>
+  <section id="jobArea"></section>
+
+  <section aria-labelledby="toolsH"><h2 class="eyebrow" id="toolsH">Tools - One time use</h2><ul class="tools" id="tools"></ul></section>
+  <section aria-labelledby="moreH"><h2 class="eyebrow" id="moreH">More</h2><ul class="links" id="links"></ul></section>
+  <section id="histArea" hidden>
+    <button class="histbtn" type="button" id="histBtn" aria-expanded="false" aria-controls="hist"><span><b>Job history</b><small id="histCount"></small></span><em class="chev" aria-hidden="true">›</em></button>
+    <ul class="hist" id="hist" hidden></ul>
   </section>
-
-  <section class="tiles" aria-label="Start">
-    <a class="tile main" href="camera.html" id="newTile">
-      <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></i>
-      <b id="newT">Start New Job</b><span>SA-#, job type, then photos</span>
-    </a>
-    <a class="tile" href="stock.html">
-      <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg></i>
-      <b>Inventory</b><span>Receive, transfer, RMA, history</span>
-    </a>
-  </section>
-
-  <section class="stats" id="stats" aria-label="Stock on this phone"></section>
-
-  <p class="foot">Everything is saved on this phone. Stock backs up to your Excel file from Inventory.</p>
+  <p class="foot" id="foot"></p>
 </div>
+
+<!-- ============ NEW JOB ============ -->
+<div class="view nj" id="newjob" hidden>
+  <div class="lhead">
+    <a class="fk-back" href="index.html" id="njBack">‹ Field Kit</a>
+    <header class="fk-head">
+      <div class="fk-tile" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></div>
+      <div class="fk-head-txt"><h1 class="fk-title njtitle">New Job</h1><p class="fk-sub">Then straight into Field Cam</p></div>
+    </header>
+  </div>
+  <section class="njform">
+    <div class="field"><label for="njRef">SA-#######</label>
+      <div class="njref"><input id="njRef" inputmode="numeric" maxlength="10" placeholder="SA-1234567" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn" type="button" id="njPaste">Paste</button></div>
+      <span class="hint">Type the 7 digits or paste the full SA number.</span></div>
+    <div id="njPick" style="display:flex;flex-direction:column;gap:14px"></div>
+    <p class="help">Outcome starts as Complete. You can change it in Field Cam.</p>
+  </section>
+  <div id="njErr"></div>
+  <button class="btn primary block" type="button" id="njStart">Start Job</button>
+</div>
+
+<!-- ============ JOB SUMMARY ============ -->
+<div class="view" id="lobby" hidden>
+  <div class="lhead">
+    <a class="fk-back" href="index.html" id="lbBack">‹ Field Kit</a>
+    <header class="fk-head">
+      <div class="fk-tile" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg></div>
+      <div class="fk-head-txt"><h1 class="fk-title" id="lbRef"></h1><p class="fk-sub" id="lbSub"></p></div>
+    </header>
+  </div>
+  <section class="card lcard" id="lbOut" aria-label="Outcome"></section>
+  <section class="card lcard" id="lbPhotos" aria-label="Photos"></section>
+  <section class="card lcard" id="lbNotes" aria-label="Comments"></section>
+  <section class="card lcard" id="lbGear" aria-label="Equipment Deployed"></section>
+  <div class="lfoot">
+    <div id="lbWarn"></div>
+    <button class="btn primary block" type="button" id="lbDone">Complete Job</button>
+    <p class="help" id="lbHelp">You can leave any time. This job stays open until you tap Complete Job.</p>
+  </div>
+</div>
+
+<!-- ============ FIRST-LAUNCH SETUP ============ -->
+<div class="view" id="setup" hidden>
+  <header class="head">
+    <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 8V6h6v2"/><path d="M5 8h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-4 3v-3a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z"/><circle cx="8.5" cy="14" r="2"/><path d="M13 14h.01M16 14h.01M19 14h.01" stroke-width="2.6"/></svg></div>
+    <div class="head-txt"><h1>Welcome to Field Kit</h1><p class="help" style="margin-top:3px">Set up once. You won't type these again in any tool.</p></div>
+  </header>
+  <div class="steps" id="stepBar" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div>
+    <p class="eyebrow" id="stepNum"></p>
+    <h2 id="stepH" style="margin-top:4px"></h2>
+    <p class="help" id="stepSub" style="margin-top:4px"></p>
+  </div>
+  <form class="card" id="stepForm" novalidate></form>
+  <div id="stepErr"></div>
+  <div class="navrow"><button class="btn" type="button" id="stepBack">Back</button><button class="btn primary" type="button" id="stepNext">Continue</button></div>
+</div>
+
+<!-- ============ SETTINGS ============ -->
+<div class="view" id="settings" hidden>
+  <div class="sethead"><h2>Settings</h2><button class="btn" type="button" id="closeSettings">Done</button></div>
+  <section class="card" aria-labelledby="sDetailsH">
+    <h3 id="sDetailsH">About you</h3>
+    <div id="sAbout"></div>
+  </section>
+  <section class="card" aria-labelledby="sAcctH">
+    <h3 id="sAcctH">Accounts and shipping</h3>
+    <div id="sAcct"></div>
+  </section>
+  <div id="sErr"></div>
+  <button class="btn primary block" type="button" id="saveDetails">Save Details</button>
+  <section class="card" aria-labelledby="sLookH">
+    <h3 id="sLookH">Appearance</h3>
+    <div id="sLook"></div>
+  </section>
+  <section class="card" id="backup" aria-labelledby="sGsH">
+    <div class="gs-line"><h3 id="sGsH" style="flex:1">Google Sheets backup</h3><span class="pill" id="gsPill"></span></div>
+    <div id="sGs"></div>
+  </section>
+  <p class="foot" id="sVer"></p>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script>
 (function () {
   "use strict";
-  var T = window.Toolkit, $ = function (id) { return document.getElementById(id); };
+  var FK = window.FieldKit, $ = function (id) { return document.getElementById(id); };
   function get(k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
+  function set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
   var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); };
-  var plural = function (n, w) { return n + " " + w + (n === 1 ? "" : "s"); };
+  var toastT;
+  function toast(m) { var t = $("toast"); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(function () { t.hidden = true; }, 2600); }
+  function svg(d, w) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + (w || 2) + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>'; }
 
-  /* profile */
-  function paintProfile(forceEdit) {
-    var p = T ? T.profile() : { name: "", dealer: "" }, need = !p.name || !p.dealer;
-    $("profile").hidden = !(need || forceEdit);
-    $("profH").textContent = need ? "Set up Field Kit" : "Your details";
-    $("pName").value = p.name || ""; $("pDealer").value = p.dealer || "";
-    $("who").hidden = need;
-    $("who").textContent = [p.name, p.dealer].filter(Boolean).join(" · ");
+  /* ================= menu content ================= */
+  // Main tools. Add a tool here and it shows in the list.
+  var TOOLS = [
+    { id: "cam", name: "Field Cam", desc: "Labelled, compressed job photos", href: "fieldcam.html", icon: '<path d="M3 8h4l2-3h6l2 3h4v12H3z"/><circle cx="12" cy="13" r="4"/>' },
+    { id: "stock", name: "Field Stock", desc: "Receive, deploy, transfer and RMA", href: "fieldstock.html", icon: '<path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/>' },
+    { id: "notes", name: "Field Notes", desc: "Completion comments for FSL", href: "fieldnotes.html", icon: '<path d="M4 4h16v12H8l-4 4z"/><path d="M8 9h8M8 12h5"/>' }
+  ];
+  // Secondary links, shown smaller under the tools. "out" opens in a new tab.
+  var LINKS = [
+    { name: "Compass", desc: "eCoverage Intelligence", href: "https://ecoverage-intelligence-29408448304181.1.azure.databricksapps.com/", out: true, icon: '<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>' },
+    { name: "Inventory", desc: "Xplore Dealer Portal", href: "https://dealerportal.xplore.ca/", out: true, icon: '<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.3a1 1 0 0 0 1 .7h9.6a1 1 0 0 0 1-.8L21 8H6"/>' },
+    { name: "Manual Order Request", desc: "When you can't order through Salesforce", href: "fieldstock.html#order", icon: '<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/>' },
+    { name: "RMA Request", desc: "Request an RMA number", href: "https://form.jotform.com/72404477841257", out: true, icon: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>' }
+  ];
+  /* What's unfinished in each tool. Field Cam and Field Stock note it when the tech leaves them;
+     Field Notes keeps its form as it goes (dropped after 12 hours or once the comment is copied). */
+  function inProgress() {
+    var s = FK.sessions(), out = {};
+    if (s.cam && Date.now() - s.cam.at < FK.staleAfter) out.cam = s.cam;
+    if (s.stock && Date.now() - s.stock.at < FK.staleAfter) out.stock = s.stock;
+    var w = get("xplore_fsl_wip_v2", null), st = w && w.state;
+    if (st && w.at && Date.now() - w.at < FK.staleAfter && Object.keys(st).some(function (k) { var v = st[k]; return v && (typeof v !== "object" || Object.keys(v).length); })) {
+      var job = st.job_type && st.job_plat ? st.job_type + " · " + (st.job_plat === "Fibre" && st.job_drop ? "Fibre (" + st.job_drop + ")" : st.job_plat) : "";
+      out.notes = { title: st.job_type && st.job_plat ? st.job_type + " · " + st.job_plat : "Comments started", at: w.at };
+    }
+    return out;
   }
-  $("who").addEventListener("click", function () { paintProfile(true); $("pName").focus(); });
-  $("profile").addEventListener("submit", function (e) {
-    e.preventDefault();
-    var name = $("pName").value.trim().replace(/\s+/g, " "), dealer = $("pDealer").value.trim();
-    var miss = [!name && "your name", !dealer && "dealer name"].filter(Boolean);
-    if (miss.length) { $("pErr").textContent = "Still needed: " + miss.join(" and ") + "."; $("pErr").hidden = false; return; }
-    $("pErr").hidden = true;
-    if (T) T.setProfile({ name: name, dealer: dealer });
-    paintProfile(false);
-  });
-
-  /* current job */
-  var OUT = { OK: "Complete", CC: "Cannot Complete", NR: "Not Required" };
-  function paintJob() {
-    var j = T && T.currentJob();
-    $("jobSec").hidden = !j;
-    $("newT").textContent = j ? "New Job" : "Start New Job";
-    if (!j) return;
-    $("jSa").textContent = j.ref || "No SA-#";
-    $("jTitle").textContent = j.title || "Job";
-    var need = (j.missing || []).length, deployed = T.deployedOn(j.id).length, serials = (j.serials || []).length;
-    var unlogged = (j.serials || []).filter(function (s) { return !s.sku; }).length;
-    var draft = get("toolkit.commentsFor", "") === j.id && (function () { try { return !!localStorage.getItem("xplore_fsl_draft_fibre_existing_v16"); } catch (e) { return false; } })();
-    var steps = [
-      { href: "camera.html", state: j.ref ? "done" : "todo", t: "Job info", s: (j.outcome ? OUT[j.outcome] : "Outcome not set yet") },
-      { href: "camera.html", state: !j.photos ? "" : need ? "todo" : "done", t: "Photos",
-        s: j.photos ? plural(j.photos, "photo") + (need ? " · still needed: " + j.missing.join(", ") : " · all required taken") : "None yet" },
-      { href: "camera.html", state: !serials ? "" : unlogged ? "todo" : "done", t: "Equipment",
-        s: serials ? plural(deployed, "item") + " deployed in Stock" + (unlogged ? " · " + unlogged + " need a model picked" : "") : "Scan serials in Camera to deploy them" },
-      { href: "comments.html", state: draft ? "done" : "", t: "Comments",
-        s: !T.commentsFit(j) ? "Not built for this job type yet" : draft ? "Draft started" : "Generate when you're ready" }
-    ];
-    $("steps").innerHTML = steps.map(function (x, i) {
-      return '<li class="step ' + x.state + '"><a href="' + x.href + '"><span class="num">' + (x.state === "done" ? "✓" : i + 1) + '</span><span class="st-main"><b>' + esc(x.t) + '</b><span>' + esc(x.s) + '</span></span><span class="chev" aria-hidden="true">›</span></a></li>';
+  function ago(at) { var m = Math.max(1, Math.round((Date.now() - at) / 60000)); return m < 60 ? m + " min ago" : m < 1440 ? Math.round(m / 60) + " hr ago" : "over a day ago"; }
+  var RESTART = svg('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>', 2.2);
+  function paintTools() {
+    var prog = inProgress();
+    $("tools").innerHTML = TOOLS.map(function (t) {
+      var s = prog[t.id];
+      var line = s ? (s.short || [s.title, s.detail].filter(Boolean).join(" · ")) : t.desc;
+      return '<li class="tool' + (s ? " busy" : "") + '"><a href="' + esc(t.href) + '"><i aria-hidden="true">' + svg(t.icon) + '</i><div><b>' + esc(t.name) +
+        (s ? ' <em class="live">In progress</em>' : '') + '</b><span>' + esc(line) + '</span>' +
+        '</div><em class="chev" aria-hidden="true">›</em></a>' +
+        (s ? '<button class="newbtn" type="button" data-new="' + t.id + '" aria-label="Start new in ' + esc(t.name) + '" title="Start new">' + RESTART + '</button>' : '') + '</li>';
     }).join("");
   }
+  $("links").innerHTML = LINKS.map(function (l) {
+    return '<li><a href="' + esc(l.href) + '"' + (l.out ? ' target="_blank" rel="noopener"' : '') + '>' + svg(l.icon) + '<span><b>' + esc(l.name) + '</b><small>' + esc(l.desc) + (l.out ? '<span class="sr-only"> (opens in a new tab)</span>' : '') + '</small></span>' +
+      (l.out ? svg('<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>').replace('<svg ', '<svg class="out" ') : '<em class="chev" aria-hidden="true">›</em>') + '</a></li>';
+  }).join("");
 
-  /* stock summary, worked out the same way Stock does: each serial's latest live entry */
-  function paintStats() {
-    var ev = get("techstock.events", []).filter(function (e) { return !e.voided; }).sort(function (a, b) { return a.ts - b.ts; });
-    var last = {}, dayStart = new Date(); dayStart.setHours(0, 0, 0, 0);
-    var today = 0;
-    ev.forEach(function (e) { if (e.serialKey) last[e.serialKey] = e.type; if (e.type === "deploy" && e.ts >= dayStart.getTime()) today++; });
-    var onHand = Object.keys(last).filter(function (k) { return last[k] === "receive"; }).length;
-    var bk = get("techstock.lastBackup", null);
-    var since = bk ? ev.filter(function (e) { return e.ts > (typeof bk === "number" ? bk : bk.ts || 0); }).length : ev.length;
-    $("stats").innerHTML = '<span><b>' + onHand + '</b>serialized on hand</span><span><b>' + today + '</b>deployed today</span>' +
-      (ev.length ? '<span><b>' + since + '</b>' + (bk ? "entries since last backup" : "entries, never backed up") + '</span>' : "");
+  /* ================= jobs: Start New Job, job history, job summary ================= */
+  var J = FK.job;
+  var PLUS = svg('<path d="M12 5v14M5 12h14"/>', 2.2);
+  var STEP_URL = { cam: "fieldcam.html#job", notes: "fieldnotes.html#job" };
+  var STEP_TXT = { cam: "Photos", notes: "Comments", lobby: "Summary" };
+  function when(t) {
+    var d = new Date(t), today = new Date(); today.setHours(0, 0, 0, 0);
+    var time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    if (t >= today.getTime()) return "Today " + time;
+    if (t >= today.getTime() - 864e5) return "Yesterday " + time;
+    return d.toLocaleDateString("en-CA", { weekday: "short", month: "short", day: "numeric" }) + " " + time;
+  }
+  function jobName(j) { return j.title || "Job details not set yet"; }
+  function goStep(j) { if (STEP_URL[j.step]) location.href = STEP_URL[j.step]; else openLobby(); }
+  /* ---- new job: SA-# and job details here, then Field Cam opens straight into the camera ---- */
+  // same lists as Field Cam (PLATFORMS there); the job stores Field Cam's platform value, e.g. "Fibre (Drop Required)"
+  var NJ_TYPES = [["INS", "Install"], ["CON", "Conversion"], ["REP", "Repair"], ["REC", "Recovery"]];
+  var NJ_PLATS = { INS: ["Fibre (Existing Drop)", "Fibre (Drop Required)", "Fibre (Drop Only)", "Fixed Wireless", "Satellite", "VAS"], CON: ["Fibre (Existing Drop)", "Fibre (Drop Required)", "Fixed Wireless", "Satellite"],
+    REP: ["Fibre", "Fixed Wireless", "Satellite", "VAS"], REC: ["Fibre", "Fixed Wireless", "Satellite", "VAS"] };
+  var NJ_FAMS = [["Fibre", "Fibre"], ["Fixed Wireless", "Fixed Wireless"], ["Satellite", "Satellite"], ["VAS", "Value Added Services"]];
+  var NJ_DROPS = ["Existing Drop", "Drop Required", "Drop Only"], NJ_VAS = ["XTV", "XWH", "XWR"];
+  var nj = { work: null, fam: null, drop: null, vas: null };
+  var famOf = function (p) { return /^Fibre/.test(p) ? "Fibre" : p; };
+  function njSeg(k, items, cur, n) {
+    return '<div class="seg" style="--n:' + n + '" role="group">' + items.map(function (it) {
+      return '<button type="button" data-nj="' + k + '" data-v="' + esc(it[0]) + '" aria-pressed="' + (cur === it[0] && !it[2]) + '"' + (it[2] ? " disabled" : "") + '>' + esc(it[1]) + '</button>';
+    }).join("") + '</div>';
+  }
+  function njPlats() { return nj.work ? NJ_PLATS[nj.work] : []; }
+  function njDrops() { return njPlats().filter(function (p) { return /^Fibre \(/.test(p); }); }
+  function njPlat() {
+    var ps = njPlats(); if (!nj.work || !nj.fam) return null;
+    if (nj.fam === "Fibre" && njDrops().length) return nj.drop && ps.indexOf("Fibre (" + nj.drop + ")") >= 0 ? "Fibre (" + nj.drop + ")" : null;
+    return ps.filter(function (p) { return famOf(p) === nj.fam; })[0] || null;
+  }
+  function paintNewJob() {
+    var ps = njPlats();
+    if (nj.fam && nj.work && !ps.some(function (p) { return famOf(p) === nj.fam; })) nj.fam = null;
+    var html = '<div class="field"><span class="lbl">Job type</span>' + njSeg("work", NJ_TYPES, nj.work, 4) + '</div>' +
+      '<div class="field"><span class="lbl">Platform</span>' + njSeg("fam", NJ_FAMS.map(function (f) { return [f[0], f[1], nj.work && !ps.some(function (p) { return famOf(p) === f[0]; })]; }), nj.fam, 2) + '</div>';
+    if (nj.fam === "Fibre" && njDrops().length) html += '<div class="field"><span class="lbl">Drop</span>' + njSeg("drop", NJ_DROPS.map(function (d) { return [d, d, ps.indexOf("Fibre (" + d + ")") < 0]; }), nj.drop, 3) + '</div>';
+    if (njPlat() === "VAS") html += '<div class="field"><span class="lbl">VAS service</span>' + njSeg("vas", NJ_VAS.map(function (v) { return [v, v]; }), nj.vas, 3) + '</div>';
+    $("njPick").innerHTML = html;
+  }
+  $("njPick").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-nj]"); if (!b || b.disabled) return;
+    var k = b.getAttribute("data-nj"), v = b.getAttribute("data-v");
+    nj[k] = v; if (k === "fam") { nj.drop = null; nj.vas = null; }
+    $("njErr").innerHTML = ""; paintNewJob();
+  });
+  function normRef(v) { v = String(v || "").trim().toUpperCase().replace(/\s+/g, ""); var m = v.match(/^(?:SA[-#:]?)?(\d+)$/); return m ? "SA-" + m[1] : v.replace(/[^A-Z0-9-]/g, ""); }
+  function refFromText(t) {
+    t = String(t || ""); var sa = t.match(/\bSA[\s#:-]*(\d{7})(?!\d)/i); if (sa) return "SA-" + sa[1];
+    var only = t.trim().match(/^#?(\d{7})$/); return only ? "SA-" + only[1] : "";
+  }
+  $("njRef").addEventListener("blur", function () { if ($("njRef").value.trim()) $("njRef").value = normRef($("njRef").value); });
+  // same as Field Cam: only digits (max 7), shown as SA-####### while typing
+  $("njRef").addEventListener("input", function () {
+    var inp = $("njRef"), d = inp.value.replace(/\D/g, "").slice(0, 7), v = d ? "SA-" + d : "";
+    if (inp.value !== v) { inp.value = v; try { inp.setSelectionRange(v.length, v.length); } catch (e) {} }
+    $("njErr").innerHTML = "";
+  });
+  $("njPaste").addEventListener("click", function () {
+    if (!navigator.clipboard || !navigator.clipboard.readText) { $("njRef").focus(); return; }
+    navigator.clipboard.readText().then(function (t) { var r = refFromText(t); if (r) { $("njRef").value = r; $("njErr").innerHTML = ""; } else toast("No SA-# found in what you copied"); }, function () { $("njRef").focus(); });
+  });
+  function openNewJob() {
+    nj = { work: null, fam: null, drop: null, vas: null }; $("njRef").value = ""; $("njErr").innerHTML = "";
+    paintNewJob();
+    if (!/^#new-job/.test(location.hash)) history.pushState(null, "", "#new-job");
+    showView("newjob");
+  }
+  $("njBack").addEventListener("click", function (e) { e.preventDefault(); history.replaceState(null, "", location.pathname + location.search); openMenu(); });
+  $("njStart").addEventListener("click", function () {
+    var ref = normRef($("njRef").value), plat = njPlat(), miss = [];
+    if (!ref) miss.push("SA-#");
+    else if (!/^SA-\d{7}$/.test(ref)) { $("njErr").innerHTML = '<div class="err">\u201c' + esc(ref) + '\u201d isn\'t an SA-#. It needs 7 digits, e.g. SA-1234567.</div>'; return; }
+    if (!nj.work) miss.push("job type");
+    else if (!nj.fam) miss.push("platform");
+    else if (!plat) miss.push("drop");
+    else if (plat === "VAS" && !nj.vas) miss.push("VAS service (XTV, XWH or XWR)");
+    if (miss.length) { $("njErr").innerHTML = '<div class="err">Still needed: ' + esc(miss.join(", ")) + '.</div>'; return; }
+    // the Field Cam job, ready to shoot
+    var camJobs = get("fieldcam.jobs", {}) || {}, cid = Date.now().toString(36);
+    camJobs[cid] = { work: nj.work, plat: plat, vas: plat === "VAS" ? nj.vas : null, outcome: "OK", reason: null, ref: ref, started: Date.now() };
+    set("fieldcam.jobs", camJobs);
+    var job = J.start(), tname = NJ_TYPES.filter(function (t) { return t[0] === nj.work; })[0][1];
+    job.sa = ref; job.work = nj.work; job.plat = plat; job.outcome = "OK"; job.camJobId = cid; job.camJobIds = [cid];
+    job.base = tname + " · " + (plat === "VAS" ? "VAS · " + nj.vas : plat);
+    job.title = job.base + " · Complete";
+    J.save(job);
+    location.href = "fieldcam.html#job";
+  });
+  function newJob() { openNewJob(); }
+  var histAll = false;
+  function paintJobs() {
+    var a = J.active();
+    if (!a) {
+      $("jobArea").innerHTML = '<div class="jobwrap"><button class="job" type="button" id="jobStart"><i aria-hidden="true">' + PLUS + '</i><div><b>Start New Job</b><span>Photos, comments, job summary</span></div><em class="chev" aria-hidden="true">›</em></button></div>';
+    } else {
+      $("jobArea").innerHTML = '<div class="jobwrap busy"><button class="job" type="button" id="jobGo"><i aria-hidden="true">' +
+        svg('<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/>', 2.2) +
+        '</i><div><b>' + esc(a.sa || "New job") + ' <em class="live">' + (a.status === "complete" ? "Reopened" : "In progress") + '</em></b><span>' + esc(a.title ? a.title.split(" · ").slice(0, 2).join(" · ") : "Job details not set yet") + '</span></div><em class="chev" aria-hidden="true">›</em></button>' +
+        '<button class="newbtn" type="button" id="jobNew" aria-label="Replace with a new job. This one stays in Job history." title="Start over with a new job">' + RESTART + '</button></div>';
+    }
+    var act = a ? a.id : "", hist = J.list().filter(function (j) { return j.id !== act; });
+    $("histArea").hidden = !hist.length;
+    var shown = hist;
+    $("histCount").textContent = hist.length + " job" + (hist.length === 1 ? "" : "s") + " in the last 7 days";
+    $("hist").hidden = !histAll; $("histBtn").setAttribute("aria-expanded", String(histAll));
+    $("hist").innerHTML = shown.map(function (j) {
+      var done = j.status === "complete";
+      return '<li><button type="button" data-job="' + esc(j.id) + '"><span style="min-width:0"><b>' + esc(j.sa || "No SA-#") + '</b><small><span class="st' + (done ? "" : " open") + '">' + (done ? "Completed" : "Not completed") + '</span> · ' +
+        esc(when(done ? j.completedAt : j.created)) + '</small><small class="wrap">' + esc(jobName(j)) + '</small></span><em class="chev" aria-hidden="true">›</em></button></li>';
+    }).join("");
+  }
+  // Job history stays closed until tapped
+  $("histBtn").addEventListener("click", function () { histAll = !histAll; paintJobs(); if (histAll) $("histArea").scrollIntoView({ block: "nearest", behavior: "smooth" }); });
+  var jobSureT = null;
+  document.addEventListener("click", function (e) {
+    if (e.target.closest("#jobStart")) { newJob(); return; }
+    if (e.target.closest("#jobGo")) { var a = J.active(); if (a) goStep(a); return; }
+    var nb = e.target.closest("#jobNew");
+    if (nb) {
+      if (!nb.classList.contains("sure")) { nb.classList.add("sure"); nb.textContent = "Tap to start new"; nb.setAttribute("aria-label", "Tap again to replace it with a new job. This one stays in Job history."); clearTimeout(jobSureT); jobSureT = setTimeout(paintJobs, 4000); return; }
+      newJob(); return;
+    }
+    var h = e.target.closest("[data-job]");
+    if (h) { J.open(h.getAttribute("data-job")); openLobby(); }
+  });
+
+  /* ---- job summary: photos, comments and equipment, each with the way back into its tool ---- */
+  var thumbUrls = [];
+  function camPhotos(ids) {
+    return new Promise(function (done) {
+      if (!ids.length || !window.indexedDB) return done(null);
+      var r; try { r = indexedDB.open("fieldcam", 1); } catch (e) { return done(null); }
+      r.onupgradeneeded = function () { r.result.createObjectStore("photos", { keyPath: "id" }); };   // same as Field Cam
+      r.onerror = function () { done(null); };
+      r.onsuccess = function () {
+        var db = r.result;
+        try {
+          var q = db.transaction("photos", "readonly").objectStore("photos").getAll();
+          q.onsuccess = function () { db.close(); done((q.result || []).filter(function (p) { return ids.indexOf(p.sessionId) >= 0; }).sort(function (a, b) { return a.created - b.created; })); };
+          q.onerror = function () { db.close(); done(null); };
+        } catch (e) { db.close(); done(null); }
+      };
+    });
+  }
+  function labelOf(p) { return p.labels && p.labels.length ? p.labels.join(", ") : p.unlabelled ? "Not labelled" : (p.label || "Photo"); }
+  function stepHead(n, title, done, pill, pillCls) {
+    return '<div class="gs-line"><h3><span class="lstep' + (done ? " done" : "") + '" aria-hidden="true">' + (done ? "✓" : n) + '</span>' + title + '</h3>' + (pill ? '<span class="pill ' + (pillCls || "") + '">' + esc(pill) + '</span>' : "") + '</div>';
+  }
+  var lobbyState = { photosOk: false, notesOk: false };
+  function paintLobbyPhotos(j) {
+    var box = $("lbPhotos");
+    box.innerHTML = stepHead(1, "Photos", false) + '<p class="help">Loading photos…</p>';
+    camPhotos(j.camJobIds || []).then(function (ps) {
+      thumbUrls.forEach(function (u) { try { URL.revokeObjectURL(u); } catch (e) {} }); thumbUrls = [];
+      var list = ps || [], n = ps ? list.length : (j.photos || 0), uns = ps ? list.filter(function (p) { return !p.downloaded; }).length : (j.unsaved || 0);
+      lobbyState.photosOk = n > 0 && !uns;
+      var pill = !n ? "None yet" : uns ? uns + " not saved" : "Saved to phone";
+      var html = stepHead(1, "Photos", lobbyState.photosOk, pill, !n ? "" : uns ? "warn" : "good");
+      if (list.length) {
+        var max = 11, show = list.length > 12 ? list.slice(0, max) : list;
+        html += '<div class="thumbs">' + show.map(function (p) {
+          var u = ""; try { if (p.thumb) { u = URL.createObjectURL(p.thumb); thumbUrls.push(u); } } catch (e) {}
+          return '<span>' + (u ? '<img alt="' + esc(labelOf(p)) + '" src="' + u + '">' : "") + '<em>' + esc(labelOf(p)) + '</em></span>';
+        }).join("") + (list.length > show.length ? '<span class="more">+' + (list.length - show.length) + '</span>' : "") + '</div>';
+      } else if (n) html += '<p class="help">' + n + ' photo' + (n === 1 ? "" : "s") + ' taken. They\'ve been cleared from Field Cam on this phone since.</p>';
+      else html += '<p class="help">No photos yet. Field Cam asks for the SA-#, job type and platform, then each photo FSL needs.</p>';
+      html += '<a class="btn' + (lobbyState.photosOk ? "" : " primary") + '" href="fieldcam.html#job">' + (n ? (uns ? "Save Photos in Field Cam" : "Open Field Cam") : "Take Photos") + '</a>';
+      box.innerHTML = html;
+      paintLobbyWarn(j);
+    });
+  }
+  /* ---- outcome: change it here, or in Field Cam (tap the outcome next to New Job) ---- */
+  var OUT_DEFAULT = [{ id: "OK", name: "Complete", reasons: [] }, { id: "CC", name: "Cannot Complete", reasons: [] }, { id: "NR", name: "Not Required", reasons: [] }];
+  var outOpen = false;
+  function outName(j) { var o = (j.outcomeOpts || OUT_DEFAULT).filter(function (x) { return x.id === j.outcome; })[0]; return o ? o.name : ({ OK: "Complete", CC: "Cannot Complete", NR: "Not Required" })[j.outcome] || "Not set"; }
+  function paintLobbyOut(j) {
+    var html = '<div class="lout"><i class="odot o-' + esc(j.outcome || "") + '" aria-hidden="true"></i><div class="ov">' + esc(outName(j)) + (j.reason ? '<small>' + esc(j.reason) + '</small>' : "") + '</div>' +
+      '<button class="btn sm" type="button" id="lbOutBtn" aria-expanded="' + outOpen + '">' + (outOpen ? "Done" : "Change Outcome") + '</button></div>';
+    if (outOpen) {
+      html += '<div class="olist2">' + (j.outcomeOpts || OUT_DEFAULT).map(function (o) {
+        var row = function (r, label) { var on = j.outcome === o.id && (j.reason || "") === (r || ""); return '<button type="button" data-out="' + esc(o.id) + '" data-r="' + esc(r || "") + '" aria-pressed="' + on + '"><i class="odot o-' + esc(o.id) + '" aria-hidden="true"></i>' + esc(label) + '</button>'; };
+        // each outcome is its own group, so an outcome without reasons never looks like part of the one above
+        return '<div class="ogrp2' + (o.reasons && o.reasons.length ? " has" : "") + '">' + (o.reasons && o.reasons.length ? '<h4>' + esc(o.name) + '</h4>' + o.reasons.map(function (r) { return row(r, r); }).join("") : row("", o.name)) + '</div>';
+      }).join("") + '</div><p class="help">Changes the photo list in Field Cam, the comments in Field Notes and what\'s logged in Field Stock.</p>';
+    }
+    $("lbOut").innerHTML = html;
+  }
+  document.addEventListener("click", function (e) {
+    if (e.target.closest("#lbOutBtn")) { outOpen = !outOpen; paintLobbyOut(J.active()); return; }
+    var b = e.target.closest("[data-out]"); if (!b) return;
+    var j = J.active(); if (!j) return;
+    J.setOutcome(j, b.getAttribute("data-out"), b.getAttribute("data-r"));
+    outOpen = false; paintLobby();
+    toast("Outcome changed to " + outName(J.active()) + (J.active().reason ? ": " + J.active().reason : ""));
+  });
+  function paintLobbyNotes(j) {
+    var c = j.notes && j.notes.comment, stale = !!(c && j.notes.stale);
+    lobbyState.notesOk = !!c && !stale;
+    var html = stepHead(2, "Comments", !!c && !stale, stale ? "Needs update" : c ? "Copied " + when(j.notes.copiedAt).replace(/^Today /, "") : "Not written", c && !stale ? "good" : "warn");
+    if (stale) html += '<p class="help" style="color:var(--warn)">The outcome changed after this was copied. Edit it in Field Notes and copy it again.</p>';
+    if (c) html += '<pre class="cmt" id="lbCmt">' + esc(c) + '</pre><div class="row"><button class="btn" type="button" id="lbCopy">Copy Again</button><a class="btn' + (stale ? " primary" : "") + '" href="fieldnotes.html#job">Edit in Field Notes</a></div>';
+    else html += '<p class="help">Field Notes opens with the job type, platform and the photos you took already filled in.</p><a class="btn' + (lobbyState.photosOk ? " primary" : "") + '" href="fieldnotes.html#job">Write Comments</a>';
+    $("lbNotes").innerHTML = html;
+  }
+  function gearWhy(j) {
+    if (!/^SA-\d{7}$/.test(j.sa || "")) return "Not logged: the job has no SA-# yet";
+    if (j.outcome && j.outcome !== "OK") return "Not logged: the job isn't Complete";
+    return "";
+  }
+  function paintLobbyGear(j) {
+    var m = J.slotModel(j, j.notes && j.notes.state), dep = J.deployed(j), why = gearWhy(j);
+    if (m.off) {
+      lobbyState.gearLeft = 0;
+      $("lbGear").innerHTML = stepHead(3, "Equipment Deployed", true, "None", "") + '<p class="help">None. The job is ' + esc(j.outcome === "CC" ? "Cannot Complete" : "Not Required") + ', so no equipment is deployed or logged in Field Stock.</p>';
+      return;
+    }
+    var keyOf = function (c) { return String(c).replace(/\s+/g, "").toUpperCase(); };
+    var count = m.total + m.extras.length, done = m.done + m.extras.filter(function (s) { return s.sku; }).length;
+    lobbyState.gearLeft = m.total - m.done;
+    var html = stepHead(3, "Equipment Deployed", count > 0 && done === count, count ? done + " of " + count : "None scanned", count && done === count ? "good" : count ? "warn" : "");
+    if (why && count) html += '<p class="help" style="color:var(--warn)">' + esc(why) + '</p>';
+    if (m.has || m.extras.length) {
+      html += J.slotsHTML(m, {
+        scan: '<a class="fkj-btn" href="fieldcam.html#job">Scan</a>', pick: !why,
+        status: function (code, s) {
+          var ev = dep.filter(function (e) { return e.serialKey === keyOf(code); })[0];
+          return ev ? '<small class="ok">Logged in Field Stock</small>' : why ? "" : s && !s.sku ? '<small class="no">Not logged: pick which item it is</small>' : '<small class="no">Not logged yet</small>';
+        }
+      });
+      var items = dep.filter(function (e) { return !e.serialKey; });
+      if (items.length) html += '<p class="help">Also logged in Field Stock: ' + esc(items.map(function (e) { return e.skuName; }).join(", ")) + '.</p>';
+      var g = get("techstock.gs", null);
+      if (dep.length && g && g.connected && g.rev > (g.synced || 0)) html += '<p class="help">Goes to your Google Sheet next time Field Stock is open.</p>';
+    } else html += '<p class="help">Scan each serial number in Field Cam. They\'re logged in Field Stock as deployed on this SA-#.</p>';
+    html += '<a class="btn" href="fieldcam.html#job">' + (m.has || m.extras.length ? "Scan More in Field Cam" : "Scan in Field Cam") + '</a>';
+    $("lbGear").innerHTML = html;
+  }
+  function paintLobbyWarn(j) {
+    var miss = [];
+    if (!lobbyState.photosOk) miss.push("the photos aren't all saved to your phone");
+    if (!lobbyState.notesOk) miss.push(j.notes && j.notes.stale ? "the comments need updating for the new outcome" : "the comments aren't copied");
+    if (lobbyState.gearLeft) miss.push(lobbyState.gearLeft + " equipment slot" + (lobbyState.gearLeft === 1 ? " is" : "s are") + " empty");
+    $("lbWarn").innerHTML = lobbySure && miss.length ? '<div class="err">' + esc(miss.join(", ").replace(/, ([^,]*)$/, " and $1").replace(/^./, function (m) { return m.toUpperCase(); })) + '. Tap Complete Job again to finish anyway.</div>' : "";
+  }
+  var lobbySure = false;
+  function paintLobby() {
+    var j = J.active(); if (!j) { openMenu(); return; }
+    $("lbRef").textContent = j.sa || "New job";
+    $("lbSub").textContent = (j.base || jobName(j)) + (j.status === "complete" ? " · Completed " + when(j.completedAt) : "");
+    $("lbDone").textContent = j.status === "complete" ? "Close Job" : "Complete Job";
+    $("lbHelp").textContent = j.status === "complete" ? "This job is in Job history for 7 days from its last change." : "You can leave any time. This job stays open until you tap Complete Job.";
+    lobbySure = false; $("lbWarn").innerHTML = "";
+    paintLobbyOut(j); paintLobbyPhotos(j); paintLobbyNotes(j); paintLobbyGear(j);
+  }
+  function openLobby() {
+    if (!J.active()) { openMenu(); return; }
+    if (!/^#job/.test(location.hash)) history.pushState(null, "", "#job");
+    paintLobby(); showView("lobby");
+  }
+  function leaveLobby() { if (/^#job/.test(location.hash)) history.replaceState(null, "", location.pathname + location.search); openMenu(); }
+  $("lbBack").addEventListener("click", function (e) { e.preventDefault(); leaveLobby(); });
+  addEventListener("popstate", function () {
+    if (/^#job/.test(location.hash) && J.active()) { paintLobby(); showView("lobby"); }
+    else if (/^#new-job/.test(location.hash)) { paintNewJob(); showView("newjob"); }
+    else if (!$("lobby").hidden || !$("newjob").hidden) openMenu();
+  });
+  $("lbDone").addEventListener("click", function () {
+    var j = J.active(); if (!j) return openMenu();
+    if (j.status !== "complete" && !lobbySure && (!lobbyState.photosOk || !lobbyState.notesOk || lobbyState.gearLeft)) { lobbySure = true; paintLobbyWarn(j); return; }
+    if (j.status === "complete") J.setActive(null); else { J.complete(j.id); toast("Job completed"); }
+    leaveLobby();
+  });
+  var rmSureT = null;
+  document.addEventListener("click", function (e) {
+    var cp = e.target.closest("#lbCopy");
+    if (cp) {
+      var t = (J.active() || {}).notes; t = t && t.comment;
+      if (t && navigator.clipboard) navigator.clipboard.writeText(t).then(function () { toast("Copied. Paste it into FSL."); }, function () { selectCmt(); });
+      else selectCmt();
+      return;
+    }
+    var ss = e.target.closest("[data-slot-set]");
+    if (ss) { var jj = J.active(); if (!jj) return; J.setSlot(jj, ss.getAttribute("data-slot-set"), ss.getAttribute("data-v")); paintLobbyGear(J.active()); return; }
+    var rm = e.target.closest("[data-rm],[data-slot-rm]");
+    if (rm) {
+      if (!rm.classList.contains("sure")) { rm.classList.add("sure"); rm.textContent = "Remove?"; clearTimeout(rmSureT); rmSureT = setTimeout(function () { if (!$("lobby").hidden) paintLobbyGear(J.active()); }, 4000); return; }
+      var j = J.active(); if (!j) return;
+      var r = J.removeSerial(j, rm.getAttribute("data-rm") || rm.getAttribute("data-slot-rm"));
+      toast(r && r.voided ? "Removed, and voided in Field Stock" : "Removed from the job");
+      paintLobbyGear(J.active()); return;
+    }
+    var ps = e.target.closest("[data-slot-paste]");
+    if (ps) { var prow = ps.closest(".fkj-add"); J.pasteInto(prow.querySelector("input")).then(function (ok) { if (ok) lobbyTyped(prow, ps.getAttribute("data-slot-paste")); else toast("Nothing to paste. Copy the S/N first, or type it in."); }); return; }
+    var pk = e.target.closest("[data-pick]");
+    if (pk) {
+      var code = pk.getAttribute("data-pick");
+      J.pickModel(code, J.modelsFor(code)).then(function (sku) {
+        if (!sku) return;
+        var j = J.active(); if (!j) return;
+        j.serials.forEach(function (s) { if (s.code === code) { s.sku = sku; if (!s.item) s.item = J.modelName(sku); } });
+        var cams = get("fieldcam.jobs", {}) || {};
+        (j.camJobIds || []).forEach(function (id) { var cj = cams[id]; if (cj && cj.serials) cj.serials.forEach(function (s) { if (s.code === code) s.sku = sku; }); });
+        set("fieldcam.jobs", cams);
+        J.save(j); J.syncDeploys(j); paintLobbyGear(J.active()); toast("Logged in Field Stock");
+      });
+    }
+  });
+  // typed: goes in on Done / Enter, or when the tech taps away
+  document.addEventListener("keydown", function (e) { var i = e.target.closest && e.target.closest("#lbGear [data-slot-in]"); if (i && e.key === "Enter") { e.preventDefault(); i.blur(); } });
+  document.addEventListener("change", function (e) { var i = e.target.closest && e.target.closest("#lbGear [data-slot-in]"); if (i && i.value.trim()) lobbyTyped(i.closest(".fkj-add"), i.getAttribute("data-slot-in")); });
+  // a serial typed or pasted into a slot on the job summary
+  function lobbyTyped(row, slotId) {
+    var j = J.active(), inp = row && row.querySelector("input"); if (!j || !inp || inp.getAttribute("data-busy")) return;
+    inp.setAttribute("data-busy", "1"); setTimeout(function () { inp.removeAttribute("data-busy"); }, 600);
+    function err(m) { var p = row.parentNode.querySelector(".fkj-err"); if (!p) { p = document.createElement("p"); p.className = "fkj-err"; row.parentNode.insertBefore(p, row.nextSibling); } p.textContent = m; inp.focus(); }
+    if (!inp.value.trim()) return err("Type or paste the S/N first.");
+    J.slotEntry(j, slotId, inp.value).then(function (r) {
+      if (r.error) return err(r.error);
+      var jj = J.active(); if (!jj) return;
+      J.addSerial(jj, r); paintLobbyGear(J.active());
+      toast(r.sku ? "Added and logged in Field Stock" : "Added (not logged in Field Stock)");
+    });
+  }
+  function selectCmt() { var el = $("lbCmt"); if (!el) return; var r = document.createRange(); r.selectNodeContents(el); var s = getSelection(); s.removeAllRanges(); s.addRange(r); toast("Selected. Press and hold, then tap Copy."); }
+
+  var sureT = null;
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-new]"); if (!b) return;
+    var app = b.getAttribute("data-new");
+    if (!b.classList.contains("sure")) {
+      // first tap: ask, without changing the card's size
+      b.classList.add("sure"); b.innerHTML = "Tap to clear";
+      b.setAttribute("aria-label", { cam: "Tap again to end the Field Cam job (photos stay saved)", stock: "Tap again to clear the unsaved Field Stock items", notes: "Tap again to clear the Field Notes comments" }[app]);
+      clearTimeout(sureT); sureT = setTimeout(paintTools, 4000);
+      return;
+    }
+    var tool = TOOLS.filter(function (t) { return t.id === app; })[0];
+    FK.clearTool(app); location.href = tool.href;
+  });
+  function paintMenu() {
+    paintTools(); paintJobs();
+    var p = FK.profile();
+    $("who").textContent = [p.name, p.dealer].filter(Boolean).join(" · ");
+    $("gsWarn").hidden = !gsAvailable() || gs().connected;
+  }
+  function verLine() {
+    var v = window.FIELDKIT_VERSION || { version: FK.version }, d = v.updated ? new Date(v.updated) : null;
+    return "Field Kit v" + v.version + (d && !isNaN(d) ? " · Updated " + d.toLocaleDateString("en-CA", { month: "short", day: "numeric", year: "numeric" }) + ", " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "");
+  }
+  $("foot").textContent = verLine();
+
+  /* ================= details: the same checks Field Stock has always used ================= */
+  var PROVS = ["AB", "BC", "MB", "NB", "NL", "NS", "NT", "NU", "ON", "PE", "QC", "SK", "YT"];
+  var WORK_DOMAIN = "xplore.ca";
+  var isWorkEmail = function (e) { return /@xplore\.ca$/i.test(String(e || "").trim()); };
+  var validEmail = function (v) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v); };
+  // lowercase words get a capital; ALL-CAPS words longer than 3 letters are softened (SMITH → Smith); XCI, NS, PEI stay
+  var titleWord = function (w) { return (w === w.toLowerCase() || (w === w.toUpperCase() && w.replace(/[^A-Za-z]/g, "").length > 3)) ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : w; };
+  var titleCase = function (v) { return v.replace(/\s+/g, " ").trim().split(" ").map(function (w) { return w.split("-").map(titleWord).join("-"); }).join(" "); };
+  function normPostal(v) { var k = String(v || "").toUpperCase().replace(/[^A-Z0-9]/g, ""); return /^[A-Z]\d[A-Z]\d[A-Z]\d$/.test(k) ? k.slice(0, 3) + " " + k.slice(3) : null; }
+  function streetError(v) {
+    if (!/^\d/.test(v)) return "Start with the street number, e.g. 123 Main St.";
+    if (!/^\d[\dA-Za-z\/-]*\s+(?=.*[A-Za-zÀ-ÿ]{2})/.test(v)) return "Add the street name after the number, e.g. 123 Main St.";
+    if (/\b[A-Z]\d[A-Z]\s?\d[A-Z]\d\b/i.test(v)) return "Take the postal code out. It goes in its own box.";
+    if (/,\s*(AB|BC|MB|NB|NL|NS|NT|NU|ON|PE|QC|SK|YT)\b/i.test(v)) return "Only the street and unit go here. City and province have their own boxes.";
+    if (v.length > 80) return "That's too long for a street address.";
+    return "";
+  }
+  // Canada Post: the first letter of a postal code tells you the province
+  var POSTAL_LETTERS = { NL: "A", NS: "B", PE: "C", NB: "E", QC: "GHJ", ON: "KLMNP", MB: "R", SK: "S", AB: "T", BC: "V", NT: "X", NU: "X", YT: "Y" };
+  var PROV_NAMES = { NL: "Newfoundland and Labrador", NS: "Nova Scotia", PE: "PEI", NB: "New Brunswick", QC: "Quebec", ON: "Ontario", MB: "Manitoba", SK: "Saskatchewan", AB: "Alberta", BC: "British Columbia", NT: "Northwest Territories", NU: "Nunavut", YT: "Yukon" };
+  function postalProvError(prov, postal) {
+    var pc = normPostal(postal); if (!pc || !POSTAL_LETTERS[prov] || POSTAL_LETTERS[prov].indexOf(pc[0]) >= 0) return "";
+    var L = POSTAL_LETTERS[prov].split(""), starts = L.length === 1 ? L[0] : L.slice(0, -1).join(", ") + " or " + L[L.length - 1];
+    return pc + " isn't " + (/^[AEIOU]/.test(PROV_NAMES[prov]) ? "an" : "a") + " " + PROV_NAMES[prov] + " postal code. " + PROV_NAMES[prov] + " codes start with " + starts + ".";
+  }
+  function phoneDigits(v) { var d = String(v || "").replace(/\D/g, ""); if (d.length === 11 && d[0] === "1") d = d.slice(1); return d; }
+
+  var F = {
+    name: { label: "Your Name", hint: "First and last name, e.g. Jane Smith", ac: "name", cap: "words",
+      norm: titleCase, ok: function (v) { return /^[A-Za-zÀ-ÿ'’.-]+( [A-Za-zÀ-ÿ'’.-]+)+$/.test(v); }, bad: "Enter your first and last name, e.g. Jane Smith." },
+    email: { label: "Work Email", hint: "Your @xplore.ca email, e.g. jane.smith@xplore.ca", ac: "email", type: "email",
+      norm: function (v) { return v.replace(/\s+/g, "").toLowerCase(); }, ok: function (v) { return validEmail(v) && isWorkEmail(v); }, bad: "Enter your @xplore.ca work email, e.g. jane.smith@xplore.ca." },
+    dealer: { label: "Dealer Name", hint: "Your dealership, e.g. XCI Example Tech", ac: "organization", cap: "words",
+      // a name added after a dash ("XCI Example Tech - Jane Smith") is dropped: the dealer name is just the dealership
+      norm: function (v) { var x = v.replace(/[‒-―−]/g, "-").replace(/\s+-\s+.*$/, "").replace(/\s+/g, " ").trim();
+        return titleCase(x).replace(/^xci\b/i, "XCI").replace(/\b(ns|nb|nl|pei|mb)\b/gi, function (m) { return m.toUpperCase(); }); },
+      ok: function (v) { return /[A-Za-zÀ-ÿ].*[A-Za-zÀ-ÿ]/.test(v) && v.length <= 60; }, bad: "Enter your dealer name, e.g. XCI Example Tech." },
+    phone: { label: "Mobile Number", hint: "e.g. 519-555-0123", ac: "tel", type: "tel", im: "tel",
+      norm: function (v) { var d = phoneDigits(v); return d.length === 10 ? d.slice(0, 3) + "-" + d.slice(3, 6) + "-" + d.slice(6) : v.trim(); },
+      ok: function (v) { return phoneDigits(v).length === 10; }, bad: "Enter a 10-digit number, e.g. 519-555-0123." },
+    sap: { label: "SAP Account #", hint: "6 digits, e.g. 100123", im: "numeric",
+      norm: function (v) { return v.replace(/\D/g, ""); }, ok: function (v) { return /^\d{6}$/.test(v); }, bad: "Your SAP account # is 6 digits, e.g. 100123." },
+    sf: { label: "Salesforce Account #", hint: "7 digits, e.g. 1700123", im: "numeric",
+      norm: function (v) { return v.replace(/\D/g, ""); }, ok: function (v) { return /^\d{7}$/.test(v); }, bad: "Your Salesforce account # is 7 digits, e.g. 1700123." },
+    street: { label: "Shipping Address", hint: "Street and unit, e.g. 123 Main St #4", ph: "Street and unit", ac: "shipping street-address", cap: "words",
+      norm: function (v) { return titleCase(v.replace(/\s*,\s*/g, ", ")); }, ok: function (v) { return streetError(v) === ""; }, bad: function (v) { return streetError(v); } },
+    city: { label: "City", ph: "City", ac: "shipping address-level2", cap: "words",
+      norm: titleCase, ok: function (v) { return /^[A-Za-zÀ-ÿ'’. -]{2,}$/.test(v); }, bad: "Enter your city." },
+    prov: { label: "Province", select: PROVS, ac: "shipping address-level1",
+      norm: function (v) { return v; }, ok: function (v) { return PROVS.indexOf(v) >= 0; }, bad: "Choose your province." },
+    postal: { label: "Postal Code", hint: "e.g. A1A 1A1", ac: "shipping postal-code", cap: "characters",
+      norm: function (v) { return normPostal(v) || v.trim().toUpperCase(); }, ok: function (v) { return !!normPostal(v); }, bad: "Enter a postal code like A1A 1A1." },
+    manager: { label: "Xplore Operations Manager", hint: "Their email, e.g. first.last@xplore.ca. Manual order requests go to them to approve.", type: "email",
+      norm: function (v) { return v.replace(/\s+/g, "").toLowerCase(); }, ok: validEmail, bad: "Enter a full email address, e.g. first.last@xplore.ca." }
+  };
+  var ABOUT = ["name", "email", "phone", "manager"], ACCT = ["dealer", "sap", "sf", "street", "cityprov", "postal"];
+
+  function inputHTML(pre, k) {
+    var f = F[k], id = pre + "_" + k;
+    if (f.select) return '<select id="' + id + '" data-k="' + k + '" autocomplete="' + f.ac + '" aria-label="' + f.label + '"><option value="">Prov.</option>' + f.select.map(function (v) { return "<option>" + v + "</option>"; }).join("") + "</select>";
+    return '<input id="' + id + '" data-k="' + k + '" type="' + (f.type || "text") + '"' + (f.ph ? ' placeholder="' + esc(f.ph) + '"' : "") + (f.ac ? ' autocomplete="' + f.ac + '"' : "") +
+      (f.im ? ' inputmode="' + f.im + '"' : "") + ' autocapitalize="' + (f.cap || "off") + '"' + (f.type === "email" ? ' spellcheck="false"' : "") + ">";
+  }
+  function fieldHTML(pre, k) {
+    if (k === "cityprov") return '<div class="field"><label for="' + pre + '_city">City and Province</label><div class="pair">' + inputHTML(pre, "city") + inputHTML(pre, "prov") +
+      '</div><small class="ferr" id="' + pre + '_city_err" hidden></small><small class="ferr" id="' + pre + '_prov_err" hidden></small></div>';
+    var f = F[k];
+    return '<div class="field"><label for="' + pre + "_" + k + '">' + esc(f.label) + (f.optional ? " <em>(optional)</em>" : "") + "</label>" + inputHTML(pre, k) +
+      (f.hint ? '<small class="hint">' + esc(f.hint) + "</small>" : "") + '<small class="ferr" id="' + pre + "_" + k + '_err" hidden></small></div>';
+  }
+  var keysOf = function (list) { return list.reduce(function (a, k) { return a.concat(k === "cityprov" ? ["city", "prov"] : [k]); }, []); };
+  function fill(pre, keys) { var p = FK.profile(); keys.forEach(function (k) { var el = $(pre + "_" + k); if (el) el.value = p[k] || ""; }); }
+  function showErr(pre, k, msg) { var el = $(pre + "_" + k), e = $(pre + "_" + k + "_err"); if (!el || !e) return; el.classList.toggle("bad", !!msg); e.hidden = !msg; e.textContent = msg || ""; }
+  // tidy and check one box; returns the clean value, "" for an empty optional box, or null when it needs fixing
+  function check(pre, k) {
+    var f = F[k], el = $(pre + "_" + k); if (!el) return null;
+    var v = f.norm(el.value || "");
+    if (!f.select && v !== el.value) el.value = v;
+    if (!v && f.optional) { showErr(pre, k, ""); return ""; }
+    var good = !!v && f.ok(v);
+    showErr(pre, k, good ? "" : (typeof f.bad === "function" ? f.bad(v) : f.bad));
+    return good ? v : null;
+  }
+  // check a set of boxes; returns the values, or null and focuses the first box to fix
+  function collect(pre, keys) {
+    var out = {}, first = null;
+    keys.forEach(function (k) { var v = check(pre, k); if (v == null) { if (!first) first = k; } else out[k] = v; });
+    if (!first && out.prov && out.postal) { var m = postalProvError(out.prov, out.postal); if (m) { showErr(pre, "postal", m); first = "postal"; } }
+    if (first) { var el = $(pre + "_" + first); if (el) el.focus(); return null; }
+    return out;
+  }
+  function wire(box, pre) {
+    box.addEventListener("blur", function (e) { var k = e.target.dataset && e.target.dataset.k; if (k && e.target.value) check(pre, k); }, true);
+    box.addEventListener("change", function (e) { var k = e.target.dataset && e.target.dataset.k; if (k && e.target.tagName === "SELECT") check(pre, k); });
+  }
+  function detailsDone(p) {
+    return keysOf(ABOUT.concat(ACCT)).every(function (k) { var f = F[k], v = p[k] || ""; return f.optional ? (!v || f.ok(v)) : (!!v && f.ok(f.norm(v))); }) && !postalProvError(p.prov, p.postal);
   }
 
-  function paint() { paintProfile(false); paintJob(); paintStats(); }
-  paint();
-  addEventListener("pageshow", paint);
-  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") paint(); });
+  /* appearance controls (setup step 3 and settings) */
+  function lookHTML(pre) {
+    var pr = FK.prefs();
+    var seg = function (name, opts, cur) { return '<div class="seg" style="--n:' + opts.length + '" role="group" aria-label="' + name + '">' + opts.map(function (o) { return '<button type="button" data-' + pre + '-' + name + '="' + o[0] + '" aria-pressed="' + (o[0] === String(cur)) + '">' + o[1] + "</button>"; }).join("") + "</div>"; };
+    return '<div class="field"><span class="lbl">Theme</span>' + seg("theme", [["light", "Light"], ["dark", "Dark"], ["black", "Black"]], pr.theme) +
+      '<small class="hint">Used in Field Kit, Field Cam, Field Stock and Field Notes. Black uses true black, which saves battery on most iPhones.</small></div>' +
+      '<div class="field"><span class="lbl">Field Cam Grid Lines</span>' + seg("grid", [["false", "Off"], ["true", "On"]], pr.grid) + '<small class="hint">A 3 × 3 grid over the camera to help line up shots.</small></div>';
+  }
+  function applyTheme(t) { document.documentElement.setAttribute("data-theme", t); }
+  function wireLook(box, pre) {
+    box.addEventListener("click", function (e) {
+      var b = e.target.closest("button"); if (!b) return;
+      var t = b.getAttribute("data-" + pre + "-theme"), g = b.getAttribute("data-" + pre + "-grid");
+      if (t == null && g == null) return;
+      if (t != null) { FK.setPrefs({ theme: t }); applyTheme(t); }
+      if (g != null) FK.setPrefs({ grid: g === "true" });
+      b.parentNode.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+    });
+  }
+
+  /* ================= Google Sheets: same account and sheet Field Stock syncs to ================= */
+  var GOOGLE_CLIENT_ID = "649946221532-ktu3ej6cnsp26fnrq7emv1ubh2sib1kn.apps.googleusercontent.com";
+  var GS_SCOPES = "https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email";
+  var GS_KEY = "techstock.gs", SHEETS = "https://sheets.googleapis.com/v4/spreadsheets";
+  var IN_CLAUDE = !!(window.claude && typeof window.claude.use === "function");
+  var PRIVACY = "https://xploreforms.github.io/StockTracker/privacy.html";
+  var gsClient = null, gsWait = null, gsBusy = false;
+  function gs() { return Object.assign({ connected: false, email: "", sheetId: "", token: "", exp: 0, rev: 0, synced: 0, lastSync: 0 }, get(GS_KEY, {})); }
+  function gsPut(patch) { var g = Object.assign(gs(), patch); set(GS_KEY, g); return g; }
+  function gsAvailable() { return !!GOOGLE_CLIENT_ID && !IN_CLAUDE; }
+  function gsReady(g) { g = g || gs(); return g.connected && (isWorkEmail(g.email) || g.allowOther); }
+  function gsInit() {
+    if (gsClient) return true;
+    if (!(window.google && google.accounts && google.accounts.oauth2)) return false;
+    gsClient = google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID, scope: GS_SCOPES,
+      callback: function (r) { var w = gsWait; gsWait = null;
+        if (r && r.access_token) { gsPut({ token: r.access_token, exp: Date.now() + (Number(r.expires_in) || 3600) * 1000 }); if (w) w.res(); }
+        else if (w) w.rej(new Error((r && r.error) || "denied")); },
+      error_callback: function (e) { var w = gsWait; gsWait = null; if (w) w.rej(new Error((e && e.type) || "popup_closed")); }
+    });
+    return true;
+  }
+  // must start from a tap, or the browser blocks Google's sign-in window
+  function gsAuth(prompt) {
+    if (!gsInit()) return Promise.reject(new Error("Google sign-in didn't load. Check your connection and reload."));
+    return new Promise(function (res, rej) { gsWait = { res: res, rej: rej }; gsClient.requestAccessToken({ prompt: prompt }); });
+  }
+  async function gapi(url, opts) {
+    opts = opts || {};
+    var r = await fetch(url, Object.assign({}, opts, { headers: Object.assign({ Authorization: "Bearer " + gs().token, "Content-Type": "application/json" }, opts.headers || {}) }));
+    if (r.status === 404) { var e = new Error("not found"); e.notFound = true; throw e; }
+    if (!r.ok) { var m = ""; try { m = (await r.json()).error.message; } catch (x) {} throw new Error(m || ("Google returned error " + r.status)); }
+    return r.status === 204 ? null : r.json();
+  }
+  // find the sheet Field Stock made before (another phone, or a reinstall), or make a new one
+  async function gsFindOrCreate() {
+    var q = encodeURIComponent("mimeType='application/vnd.google-apps.spreadsheet' and appProperties has { key='stockTracker' and value='1' } and trashed=false");
+    var found = await gapi("https://www.googleapis.com/drive/v3/files?q=" + q + "&orderBy=modifiedTime%20desc&pageSize=5&fields=files(id,name)");
+    if (found.files && found.files.length) { gsPut({ sheetId: found.files[0].id }); return "found"; }
+    var p = FK.profile(), title = "Field Stock - " + p.name + (p.dealer ? " (" + p.dealer + ")" : "");
+    var sh = await gapi(SHEETS, { method: "POST", body: JSON.stringify({ properties: { title: title },
+      sheets: [{ properties: { title: "History", gridProperties: { frozenRowCount: 1 } } }, { properties: { title: "On hand", gridProperties: { frozenRowCount: 1 } } }] }) });
+    gsPut({ sheetId: sh.spreadsheetId });
+    await gapi("https://www.googleapis.com/drive/v3/files/" + encodeURIComponent(sh.spreadsheetId), { method: "PATCH", body: JSON.stringify({ appProperties: { stockTracker: "1" } }) });
+    return "made";
+  }
+  // returns a short message for the screen; throws if sign-in didn't finish
+  async function gsConnect() {
+    gsPut({ email: "", sheetId: "", allowOther: false });
+    await gsAuth("select_account consent");
+    var g = gsPut({ connected: true, rev: (gs().rev || 0) + 1 });   // the extra rev tells Field Stock to sync next time it opens
+    try { var u = await gapi("https://www.googleapis.com/oauth2/v3/userinfo"); g = gsPut({ email: u.email || "" }); } catch (e) {}
+    try { var how = await gsFindOrCreate(); return how === "found" ? "Found your Field Stock sheet. Your entries come back next time you open Field Stock." : "Made your Field Stock backup sheet."; }
+    catch (e) { return "Connected. Field Stock will finish making your sheet the next time it opens."; }
+  }
+  function gsDisconnect() {
+    var g = gs();
+    try { if (g.token && window.google && google.accounts && google.accounts.oauth2) google.accounts.oauth2.revoke(g.token, function () {}); } catch (e) {}
+    gsPut({ connected: false, token: "", exp: 0, email: "", sheetId: "", synced: 0, allowOther: false });
+  }
+  function guideHTML() {
+    return '<p class="help" style="color:var(--fg)">Field Kit has no server. Everything you log in Field Stock is saved only on this phone, so it needs a backup in a free Google account made with your <b>@' + WORK_DOMAIN + '</b> email.</p>' +
+      '<ul class="why"><li><b>Your phone isn\'t a safe place on its own</b>If it\'s lost, broken, reset or replaced, every entry on it is gone. Google Sheets brings everything back on a new phone.</li>' +
+      '<li><b>It\'s your proof at quarterly counts</b>Your history shows what you received, deployed, transferred, sent on RMA and recycled.</li>' +
+      '<li><b>Why your @' + WORK_DOMAIN + ' email</b>It keeps work records off your personal accounts and is the account you\'ll always have while you work here.</li></ul>' +
+      '<details class="grp"><summary>I need to create one<small>About 3 minutes. It\'s free and needs no Gmail address.</small></summary><ol>' +
+      '<li>Tap <b>Open Google Sign-Up</b>. It opens in a new tab, so you can come back here.</li>' +
+      '<li>Type your first and last name, then tap <b>Next</b>. Add your birthday and gender, then tap <b>Next</b>.</li>' +
+      '<li>When Google suggests a Gmail address, tap <b>Use your existing email</b> instead (you may need to tap <b>Create your own Gmail address</b> or scroll first). Type your <b>@' + WORK_DOMAIN + '</b> email.</li>' +
+      '<li>Google emails a code to your Xplore inbox. Copy it and type it in.</li>' +
+      '<li>Make a password. It\'s a new Google password, separate from your Xplore email password. Write it down somewhere safe.</li>' +
+      '<li>You can skip the phone number and recovery steps. Agree to Google\'s terms to finish.</li>' +
+      '<li>Come back here and tap <b>Connect Google Sheets</b>. Pick your <b>@' + WORK_DOMAIN + '</b> account.</li></ol>' +
+      '<a class="btn block" href="https://accounts.google.com/signup" target="_blank" rel="noopener">Open Google Sign-Up</a>' +
+      '<p class="help" style="margin-bottom:12px">If Google says your email is already in use, you made an account before. Use <a href="https://accounts.google.com/signin/recovery" target="_blank" rel="noopener">Forgot password</a> to get back in.</p></details>' +
+      '<details class="grp"><summary>I already have one<small>A Google account that signs in with my @' + WORK_DOMAIN + ' email</small></summary>' +
+      '<p class="help" style="color:var(--fg);margin-bottom:12px">Tap <b>Connect Google Sheets</b> and pick your <b>@' + WORK_DOMAIN + '</b> account. If it isn\'t listed, tap <b>Use another account</b> and sign in with your work email and Google password.</p></details>' +
+      '<p class="help">Field Kit can only open the one sheet it creates, nothing else in your Google Drive. <a href="' + PRIVACY + '" target="_blank" rel="noopener">Privacy policy</a></p>';
+  }
+  // the wrong-account warning, shared by setup and settings
+  function wrongHTML(g) {
+    return '<div class="err"><b>' + esc(g.email || "That account") + ' isn\'t your @' + WORK_DOMAIN + ' account.</b><br>Back up to your work Google account so your records stay with your job.</div>' +
+      '<div class="row"><button class="btn primary" type="button" data-gs="connect">Switch Account</button><button class="btn ghost" type="button" data-gs="keep">Use This Account Anyway</button></div>';
+  }
+
+  /* ================= first-launch setup ================= */
+  var STEP_INFO = [
+    { h: "About you", sub: "" },
+    { h: "Accounts and shipping", sub: "For stock orders, RMAs and transfers." },
+    { h: "Back up with Google Sheets", sub: "Required, so your stock history is never lost." }
+  ];
+  var step = 0;
+  function showView(id) { ["menu", "setup", "settings", "lobby", "newjob"].forEach(function (v) { $(v).hidden = v !== id; }); scrollTo(0, 0); }
+  function renderStep() {
+    var info = STEP_INFO[step], form = $("stepForm");
+    $("stepBar").querySelectorAll("i").forEach(function (b, i) { b.classList.toggle("on", i <= step); });
+    $("stepNum").textContent = "Step " + (step + 1) + " of " + STEP_INFO.length;
+    $("stepH").textContent = info.h; $("stepSub").textContent = info.sub; $("stepSub").hidden = !info.sub;
+    $("stepErr").innerHTML = ""; $("stepBack").hidden = step === 0;
+    $("stepNext").hidden = false; $("stepNext").disabled = false;
+    if (step === 0) { form.innerHTML = ABOUT.map(function (k) { return fieldHTML("w", k); }).join(""); fill("w", keysOf(ABOUT)); }
+    if (step === 1) { form.innerHTML = ACCT.map(function (k) { return fieldHTML("w", k); }).join(""); fill("w", keysOf(ACCT)); }
+    if (step === 2) paintGoogleStep();
+    $("stepNext").textContent = step === 2 ? "Finish" : "Continue";
+  }
+  function paintGoogleStep() {
+    var form = $("stepForm"), g = gs();
+    if (!gsAvailable()) {
+      form.innerHTML = '<p class="help" style="color:var(--fg)">Google Sheets backup works on the Field Kit website, not in this preview. You can finish setup here and connect from Settings on the website.</p>';
+      $("stepNext").disabled = false; return;
+    }
+    if (g.connected && !gsReady(g)) { form.innerHTML = wrongHTML(g); $("stepNext").disabled = true; return; }
+    if (gsReady(g)) {
+      form.innerHTML = '<p class="ok">Connected as ' + esc(g.email || "your Google account") + '</p><p class="help">Field Stock backs up your entries to your Google Sheet in the background whenever it\'s open.</p>' +
+        '<button class="btn ghost" type="button" data-gs="connect">Use a Different Account</button>';
+      $("stepNext").disabled = false; return;
+    }
+    form.innerHTML = guideHTML() + '<button class="btn primary block" type="button" data-gs="connect">Connect Google Sheets</button>';
+    $("stepNext").disabled = true;
+  }
+  $("stepBack").addEventListener("click", function () { if (step > 0) { step--; renderStep(); } });
+  $("stepNext").addEventListener("click", function () {
+    if (step === 0 || step === 1) {
+      var vals = collect("w", keysOf(step === 0 ? ABOUT : ACCT));
+      if (!vals) { $("stepErr").innerHTML = '<div class="err">Fix the boxes marked in red, then tap Continue.</div>'; return; }
+      if (step === 0 && !vals.phone) vals.phone = "";
+      FK.setProfile(vals);
+    }
+    if (step === 2) { finishSetup(); return; }
+    step++; renderStep();
+  });
+  wire($("stepForm"), "w");
+  function finishSetup() { FK.markSetupDone(); toast("You're all set"); openMenu(); }
+
+  // setup and settings share the Google buttons
+  document.addEventListener("click", async function (e) {
+    var b = e.target.closest("[data-gs]"); if (!b) return;
+    var what = b.getAttribute("data-gs"), inSetup = !$("setup").hidden, errBox = inSetup ? $("stepErr") : $("sErr");
+    if (what === "keep") { gsPut({ allowOther: true }); repaintGoogle(); return; }
+    if (what === "disconnect") { gsDisconnect(); repaintGoogle(); toast("Google Sheets disconnected"); return; }
+    if (what === "connect" && !gsBusy) {
+      gsBusy = true; b.disabled = true; errBox.innerHTML = "";
+      try { var msg = await gsConnect(); toast(gsReady() ? msg : "Connected, but that isn't an @" + WORK_DOMAIN + " account"); }
+      catch (err) { errBox.innerHTML = '<div class="err">Google sign-in didn\'t finish. Tap Connect and try again.</div>'; }
+      finally { gsBusy = false; b.disabled = false; repaintGoogle(); }
+    }
+  });
+  function repaintGoogle() { if (!$("setup").hidden) paintGoogleStep(); if (!$("settings").hidden) paintSettingsGoogle(); paintMenu(); }
+
+  /* ================= settings ================= */
+  function openSettings(toBackup) {
+    $("sAbout").innerHTML = ABOUT.map(function (k) { return fieldHTML("a", k); }).join("");
+    $("sAcct").innerHTML = ACCT.map(function (k) { return fieldHTML("a", k); }).join("");
+    fill("a", keysOf(ABOUT.concat(ACCT)));
+    $("sLook").innerHTML = lookHTML("a"); $("sErr").innerHTML = "";
+    paintSettingsGoogle();
+    $("sVer").textContent = verLine();
+    showView("settings");
+    if (toBackup) $("backup").scrollIntoView();
+  }
+  function paintSettingsGoogle() {
+    var box = $("sGs"), pill = $("gsPill"), g = gs();
+    pill.className = "pill";
+    if (!gsAvailable()) { pill.textContent = "Website only"; box.innerHTML = '<p class="help">Google Sheets backup works on the Field Kit website, not in this preview.</p>'; return; }
+    if (!g.connected) { pill.textContent = "Off"; pill.classList.add("warn"); box.innerHTML = guideHTML() + '<button class="btn primary block" type="button" data-gs="connect">Connect Google Sheets</button>'; return; }
+    if (!gsReady(g)) { pill.textContent = "Wrong account"; pill.classList.add("warn"); box.innerHTML = wrongHTML(g); return; }
+    var waiting = g.rev > g.synced;
+    pill.textContent = waiting ? "Waiting" : "Synced"; pill.classList.add(waiting ? "warn" : "good");
+    box.innerHTML = '<p class="help" style="color:var(--fg)">Connected as <b>' + esc(g.email || "your Google account") + '</b></p>' +
+      '<p class="help">' + (waiting ? "Some entries aren't in your sheet yet. Open Field Stock with signal and they sync on their own." :
+        (g.lastSync ? "Up to date. Last synced " + new Date(g.lastSync).toLocaleString("en-CA", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + "." : "Field Stock backs up your entries whenever it's open.")) + "</p>" +
+      '<div class="row">' + (g.sheetId ? '<a class="btn" href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(g.sheetId) + '/edit" target="_blank" rel="noopener">Open Sheet</a>' : "") +
+      '<a class="btn" href="fieldstock.html">Sync in Field Stock</a><button class="btn ghost" type="button" data-gs="connect">Switch Account</button></div>';
+  }
+  $("saveDetails").addEventListener("click", function () {
+    var vals = collect("a", keysOf(ABOUT.concat(ACCT)));
+    if (!vals) { $("sErr").innerHTML = '<div class="err">Fix the boxes marked in red, then tap Save Details.</div>'; return; }
+    if (!vals.phone) vals.phone = "";
+    $("sErr").innerHTML = ""; FK.setProfile(vals); paintMenu(); toast("Details saved");
+  });
+  wire($("sAbout"), "a"); wire($("sAcct"), "a"); wireLook($("sLook"), "a");
+  $("openSettings").addEventListener("click", function () { openSettings(false); });
+  document.addEventListener("click", function (e) { if (e.target.closest("[data-open-backup]")) openSettings(true); });
+  $("closeSettings").addEventListener("click", openMenu);
+
+  /* ================= start ================= */
+  function openMenu() { paintMenu(); showView("menu"); }
+  function start() {
+    var p = FK.profile();
+    // a tech who already set up Field Stock on this phone only has the new boxes to fill
+    if (!FK.setupDone() || !detailsDone(p)) {
+      step = !keysOf(ABOUT).every(function (k) { return F[k].optional ? (!p[k] || F[k].ok(p[k])) : (!!p[k] && F[k].ok(F[k].norm(p[k]))); }) ? 0 : !detailsDone(p) ? 1 : 2;
+      if (FK.setupDone()) step = Math.min(step, 1);
+      renderStep(); showView("setup"); return;
+    }
+    if (/^#backup/.test(location.hash)) { openSettings(true); return; }
+    if (/^#job/.test(location.hash) && J.active()) { paintLobby(); showView("lobby"); return; }
+    if (/^#new-job/.test(location.hash)) { openNewJob(); return; }
+    if (/^#job/.test(location.hash)) history.replaceState(null, "", location.pathname + location.search);
+    openMenu();
+  }
+  start();
+  addEventListener("pageshow", function () { if (!$("menu").hidden) paintMenu(); if (!$("lobby").hidden) paintLobby(); });
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible" && !$("menu").hidden) paintMenu(); if (document.visibilityState === "visible" && !$("lobby").hidden) paintLobby(); if (document.visibilityState === "visible" && !$("settings").hidden) paintSettingsGoogle(); });
 })();
 </script>
+<style>.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}</style>
 
 </body>
 </html>

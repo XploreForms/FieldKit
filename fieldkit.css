@@ -1,0 +1,62 @@
+/* Field Kit design: one look for the menu and every tool.
+   Colours, fonts and the shared header come from here. Each tool maps its own colour names to these
+   (see the "Field Kit look" style block in each tool), so changing a colour here changes it everywhere.
+   Fonts: Barlow (text), Barlow Semi Condensed (titles), IBM Plex Mono (serials and numbers),
+   loaded by each page from Google Fonts. Theme: fieldkit.js sets data-theme on <html> to light, dark or black. */
+
+/* ---------- colours ---------- */
+:root{
+  --fk-bg:#F2F5F3;           /* page */
+  --fk-surface:#FFFFFF;      /* cards, sheets */
+  --fk-surface-2:#E6EDE9;    /* inputs, tiles, quiet buttons */
+  --fk-ink:#0E2A27;          /* text */
+  --fk-muted:#5A6F69;        /* secondary text */
+  --fk-line:rgba(0,43,43,.09);
+  --fk-shadow:0 1px 2px rgba(0,43,43,.06),0 6px 18px rgba(0,43,43,.06);
+  --fk-accent:#58C774;       /* Superior Green: main buttons, picked choices, app tiles */
+  --fk-accent-ink:#06301A;   /* text on Superior Green */
+  --fk-accent-text:#23864A;  /* green text and links on the page */
+  --fk-brand:#002B2B;        /* North Shore Green */
+  --fk-brand-2:#306154;      /* Carmanah Green */
+  --fk-warn:#B4400E; --fk-warn-bg:#FBE7DC; --fk-bad:#C23B2C;
+  --fk-display:"Barlow Semi Condensed","Arial Narrow",Arial,sans-serif;
+  --fk-body:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --fk-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --fk-r:12px; --fk-r-sm:8px;
+  --fk-max:560px;            /* page column on bigger screens, 16px side gutters included */
+  color-scheme:light;
+}
+html[data-theme="dark"]{
+  --fk-bg:#0A1615; --fk-surface:#11211F; --fk-surface-2:#19302C; --fk-ink:#E4EFEA; --fk-muted:#93AAA3;
+  --fk-line:rgba(200,240,225,.08); --fk-shadow:0 1px 2px rgba(0,0,0,.3);
+  --fk-accent-ink:#04200F; --fk-accent-text:#6FD893; --fk-brand-2:#4E8C7B;
+  --fk-warn:#F39A6B; --fk-warn-bg:#3B2116; --fk-bad:#FF8A7A;
+  color-scheme:dark;
+}
+/* Black: true black for OLED screens (saves battery) */
+html[data-theme="black"]{
+  --fk-bg:#000000; --fk-surface:#0C0F0E; --fk-surface-2:#161D1B; --fk-ink:#E4EFEA; --fk-muted:#8FA39D;
+  --fk-line:rgba(200,240,225,.10); --fk-shadow:none;
+  --fk-accent-ink:#04200F; --fk-accent-text:#6FD893; --fk-brand-2:#4E8C7B;
+  --fk-warn:#F39A6B; --fk-warn-bg:#2B180F; --fk-bad:#FF8A7A;
+  color-scheme:dark;
+}
+
+/* ---------- moving between pages: a quick cross-fade instead of a blank flash (Safari 18.2+, Chrome) ---------- */
+@view-transition{navigation:auto}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.18s}
+@media (prefers-reduced-motion:reduce){::view-transition-old(root),::view-transition-new(root){animation:none}}
+html{background:var(--fk-bg)}
+
+/* ---------- the way back to the menu: top left of every tool ---------- */
+.fk-bar{display:block}
+.fk-back{display:inline-flex;align-items:center;min-height:44px;padding:0 10px 0 0;color:var(--fk-accent-text);font:600 15px/1 var(--fk-body);text-decoration:none;white-space:nowrap;flex:none}
+.fk-back:active{opacity:.6}
+
+/* ---------- page header: app tile, title, one line under it ---------- */
+.fk-head{display:flex;align-items:center;gap:12px;min-width:0}
+.fk-tile{width:42px;height:42px;border-radius:11px;background:var(--fk-accent);color:var(--fk-accent-ink);display:grid;place-items:center;flex:none}
+.fk-tile svg{width:24px;height:24px}
+.fk-head-txt{min-width:0;flex:1}
+.fk-title{margin:0;font:700 1.5rem/1.05 var(--fk-display);letter-spacing:.01em;color:var(--fk-ink)}
+.fk-sub{margin:3px 0 0;font:400 .88rem/1.3 var(--fk-body);color:var(--fk-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
