@@ -281,7 +281,7 @@
       set(WIP, { at: Date.now(), state: st });
     }
     if (notesInJob) {
-      var keepNotes = function () { var j = active(), s = wipState(); if (j && s) { j.notes.state = s; save(j); } };
+      var keepNotes = function () { var j = active(), s = wipState(); if (j && s) { j.notes.state = s; save(j); notesToSlots(j, s); } };
       addEventListener("pagehide", keepNotes);
       document.addEventListener("visibilitychange", function () { if (document.hidden) keepNotes(); });
     }
@@ -488,8 +488,26 @@
     var j = active(); if (!j) return;
     j.notes = Object.assign({}, j.notes || {}, { stale: false, comment: text, copiedAt: Date.now(), state: state ? JSON.parse(JSON.stringify(state)) : (j.notes && j.notes.state) });
     j.step = "lobby"; save(j);
-    var dl = state && state.drop_len, D = slotSet();
-    if (dl && slotIds(j).indexOf("drop") >= 0 && D.drop.opts.some(function (o) { return o[0] === dl; }) && (j.slots || {}).drop !== dl) setSlot(j, "drop", dl);
+    if (state) notesToSlots(j, state);
+  }
+  /* Answers in Field Notes that are also equipment slots: the drop length and the mount type.
+     A slot follows Field Notes whenever that answer changes there; picking the slot by hand afterwards still sticks. */
+  var NOTES_MOUNT = { "J-Arm": "J-arm", "J-Arm + Side Stays": "J-arm", "Gable Mount + 10ft Pole": "Gable mount + 10ft pole", "Bipod + 5ft Pole": "Bi-pod",
+    "Tripod + 10ft Pole": "Tripod + 10ft pole", "Tower": "Not Needed", "Tower Leg": "Not Needed" };
+  function notesToSlots(j, st) {
+    if (!j || !st) return;
+    var ids = slotIds(j), D = slotSet(), seen = (j.notes && j.notes.applied) || {}, want = {};
+    if (ids.indexOf("drop") >= 0 && st.drop_len && D.drop.opts.some(function (o) { return o[0] === st.drop_len; })) want.drop = st.drop_len;
+    if (ids.indexOf("mount") >= 0 && st.mount && NOTES_MOUNT[st.mount]) want.mount = st.mount_reused === true ? "Not Needed" : NOTES_MOUNT[st.mount];   // a reused mount isn't deployed
+    var changed = false;
+    Object.keys(want).forEach(function (k) {
+      if (seen[k] === want[k]) return;   // already followed this answer
+      seen[k] = want[k]; changed = true;
+      if ((j.slots || {})[k] !== want[k]) { j.slots = Object.assign({}, j.slots || {}); j.slots[k] = want[k]; var cams = get("fieldcam.jobs", {}) || {}, cj = j.camJobId && cams[j.camJobId]; if (cj) { cj.slots = Object.assign({}, cj.slots || {}); cj.slots[k] = want[k]; set("fieldcam.jobs", cams); } }
+    });
+    if (!changed) return;
+    j.notes = Object.assign({}, j.notes || {}, { applied: seen });
+    save(j); syncDeploys(j);
   }
   // change the outcome from the job summary: the job, its Field Cam job (photos not saved yet are restamped next time
   // Field Cam opens), Field Notes and Field Stock all follow
