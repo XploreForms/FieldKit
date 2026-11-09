@@ -133,10 +133,12 @@ html[data-grid="on"] .grid3{display:block}
 .scantop{position:absolute;left:10px;right:66px;top:10px;z-index:6;display:flex;align-items:center;gap:8px;padding:5px 5px 5px 12px;border-radius:12px;background:rgba(10,18,17,.78);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);font-size:13px;line-height:1.3}
 .scantop span{flex:1;min-width:0}
 /* Field Kit jobs: conversions and repairs can mark a scan as recovered equipment instead of deployed */
-.scanmode{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:6;display:flex;gap:4px;padding:4px;border-radius:99px;background:rgba(10,18,17,.78);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-.scanmode button{border:0;border-radius:99px;min-height:38px;padding:0 16px;background:none;color:#E4EFEA;font:600 14px var(--body,system-ui,sans-serif);cursor:pointer}
-.scanmode button[aria-pressed="true"]{background:var(--signal,#58C774);color:#06301A}
-.scanmode button[data-sm="rec"][aria-pressed="true"]{background:#F3B27A;color:#3B1A06}
+/* Deploy / Recovery switch (div). Scoped to the div: the shutter also gets class "scanmode" while scanning, and this rule
+   used to move it off its spot (over Save) and shift the screen. */
+div.scanmode{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:6;display:flex;gap:4px;padding:4px;border-radius:99px;background:rgba(10,18,17,.78);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+div.scanmode button{border:0;border-radius:99px;min-height:38px;padding:0 16px;background:none;color:#E4EFEA;font:600 14px var(--body,system-ui,sans-serif);cursor:pointer}
+div.scanmode button[aria-pressed="true"]{background:var(--signal,#58C774);color:#06301A}
+div.scanmode button[data-sm="rec"][aria-pressed="true"]{background:#F3B27A;color:#3B1A06}
 .scantop b{font:700 13px var(--mono);color:var(--signal);word-break:break-all}
 .scantop .bad{color:var(--warn)}
 .scantop .btn{flex:none;min-height:34px}
