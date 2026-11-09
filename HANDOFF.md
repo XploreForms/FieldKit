@@ -69,6 +69,7 @@ No build step. Edit files, bump `version.js`, push.
 - Name and dealer can only be changed in Field Kit settings (not in Field Cam). **Grid lines** live in Field Cam's own settings.
 
 **Job flow**
+- The VAS platform is labelled **VAS Only** everywhere techs see it (New SA, Field Cam, Field Notes picker and comment title). Field Notes still saves it as "Value Added Services" internally (`PLAT_SHOW`).
 - Every SA-# box (New SA, Field Cam, Field Stock) closes the keyboard once the 7th digit is typed (`SA_BOXES` in `fieldkit.js`).
 - New SA screen asks **Technology** for every platform except VAS (required): Fibre FTX / ATX / CTX; Fixed Wireless FWN / LTE; Satellite HJ3 / HJ2 / HTJ / HV2 / HTV. Saved as `tech` on the SA and its Field Cam job, shown after the platform ("Install · Fixed Wireless · LTE") on the menu card, SA page and SA history (`withTech` in `fieldkit-jobs.js`), and carries into Field Notes: a **Technology** row in Field Notes' Job section (same lists, VAS XWR/XWH/XTV too; also in the comment's title line, e.g. "Install — Fixed Wireless — LTE"), the Fixed Wireless Platform (FWN/LTE, kept in step with Technology), and a VAS repair's Equipment Serviced tick.
 - New SA screen collects SA-# (auto "SA-", 7 digits only, Paste finds it in copied text), job type, platform, drop (Fibre installs/conversions), Technology (VAS: XWR, XWH or XTV; shown as "Technology" like the other platforms). Outcome starts as Complete (no note about it on the New SA screen).

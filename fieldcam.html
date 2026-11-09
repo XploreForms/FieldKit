@@ -2717,7 +2717,7 @@ const platSlots = work => PLAT_SLOTS.map((p, i) => {
 // Start of a job: work order, then platform
 /* Asked the same way as Field Notes: job type, platform, then (Fibre installs and conversions) the drop.
    The job still stores one platform value, e.g. "Fibre (Drop Required)", so photo lists are unchanged. */
-const PICK_FAMS = [{ id:"Fibre", name:"Fibre" }, { id:"Fixed Wireless", name:"Fixed Wireless" }, { id:"Satellite", name:"Satellite" }, { id:"VAS", name:"Value Added Services" }];
+const PICK_FAMS = [{ id:"Fibre", name:"Fibre" }, { id:"Fixed Wireless", name:"Fixed Wireless" }, { id:"Satellite", name:"Satellite" }, { id:"VAS", name:"VAS Only" }];
 const PICK_DROPS = ["Existing Drop", "Drop Required", "Drop Only"];
 function renderJobPicker(el, sel, onChange) {
   const plats = sel.work ? PLATFORMS[sel.work] : [];
