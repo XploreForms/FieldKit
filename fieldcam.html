@@ -2477,6 +2477,7 @@ async function startScan() {
   scanMsg("Red line on the <b style=\"font:inherit;color:inherit\">S/N</b> barcode, then tap the red button" + (fkLeft.length ? `<br><small>To do: ${esc(fkLeft.join(", "))}</small>` : ""));
 }
 function stopScan() {
+  if (typeof fkScanBack !== "undefined" && fkScanBack) setTimeout(fkScanDone, 0);   // opened from the SA home's Scan: back there
   SC.on = false; SC.busy = false; $("aim").hidden = true; $("scanTop").hidden = true; $("hud").classList.remove("scan"); $("fkScanMode").hidden = true;
   const sh = $("shutter"); sh.classList.remove("scanmode", "busy"); sh.setAttribute("aria-label", "Take photo"); $("snBtn").classList.remove("on");
 }
@@ -3366,11 +3367,27 @@ async function fkIdentify(code) {
   if (sku) { s.sku = sku; if (!s.item) s.item = J.modelName(sku); }
   if (rec) s.rec = true;
   save(); renderSerials();
+  if (fkScanBack === "one") setTimeout(() => { if (SC.on) stopScan(); else fkScanDone(); }, 1300);   // from the SA home: show "Added", then back
   if (rec) { if (SC.on) scanMsg(`Recovered <b>${esc(code)}</b>${s.item ? " · " + esc(s.item) : ""}. ${sku ? "Goes into your stock" : "Not logged in Field Stock"}. Scan another or tap Done`); return; }
   const note = J.stockNote(code, j.ref);
   const row = fkModel(j).rows.find(r => r.item && r.item.code === code), left = fkSlotsLeft(j);
   if (SC.on) scanMsg(`Added <b>${esc(code)}</b>${row ? " as " + esc(row.name) : s.item ? " · " + esc(s.item) : ""}. ${sku ? esc(note) : "Not logged in Field Stock"}. ${left.length ? "Still to do: " + esc(left.join(", ")) : "Scan another or tap Done"}`);
 }
+/* Scan from the SA home: its Scan buttons open Field Cam straight into the scanner and come back afterwards
+   ("one": back after one serial is added; "many", from Scan More: back when the tech taps Done). */
+var fkScanBack = null;
+(function () {
+  if (!fkJob()) return;
+  let r = null; try { r = JSON.parse(sessionStorage.getItem("fieldkit.scanReturn") || "null"); sessionStorage.removeItem("fieldkit.scanReturn"); } catch {}
+  if (!r || Date.now() - (r.at || 0) > 60000) return;
+  fkScanBack = r.mode === "many" ? "many" : "one";
+  const go = n => {
+    if (S.started && curJob()) { closeSheets(); fkScanRec = !!r.rec; startScan().then(() => { if (!SC.on) fkScanBack = null; }); }   // scanner couldn't start: stay
+    else if (n < 50) setTimeout(() => go(n + 1), 100); else fkScanBack = null;
+  };
+  go(0);
+})();
+function fkScanDone() { if (!fkScanBack) return; fkScanBack = null; FieldKit.goHome(); }
 /* Field Kit: tell the menu what's in progress here, so it can show "In progress" on Field Cam */
 function fkSession() {
   try {

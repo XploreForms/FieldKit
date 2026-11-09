@@ -87,6 +87,7 @@ No build step. Edit files, bump `version.js`, push.
 - **XWH / XTV slots only appear** once Field Notes says how many were installed, or one is scanned/typed. No empty "If installed" slot.
 - SA home: no "Also logged in Field Stock: …" line under equipment, and no "You can leave any time…" line above Complete SA.
 - Cannot Complete / Not Required: **no equipment deployed** (entries voided; serials kept in case it changes back).
+- **Scan on the SA home** opens Field Cam straight into the scanner (`fieldkit.scanReturn` in sessionStorage). A slot's Scan comes back to the SA home as soon as one serial is added; **Scan More** comes back when the tech taps Done. Cancelling also comes back.
 - Conversions & repairs have a **Recovered** section; Field Cam's scanner has a **Deploy / Recovery** switch (installs always deploy). Recovered items log as Receive → Recovery on the job's SA-#.
 - Everything logged is sealed like Field Stock's own entries so **History Check stays Verified**.
 

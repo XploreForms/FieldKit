@@ -659,7 +659,7 @@ details.grp .btn{margin-bottom:12px}
     if (why && count) html += '<p class="help" style="color:var(--warn)">' + esc(why) + '</p>';
     if (m.has || m.extras.length || m.canRecover) {
       html += J.slotsHTML(m, {
-        scan: '<a class="fkj-btn" href="fieldcam.html#job">Scan</a>', scanRec: '<a class="fkj-btn" href="fieldcam.html#job">Scan</a>', pick: !why,
+        scan: '<a class="fkj-btn" href="fieldcam.html#job" data-scanret="one">Scan</a>', scanRec: '<a class="fkj-btn" href="fieldcam.html#job" data-scanret="one" data-rec>Scan</a>', pick: !why,
         status: function (code, s) {
           if (s && s.rec) { var rv = rec.filter(function (e) { return e.serialKey === keyOf(code); })[0]; return rv ? '<small class="ok">In your stock (recovered)</small>' : why ? "" : !s.sku ? '<small class="no">Not logged: pick which item it is</small>' : '<small class="no">Not logged yet</small>'; }
           var ev = dep.filter(function (e) { return e.serialKey === keyOf(code); })[0];
@@ -669,7 +669,7 @@ details.grp .btn{margin-bottom:12px}
       var g = get("techstock.gs", null);
       if (dep.length && g && g.connected && g.rev > (g.synced || 0)) html += '<p class="help">Goes to your Google Sheet next time Field Stock is open.</p>';
     } else html += '<p class="help">Scan each serial number in Field Cam. They\'re logged in Field Stock as deployed on this SA-#.</p>';
-    html += '<a class="btn" href="fieldcam.html#job">' + (m.has || m.extras.length || m.recovered.length ? "Scan More in Field Cam" : "Scan in Field Cam") + '</a>';
+    html += '<a class="btn" href="fieldcam.html#job" data-scanret="many">' + (m.has || m.extras.length || m.recovered.length ? "Scan More in Field Cam" : "Scan in Field Cam") + '</a>';
     $("lbGear").innerHTML = html;
   }
   function paintLobbyWarn(j) {
@@ -1145,6 +1145,12 @@ details.grp .btn{margin-bottom:12px}
   }
   start();
   addEventListener("pageshow", function () { if (!$("menu").hidden) paintMenu(); if (!$("lobby").hidden) paintLobby(); });
+  // Scan buttons here: Field Cam opens straight into the scanner and comes back here afterwards
+  // ("one": after one serial; "many", Scan More: when the tech taps Done)
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest("[data-scanret]"); if (!a) return;
+    try { sessionStorage.setItem("fieldkit.scanReturn", JSON.stringify({ mode: a.getAttribute("data-scanret"), rec: a.hasAttribute("data-rec"), at: Date.now() })); } catch (x) {}
+  }, true);
   // leaving for a tool: note which screen this was, so the tool's Back can return here (FieldKit.goHome)
   addEventListener("pagehide", function () { try { sessionStorage.setItem("fieldkit.cameFrom", /^#job/.test(location.hash) ? "#job" : ""); } catch (e) {} });
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible" && !$("menu").hidden) paintMenu(); if (document.visibilityState === "visible" && !$("lobby").hidden) paintLobby(); if (document.visibilityState === "visible" && !$("settings").hidden) paintSettingsGoogle(); });
