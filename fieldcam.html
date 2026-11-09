@@ -3310,6 +3310,8 @@ function fkRenderSlots(j) {
 $("jobBtn").addEventListener("click", () => { if (fkJob()) renderSerials(); });
 $("fkSlots").addEventListener("click", e => {
   const j = curJob(); if (!j) return;
+  const so = e.target.closest("[data-slot-open]");
+  if (so) { FieldKit.job.openSlot(so.dataset.slotOpen, so.dataset.v); renderSerials(); return; }
   const set = e.target.closest("[data-slot-set]");
   if (set) { j.slots = { ...(j.slots || {}), [set.dataset.slotSet]: set.dataset.v }; save(); renderSerials(); return; }
   const rm = e.target.closest("[data-slot-rm]");

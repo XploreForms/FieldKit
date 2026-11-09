@@ -717,6 +717,8 @@ details.grp .btn{margin-bottom:12px}
       else selectCmt();
       return;
     }
+    var so = e.target.closest("[data-slot-open]");
+    if (so) { J.openSlot(so.getAttribute("data-slot-open"), so.getAttribute("data-v")); paintLobbyGear(J.active()); return; }
     var ss = e.target.closest("[data-slot-set]");
     if (ss) { var jj = J.active(); if (!jj) return; J.setSlot(jj, ss.getAttribute("data-slot-set"), ss.getAttribute("data-v")); paintLobbyGear(J.active()); return; }
     var rm = e.target.closest("[data-rm],[data-slot-rm]");

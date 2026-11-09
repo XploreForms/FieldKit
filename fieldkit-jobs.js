@@ -194,6 +194,11 @@
   }
   /* One way to show the slots, used by Field Cam and the job summary.
      o.scan: html for an empty serial slot's button; o.status(code): line under a filled serial; o.pick: offer Pick Item */
+  // slots the tech opened to change (id -> the answer when opened)
+  var OPEN_SLOT = {};
+  function openSlot(id, value) { OPEN_SLOT[id] = value || ""; }
+  // any answer tapped in an opened slot (even the same one) folds it again
+  document.addEventListener("click", function (e) { var t = e.target && e.target.closest && e.target.closest("[data-slot-set]"); if (t) delete OPEN_SLOT[t.getAttribute("data-slot-set")]; }, true);
   // the Paste button that sits inside the serial box (clipboard icon)
   function pasteIn(id) {
     return '<button type="button" class="fkj-pastein" data-slot-paste="' + esc(id) + '" aria-label="Paste" title="Paste">' +
@@ -205,6 +210,10 @@
     var html = '<div class="fkj-slots">' + model.rows.map(function (r) {
       if (r.kind === "choice" && r.ui === "mount") {
         var M = slotSet().mount, none = r.value === M.none, base = none ? "" : String(r.value || "").replace(/ \+ 10ft Pole$/, ""), pole = / \+ 10ft Pole$/.test(r.value || "");
+        // once answered it folds to one line, like Surge; tap it to change (opened stays open until the answer changes)
+        if (r.value && OPEN_SLOT[r.id] !== r.value)
+          return '<div class="fkj-slot fkj-row"><div class="fkj-sh">' + tick + '<b>' + esc(r.name) + '</b></div><button type="button" class="fkj-change" data-slot-open="' + esc(r.id) + '" data-v="' + esc(r.value) + '" aria-label="Change mount">' +
+            '<span class="fkj-val">' + esc(none ? "New mount not required" : base + (pole ? " + 10ft pole" : "")) + '</span><span class="fkj-chev" aria-hidden="true">▾</span></button></div>';
         // "New mount not required" sits on the right of the Mount heading (reused existing, or on a tower: nothing to log)
         var mh = '<div class="fkj-slot"><div class="fkj-sh">' + (r.done ? tick : r.optional ? '<i class="fkj-need fkj-maybe" aria-hidden="true"></i>' : dot) + '<b>' + esc(r.name) + '</b>' +
           '<label class="fkj-chk fkj-chk-r"><input type="checkbox" data-slot-set="mount" data-v="' + (none ? "" : esc(M.none)) + '"' + (none ? " checked" : "") + '><span>New mount not required</span></label></div>' +
@@ -508,6 +517,7 @@
       ".fkj-add input::placeholder{font-family:var(--fk-body,sans-serif);text-transform:none;color:var(--fk-muted,#5A6F69)}.fkj-add input:focus{outline:none;box-shadow:inset 0 0 0 2px var(--fk-accent-text,#23864A)}.fkj-add .fkj-btn{min-height:44px}" +
       ".fkj-chk{display:flex;align-items:flex-start;gap:10px;margin-top:10px;font:600 .92rem/1.3 var(--fk-body,sans-serif);cursor:pointer}" +
       ".fkj-chk input{flex:none;width:22px;height:22px;margin:0;accent-color:var(--fk-accent-text,#23864A)}.fkj-chk small{display:block;font-weight:400;font-size:.82rem;color:var(--fk-muted,#5A6F69)}" +
+      ".fkj-change{display:flex;align-items:center;gap:6px;border:0;background:none;padding:6px 0 6px 8px;margin:-6px 0;min-height:36px;color:inherit;font:inherit;cursor:pointer;text-align:right;min-width:0}.fkj-change .fkj-val{flex:0 1 auto}.fkj-chev{color:var(--fk-muted,#5A6F69);font-size:.8rem}" +
       ".fkj-seg.fkj-off button{opacity:.55}.fkj-chk-r{margin:-9px 0 -9px auto;align-items:center;gap:8px;font-size:.88rem;min-height:40px;text-align:right}" +
       ".fkj-in{position:relative;flex:1;min-width:0;display:flex}.fkj-in input{padding-right:46px}" +
       ".fkj-pastein{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:38px;height:38px;border:0;border-radius:8px;background:transparent;color:var(--fk-muted,#5A6F69);display:grid;place-items:center;cursor:pointer;padding:0}" +
@@ -565,6 +575,6 @@
   FK.job = {
     inMode: function () { return jobMode; }, active: active, get: byId, list: list, start: start, complete: complete, open: open, save: save, setActive: setActive,
     fromCam: fromCam, modelsFor: modelsFor, modelName: function (id) { return SKU[id] ? SKU[id].name : ""; }, pickModel: pickModel, stockNote: stockNote,
-    deployed: deployed, recoveredEvents: recoveredEvents, canRecover: canRecover, removeSerial: removeSerial, slotModel: slotModel, slotsHTML: slotsHTML, setSlot: setSlot, setOutcome: setOutcome, slotEntry: slotEntry, addSerial: addSerial, pasteInto: pasteInto, hasSlots: function (src) { return slotIds(src).length > 0; }, syncDeploys: syncDeploys, notesCopied: notesCopied, setStep: setStep, keepDays: 7
+    deployed: deployed, recoveredEvents: recoveredEvents, canRecover: canRecover, removeSerial: removeSerial, slotModel: slotModel, slotsHTML: slotsHTML, openSlot: openSlot, setSlot: setSlot, setOutcome: setOutcome, slotEntry: slotEntry, addSerial: addSerial, pasteInto: pasteInto, hasSlots: function (src) { return slotIds(src).length > 0; }, syncDeploys: syncDeploys, notesCopied: notesCopied, setStep: setStep, keepDays: 7
   };
 })();
