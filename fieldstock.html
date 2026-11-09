@@ -307,6 +307,7 @@ button.link-row{font:inherit;text-align:left;width:100%;cursor:pointer}
 .ord-row:last-child{border-bottom:0}
 .ord-row .ord-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .ord-row .ord-txt b{font-weight:600;line-height:1.25}
+.ord-pickhead{display:flex;align-items:baseline;gap:8px;padding:10px 0 2px;border-bottom:1px solid var(--line)}.ord-pickhead b{font-weight:600}.ord-pickhead small{color:var(--muted)}
 .ord-more{display:block;border:0;background:none;padding:2px 0 10px;color:var(--accent-text,var(--ink));font:600 .82rem var(--f-body);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .ord-models{margin:0 0 8px 14px;padding-left:10px;border-left:2px solid var(--line)}
 .ord-row.sub{padding:6px 0}.ord-row.sub .ord-txt b{font-weight:500;font-size:.92rem}
@@ -1025,6 +1026,13 @@ $("dItemSel").innerHTML = `<option value="">Or pick an item without a serial…<
   const items=window.FK_CATALOG.firstOfName(SKUS.filter(s=>s.group===g && !s.serial && !s.hidden));
   return items.length ? `<optgroup label="${esc(g)}">`+items.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join("")+`</optgroup>` : "";
 }).join("");
+/* Deploy can pick any item by hand (serialized ones too: the serial is then picked from this phone's stock or typed) */
+const ALL_ITEMS_OPTS = `<option value="">Or pick an item…</option>` + GROUPS.map(g=>{
+  const items=window.FK_CATALOG.firstOfName(SKUS.filter(s=>s.group===g && !s.hidden));
+  return items.length ? `<optgroup label="${esc(g)}">`+items.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join("")+`</optgroup>` : "";
+}).join("");
+const NOSERIAL_OPTS = $("dItemSel").innerHTML;
+function fillItemSel(){ $("dItemSel").innerHTML = F.type==="deploy" ? ALL_ITEMS_OPTS : NOSERIAL_OPTS; $("dItemSel").setAttribute("aria-label", F.type==="deploy" ? "Pick an item" : "Pick an item without a serial"); }
 const SERIAL_ITEMS_OPTS = `<option value="">Pick the item…</option>` + GROUPS.map(g=>{
   const items=window.FK_CATALOG.firstOfName(SKUS.filter(s=>s.group===g && s.serial && !s.hidden));
   return items.length ? `<optgroup label="${esc(g)}">`+items.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join("")+`</optgroup>` : "";
@@ -1056,7 +1064,7 @@ function renderLines(){
   renderJob();
   if(!F.lines.length){
     const EMPTY={receive:"Scan every unit in the shipment. Add drops, NIDs and mounts from the list below.",
-      deploy:"Scan the item you're deploying, or pick a drop, NID or mount below.",
+      deploy:"Scan the item you're deploying, or pick it from the list below.",
       transfer:"Scan each unit you're transferring. Add drops, NIDs and mounts from the list below.",
       rma:"Scan each unit going back on RMA.",
       recycle:"Scan each unit you're recycling. Add anything without a serial from the list below."}[F.type];
@@ -1071,6 +1079,12 @@ function renderLines(){
       else if(!s) body+=`<select data-lsel="${i}" aria-label="Item for ${esc(l.serial)}">${SERIAL_ITEMS_OPTS}</select>`;
       if(F.type==="receive"){ if(rec && rec.inStock) body+=`<small class="warn">Already in your stock</small>`; }
       else if(!(rec && rec.inStock)) body+=`<small class="warn">Not in your stock records</small>`;
+    } else if(s && s.serial){   // picked by hand: needs its serial
+      const ids=SKUS.filter(x=>x.group===s.group && x.name===s.name).map(x=>x.id);
+      const mine=[].concat(...ids.map(id=>STOCK.bySku[id])).sort((a,b)=>b.ts-a.ts).slice(0,12);
+      body+=`<small class="warn">${mine.length?"Tap the serial you're deploying, or type it":"Type the serial you're deploying"}</small>`;
+      if(mine.length) body+=`<div class="chips">${mine.map(r=>`<button type="button" class="mono" data-lser="${i}" data-serial="${esc(r.serial)}">${esc(r.serial)}</button>`).join("")}</div>`;
+      body+=`<div class="row"><input type="text" class="mono" data-lin="${i}" placeholder="Type the serial" autocomplete="off" autocapitalize="characters" spellcheck="false"><button type="button" class="btn" data-ladd="${i}">Add</button></div>`;
     } else if(s){
       const have=STOCK.qty[s.id]||0;
       body+=`<div class="qty sm"><button type="button" data-lq="${i}" data-d="-1" aria-label="Fewer">−</button><span>${l.qty}</span><button type="button" data-lq="${i}" data-d="1" aria-label="More">+</button></div>`;
@@ -1080,11 +1094,23 @@ function renderLines(){
     return `<div class="line"><div class="line-main"><b>${esc(title)}</b>${body}</div><button type="button" class="x" data-lrm="${i}" aria-label="Remove">✕</button></div>`;
   }).join("");
 }
+/* a serial for a line picked by hand: from this phone's stock, or typed. The item must match what was picked. */
+function lineSetSerial(i, v){
+  const l=F.lines[i], s=l&&SKU[l.sku]; v=String(v||"").trim(); if(!s || !v) return false;
+  const why=lineBlock(v); if(why){ toast(why); return false; }
+  const g=guessSku(v);
+  if(g && g.sku && SKU[g.sku].name!==s.name){ toast(`${v} looks like a ${SKU[g.sku].name}, not a ${s.name}. Check the item.`); return false; }
+  if(g && g.sku) l.sku=g.sku;   // the exact model, when this phone knows the serial
+  l.serial=v; renderLines(); return true;
+}
 $("lineList").addEventListener("click",e=>{
+  const ls=e.target.closest("[data-lser]"); if(ls){ lineSetSerial(Number(ls.dataset.lser), ls.dataset.serial); return; }
+  const la=e.target.closest("[data-ladd]"); if(la){ const i=Number(la.dataset.ladd), inp=la.parentNode.querySelector("[data-lin]"); if(inp && inp.value.trim()) lineSetSerial(i, inp.value); else if(inp) inp.focus(); return; }
   const rm=e.target.closest("[data-lrm]"); if(rm){ F.lines.splice(Number(rm.dataset.lrm),1); renderLines(); return; }
   const pk=e.target.closest("[data-lpick]"); if(pk){ const l=F.lines[Number(pk.dataset.lpick)]; l.sku=pk.dataset.sku; l.pick=null; renderLines(); return; }
   const q=e.target.closest("[data-lq]"); if(q){ const l=F.lines[Number(q.dataset.lq)]; l.qty=Math.max(1,l.qty+Number(q.dataset.d)); renderLines(); }
 });
+$("lineList").addEventListener("keydown",e=>{ if(e.key==="Enter" && e.target.matches("[data-lin]")){ e.preventDefault(); lineSetSerial(Number(e.target.dataset.lin), e.target.value); } });
 $("lineList").addEventListener("change",e=>{ const sel=e.target.closest("[data-lsel]"); if(sel && sel.value){ const l=F.lines[Number(sel.dataset.lsel)]; l.sku=sel.value; l.pick=null; renderLines(); } });
 $("dItemSel").addEventListener("change",()=>{
   const id=$("dItemSel").value; if(!id) return;
@@ -1153,7 +1179,7 @@ function openLog(type, sku, serial){
 }
 function setType(t){
   if(t!==F.type) F.lines=[];
-  F.type=t;
+  F.type=t; fillItemSel();
   document.querySelectorAll("#typeSeg button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.type===t?"true":"false"));
   $("logTitle").textContent=TYPES[t].title;
   $("saveBtn").textContent=TYPES[t].save;
@@ -1299,8 +1325,11 @@ async function saveDeploy(){
   const sa=saOf($("accountIn").value), sad=saDigits(sa);
   if(!sad){ $("accountIn").focus(); return err("Enter the SA number from the work order."); }
   if(sad.length!==7){ $("accountIn").focus(); return err("SA numbers are 7 digits, e.g. SA-1234567."); }
+  // a serial typed into an item picked by hand counts, even if Add wasn't tapped
+  document.querySelectorAll("#lineList [data-lin]").forEach(inp=>{ if(inp.value.trim()) lineSetSerial(Number(inp.dataset.lin), inp.value); });
   if(!F.lines.length) return err("Scan or pick the item you're deploying.");
   const unknown=F.lines.find(l=>!SKU[l.sku]); if(unknown) return err(`Pick the item for ${unknown.serial}.`);
+  const noSn=F.lines.find(l=>SKU[l.sku].serial && !l.serial); if(noSn) return err(`Add the serial number for ${SKU[noSn.sku].name}.`);
   saving=true; $("saveBtn").disabled=true; $("saveBtn").textContent="Saving…";
   if(LOC.status!=="ok" || Date.now()-LOC.at>5*60000) await refreshLocation(true);
   if(!F.jobId || F.jobAcct!==sa){ F.jobId=newId(); F.jobAcct=sa; }
@@ -1446,11 +1475,16 @@ function openTransferMail(jobId){
 const ORDER_SECTIONS = [["Wi-Fi & Routers",["Wi-Fi & routers"]],["Fixed Wireless & LTE",["5G & fixed wireless","LTE","Mounts & surge"]],
   ["Satellite",["Hughes satellite","SurfBeam satellite"]],["Fibre & TV",["Fibre ONTs","Fibre drops & NIDs","TV"]]];
 const ORDER_MAX = {"J ARM":10, "HIGH-GAIN":10};
+/* how each family is ordered. "pick": the tech must choose a model (no "any model"). "family": family only, no model choice.
+   hide: not orderable. Every other family has one item, so it is just that item. */
+const ORDER_PICK = ["ROUTER","HIGH-GAIN","ONT","DROP CABLE","STB","AERIAL","AZEL","TRIMAST","ANTENNA"];
+const ORDER_FAMILY_ONLY = ["5G CPE","CAT12 2.5GHZ","CAT12 3.5GHZ"];
+const ORDER_HIDE = ["CAT4 3.5GHZ"];
 const ORDER_FAMS = (()=>{
   const C=window.FK_CATALOG, fams=[], by={};
   const secOf=g=>{ const x=ORDER_SECTIONS.find(([,gs])=>gs.includes(g)); return x?x[0]:"Fibre & TV"; };
   C.SKUS.forEach(sk=>{
-    if(!sk.fam || sk.hidden || sk.noOrder) return;
+    if(!sk.fam || sk.hidden || sk.noOrder || ORDER_HIDE.includes(sk.fam) || /^NLA\b/i.test(sk.desc||"")) return;   // NLA = no longer available
     let f=by[sk.fam]; if(!f){ f=by[sk.fam]={fam:sk.fam, title:sk.famName, sec:secOf(sk.group), max:ORDER_MAX[sk.fam]||20, plats:new Set(), opts:[]}; fams.push(f); }
     (sk.platforms||[]).forEach(p=>f.plats.add(p));
     const o=f.opts.find(o=>o.name===sk.name); if(o) o.ids.push(sk.id); else f.opts.push({key:"sku:"+sk.id, name:sk.name, ids:[sk.id]});
@@ -1459,7 +1493,7 @@ const ORDER_FAMS = (()=>{
     let f=by[x.fam]; if(!f){ f=by[x.fam]={fam:x.fam, title:x.famName||x.fam, sec:"Fibre & TV", max:20, plats:new Set(), opts:[]}; fams.push(f); }
     f.opts.push({key:"x:"+x.name, name:x.name, ids:[], label:x.label});
   });
-  fams.forEach(f=>{ f.key="fam:"+f.fam; f.plats=[...f.plats]; });
+  fams.forEach(f=>{ f.key="fam:"+f.fam; f.plats=[...f.plats]; f.pick = ORDER_PICK.includes(f.fam) && f.opts.length>0; });
   return ORDER_SECTIONS.flatMap(([sec])=>fams.filter(f=>f.sec===sec));
 })();
 const ORDER_OPEN=new Set();   // families showing "Choose a model"
@@ -1467,7 +1501,9 @@ const OK_ORDER="techstock.order", OK_MGR="techstock.manager";
 const ORD=Object.assign({qty:{}, reason:"", notes:""}, lsGet(OK_ORDER,{}));
 if(Object.keys(ORD.qty).some(k=>/^\d+$/.test(k))) ORD.qty={};   // an order started on the old item list: start the items again
 const saveOrd=()=>lsSet(OK_ORDER, ORD);
-const ordLines=()=>ORDER_FAMS.flatMap(f=>[{f, key:f.key, max:f.max}].concat(f.opts.length>1 ? f.opts.map(o=>({f, o, key:o.key, max:f.max})) : []));
+// a "pick" family is ordered only by model; every other family by its family line
+const ordLines=()=>ORDER_FAMS.flatMap(f=>f.pick ? f.opts.map(o=>({f, o, key:o.key, max:f.max})) : [{f, key:f.key, max:f.max}]);
+{ const ok=new Set(ordLines().map(x=>x.key)); Object.keys(ORD.qty).forEach(k=>{ if(!ok.has(k)) delete ORD.qty[k]; }); }   // lines that can't be ordered any more (any-model router, CAT4…)
 const validEmail=v=>/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
 /* transfers: your email is saved once; the receiving tech's email is remembered per dealer */
 const K_MYEMAIL="techstock.myEmail", K_DEALEREMAIL="techstock.dealerEmails";
@@ -1486,13 +1522,15 @@ function renderOrder(){
     const hay=(f.title+" "+f.fam+" "+f.opts.map(o=>o.name).join(" ")+" "+f.plats.join(" ")).toLowerCase();
     if(q && !hay.includes(q)) return;
     if(f.sec!==last){ html+=`<div class="ord-group">${esc(f.sec)}</div>`; last=f.sec; }
-    const n=ORD.qty[f.key]||0, many=f.opts.length>1;
-    const one=f.opts[0], sub = many ? "Any model" : (one && !f.title.toLowerCase().includes(one.name.toLowerCase()) ? one.name : "");
-    const picked = many ? f.opts.filter(o=>ORD.qty[o.key]).length : 0;
-    const open = many && (ORDER_OPEN.has(f.key) || picked || (q && !f.title.toLowerCase().includes(q)));
+    if(f.pick){   // choose a model: the family is a heading, the models are the lines
+      const showAll = !q || f.title.toLowerCase().includes(q) || f.fam.toLowerCase().includes(q);
+      html+=`<div class="ord-pickhead"><b>${esc(f.title)}</b><small>Choose a model</small></div><div class="ord-models">`+
+        f.opts.filter(o=>showAll || o.name.toLowerCase().includes(q)).map(o=>{ const m=ORD.qty[o.key]||0; return `<div class="ord-row sub${m?" on":""}"><div class="ord-txt"><b>${esc(o.name)}</b></div>${qtyBtns(o.key,m,f.max)}</div>`; }).join("")+`</div>`;
+      return;
+    }
+    const n=ORD.qty[f.key]||0, one=f.opts[0];
+    const sub = f.opts.length>1 ? "Any model" : (one && !f.title.toLowerCase().includes(one.name.toLowerCase()) ? one.name : "");
     html+=`<div class="ord-row${n?" on":""}"><div class="ord-txt"><b>${esc(f.title)}</b>${sub?`<small>${esc(sub)}</small>`:""}</div>${qtyBtns(f.key,n,f.max)}</div>`;
-    if(many) html+=`<button type="button" class="ord-more" data-ofam="${esc(f.key)}" aria-expanded="${!!open}">${open?"Hide models":"Choose a model"}${picked?` (${picked})`:""}</button>`+
-      (open ? `<div class="ord-models">`+f.opts.map(o=>{ const m=ORD.qty[o.key]||0; return `<div class="ord-row sub${m?" on":""}"><div class="ord-txt"><b>${esc(o.name)}</b></div>${qtyBtns(o.key,m,f.max)}</div>`; }).join("")+`</div>` : "");
   });
   $("ordList").innerHTML = html || `<div class="help" style="padding:10px 0">No items match "${esc($("ordQ").value)}".</div>`;
   const lines=Object.values(ORD.qty).filter(n=>n>0).length, units=Object.values(ORD.qty).reduce((a,b)=>a+(b||0),0);
@@ -1504,7 +1542,6 @@ function renderOrder(){
     `<br><span class="help">Change these in Field Kit settings.</span>` : "Finish your details in Field Kit settings first.";
 }
 $("ordList").addEventListener("click",e=>{
-  const t=e.target.closest("[data-ofam]"); if(t){ const k=t.dataset.ofam; ORDER_OPEN.has(k)?ORDER_OPEN.delete(k):ORDER_OPEN.add(k); renderOrder(); return; }
   const b=e.target.closest("[data-oq]"); if(!b) return; const k=b.dataset.oq, it=ordLines().find(x=>x.key===k); if(!it) return;
   ORD.qty[k]=Math.max(0,Math.min(it.max,(ORD.qty[k]||0)+Number(b.dataset.d))); if(!ORD.qty[k]) delete ORD.qty[k]; saveOrd(); $("ordErr").innerHTML=""; renderOrder(); });
 $("ordQ").addEventListener("input",renderOrder);
@@ -1514,10 +1551,10 @@ $("ordMgr").addEventListener("change",()=>{ const v=$("ordMgr").value.trim().toL
   if(v && !validEmail(v)){ showMgrErr("Enter a full email address, e.g. first.last@xplore.ca."); return; } showMgrErr(""); $("ordErr").innerHTML=""; lsSet(OK_MGR,v); if(v) toast("Manager's email saved"); });
 /* how a line reads in the order email: the family, and the model only when the tech chose one */
 function ordLine(it){
-  const f=it.f;
+  const f=it.f, code=o=>o.label ? o.label.split(" - ").slice(0,2).join(" · ") : `${f.fam}${o.ids.length?` · ${o.ids.join(" / ")}`:""}`;   // system codes, for inventory to match
   if(!it.o){ const one=f.opts.length===1 ? f.opts[0] : null;
-    return one ? (one.label || `${f.title}${one.name!==f.title?`: ${one.name}`:""} (${f.fam}${one.ids.length?` · ${one.ids.join(" / ")}`:""})`) : `${f.title}, any model (${f.fam})`; }
-  return it.o.label || `${f.title}: ${it.o.name} (${f.fam} · ${it.o.ids.join(" / ")})`;
+    return one ? `${f.title}${one.name!==f.title?`: ${one.name}`:""} (${code(one)})` : `${f.title}, any model (${f.fam})`; }
+  return `${f.title}: ${it.o.name} (${code(it.o)})`;
 }
 function showMgrErr(m){ $("ordMgr").classList.toggle("bad",!!m); $("ordMgr_err").hidden=!m; $("ordMgr_err").textContent=m; }
 function clearOrder(){ ORD.qty={}; ORD.reason=""; ORD.notes=""; saveOrd(); $("ordReason").value=""; $("ordNotes").value=""; $("ordErr").innerHTML=""; renderOrder(); }
