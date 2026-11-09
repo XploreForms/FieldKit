@@ -184,6 +184,15 @@
     }).catch(function () {});
   }
 
+  /* ---------- SA-# boxes: once the 7th digit is typed, the keyboard closes ----------
+     New SA (njRef), Field Cam (inRef, inRefEdit), Field Stock (accountIn, fromAcct). Typing only, not paste. */
+  var SA_BOXES = { njRef: 1, inRef: 1, inRefEdit: 1, accountIn: 1, fromAcct: 1 };
+  document.addEventListener("input", function (e) {
+    var t = e.target;
+    if (!t || !SA_BOXES[t.id] || !/^insert(Text|CompositionText)?$/.test(e.inputType || "")) return;
+    setTimeout(function () { if (String(t.value).replace(/\D/g, "").length === 7 && document.activeElement === t) t.blur(); }, 0);   // after the page tidies the value
+  });
+
   /* ---------- the way back from Field Cam and Field Notes ----------
      The phone's Back button and "‹ Field Kit" / "‹ SA-#######" go straight to the menu, or to the job summary in a job,
      never to the other tool or an older screen. The menu notes where it was when it opened a tool
