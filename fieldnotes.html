@@ -3273,7 +3273,27 @@ function initRetro() {
   document.addEventListener('visibilitychange', function () { if (document.hidden) wipSaveNow(); });
   setTimeout(wipOffer, 900);
   window.addEventListener('resize', function () { updatePreview(); });
+  setTimeout(skipAnswered, 1150);
 })();
+
+/* Opened as part of a Field Kit SA (from Field Cam or the SA page): the questions at the top are already answered from
+   the SA (job, platform, technology, photos…), so scroll down to the first one still to answer. Only once, on arrival,
+   and not if the tech has already scrolled or tapped. */
+var touchedEarly = false;
+['pointerdown', 'wheel', 'keydown', 'touchmove'].forEach(function (ev) { window.addEventListener(ev, function () { touchedEarly = true; }, { once: true, passive: true }); });
+function skipAnswered() {
+  if (!(window.FieldKit && FieldKit.job && FieldKit.job.inMode && FieldKit.job.inMode())) return;
+  if (touchedEarly || (window.pageYOffset || 0) > 40 || !jobKey()) return;
+  var todo = validate().filter(function (i) { return i.id !== 'tech'; });
+  var node = todo.length ? document.querySelector('#form-mount [data-field-id="' + todo[0].id + '"]') : $('preview');
+  if (!node) return;
+  var sec = node.closest && node.closest('.form-section');
+  if (sec && sec.querySelector('[data-field-id]') === node) node = sec;   // first question of its section: show the section title too
+  var head = document.querySelector('header.app-header'), headH = head ? head.getBoundingClientRect().height : 0;
+  var top = window.pageYOffset + node.getBoundingClientRect().top - headH - 12;
+  if (top < 80) return;   // already near the top
+  window.scrollTo({ top: top, behavior: calm() ? 'auto' : 'smooth' });
+}
 
 
 </script>

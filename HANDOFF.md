@@ -111,6 +111,7 @@ No build step. Edit files, bump `version.js`, push.
 **Field Cam scanning**: no instruction panel or Done button while scanning (removed at Curtis's request). Results and problems (Added…, No barcode read…, MAC address…) show as a short toast; leave scanning with the green scan button or Back.
 
 **Field Notes**
+- Opened in an SA, Field Notes scrolls past the questions already answered from the SA to the first one still to answer (`skipAnswered`, once on arrival, not if the tech already scrolled or tapped).
 - Focus ring stays inside boxes. Keyboard closes after 3 RSRP digits / 2 SINR digits.
 
 ## Open items / to do
