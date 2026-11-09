@@ -144,10 +144,8 @@
     if (y > 0 && APP !== "home") setTimeout(function () { window.scrollTo(0, y); }, 250);
   });
 
-  /* Top bars are always slim: one row with the way back ("‹ Field Kit" / "‹ Job") and the title centred.
-     Field Cam's bar is slim by design; Field Notes, Field Stock, New Job and the job summary use fk-slim
-     (styles in fieldkit.css and each page). The menu's own header isn't affected. Set before the first paint. */
-  if (APP === "notes" || APP === "stock" || APP === "home") document.documentElement.classList.add("fk-slim");
+  /* Top bars stay full size (app tile, title, line under it) and pinned at the top; they don't go slim.
+     The fk-slim styles are still in fieldkit.css and the pages if slim bars are wanted again: add fk-slim to <html>. */
 
   /* ---------- updates: nobody stays on an old version ----------
      Checks for a new version when a page opens, whenever Field Kit comes back on screen, when signal returns,

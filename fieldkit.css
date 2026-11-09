@@ -61,7 +61,7 @@ html{background:var(--fk-bg)}
 .fk-title{margin:0;font:700 1.5rem/1.05 var(--fk-display);letter-spacing:.01em;color:var(--fk-ink)}
 .fk-sub{margin:3px 0 0;font:400 .88rem/1.3 var(--fk-body);color:var(--fk-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-/* ---------- pinned top bars: always slim, the same as Field Cam's top bar ----------
+/* ---------- slim top bars (not used right now: bars stay full size; Field Cam's own bar is slim by design) ----------
    One row: the way back ("‹ Field Kit" / "‹ Job"), then the title in plain bold text. No app tile, no line under
    the title. fieldkit.js adds fk-slim to <html>; each page lines up its own header pieces (see the page styles). */
 html.fk-slim .fk-tile,html.fk-slim .top .mark{display:none}

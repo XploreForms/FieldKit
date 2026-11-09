@@ -55,7 +55,7 @@ No build step. Edit files, bump `version.js`, push.
 
 **Look & layout**
 - One theme for all tools (light default; dark; black). Changed only in Field Kit settings.
-- Headers: page-colour, no green bar or Xplore logo, 560px column on desktop. Headers are pinned and **always slim**: one row, "‹ Field Kit" / "‹ Job" on the left, title centred, no app tile or line under the title (Field Notes, Field Stock, New Job, job summary; Field Cam's bar was already like this). The menu's own header is unchanged.
+- Headers: page-colour, no green bar or Xplore logo, 560px column on desktop. Headers are pinned and **always full size** (app tile, title, line under it); they don't go slim on scroll (tried shrink-on-scroll and always-slim in 1.12.7–1.12.9, Curtis chose full size). The fk-slim styles remain in the CSS, unused. Field Cam's bar is slim by design.
 - Menu cards are a uniform 72px, two lines, nothing cut off. Home header shows **name only** (no dealer). Field Stock header also name only.
 - In-progress job card uses the **truck with work-order lines** icon; restart button is the circular arrow with a two-tap "Tap to start new".
 - No version numbers inside the tools; version only shows on the menu footer.
