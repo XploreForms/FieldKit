@@ -64,7 +64,7 @@ No build step. Edit files, bump `version.js`, push.
 **Profile / setup**
 - Step 1: Your Name, Work Email (@xplore.ca), Work Phone Number, **Xplore Approver Email**. Only the approver email has hint text: "Approves your manual order requests and is CC'd on your transfer requests." The approver is CC'd on every transfer email (with both techs).
 - Step 2: Dealer Name (format **Location XCI Tech**, e.g. Cambridge XCI Tech), **SAP Dealer Account #** (exactly 6 digits), **Salesforce Dealer Account #** (exactly 7 digits; both boxes take digits only and stop at the limit), shipping address, **Ship to Purolator depot hold for pickup** (checkbox, no hint text), **Default Shipping Instructions** (optional, ≤300 chars, no hint text). Both shipping options go into every manual order email.
-- Step 3: Google Sheets backup (required). Settings has **Sync Now** (signs in if needed, Field Stock syncs, returns to settings).
+- Step 3: Google Sheets backup. **For now it can be skipped** ("Skip for Now" under Connect); the menu then shows the "Google backup is off" banner with Connect until it's set up. Settings has **Sync Now** (signs in if needed, Field Stock syncs, returns to settings).
 - **Paste is always a clipboard icon inside the box** (no "Paste" buttons): `.fk-inwrap` + `.fk-pastein` in `fieldkit.css`; used for the SA-# on New SA and in Field Cam, Field Stock's SA boxes, and every serial box in an SA.
 - Name and dealer can only be changed in Field Kit settings (not in Field Cam). **Grid lines** live in Field Cam's own settings.
 

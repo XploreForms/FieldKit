@@ -1041,7 +1041,7 @@ details.grp .btn{margin-bottom:12px}
   var STEP_INFO = [
     { h: "About you", sub: "" },
     { h: "Accounts and shipping", sub: "For stock orders, RMAs and transfers." },
-    { h: "Back up with Google Sheets", sub: "Required, so your stock history is never lost." }
+    { h: "Back up with Google Sheets", sub: "So your stock history is never lost. You can skip this for now and connect later in Settings." }
   ];
   var step = 0;
   function showView(id) { ["menu", "setup", "settings", "lobby", "newjob"].forEach(function (v) { $(v).hidden = v !== id; }); scrollTo(0, 0); }
@@ -1063,13 +1063,14 @@ details.grp .btn{margin-bottom:12px}
       form.innerHTML = '<p class="help" style="color:var(--fg)">Google Sheets backup works on the Field Kit website, not in this preview. You can finish setup here and connect from Settings on the website.</p>';
       $("stepNext").disabled = false; return;
     }
-    if (g.connected && !gsReady(g)) { form.innerHTML = wrongHTML(g); $("stepNext").disabled = true; return; }
+    if (g.connected && !gsReady(g)) { form.innerHTML = wrongHTML(g) + '<button class="btn ghost block" type="button" id="gsSkip" style="margin-top:8px">Skip for Now</button>'; $("stepNext").disabled = true; return; }
     if (gsReady(g)) {
       form.innerHTML = '<p class="ok">Connected as ' + esc(g.email || "your Google account") + '</p><p class="help">Field Stock backs up your entries to your Google Sheet in the background whenever it\'s open.</p>' +
         '<button class="btn ghost" type="button" data-gs="connect">Use a Different Account</button>';
       $("stepNext").disabled = false; return;
     }
-    form.innerHTML = guideHTML() + '<button class="btn primary block" type="button" data-gs="connect">Connect Google Sheets</button>';
+    form.innerHTML = guideHTML() + '<button class="btn primary block" type="button" data-gs="connect">Connect Google Sheets</button>' +
+      '<button class="btn ghost block" type="button" id="gsSkip" style="margin-top:8px">Skip for Now</button>';   // for now Google backup can be skipped; the menu keeps a "Google backup is off" reminder
     $("stepNext").disabled = true;
   }
   $("stepBack").addEventListener("click", function () { if (step > 0) { step--; renderStep(); } });
@@ -1084,6 +1085,7 @@ details.grp .btn{margin-bottom:12px}
     step++; renderStep();
   });
   wire($("stepForm"), "w");
+  document.addEventListener("click", function (e) { if (e.target.closest && e.target.closest("#gsSkip")) finishSetup(); });
   function finishSetup() { FK.markSetupDone(); toast("You're all set"); openMenu(); }
 
   // setup and settings share the Google buttons
