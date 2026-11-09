@@ -540,13 +540,18 @@
   /* Answers in Field Notes that are also equipment slots: the drop length and the mount type.
      A slot follows Field Notes whenever that answer changes there; picking the slot by hand afterwards still sticks. */
   // Field Notes' Mount Type -> the mount slot (side stays aren't tracked; a tower or a reused mount means no new mount)
-  var NOTES_MOUNT = { "J-Arm": "J-Arm", "J-Arm + Side Stays": "J-Arm", "Gable Mount + 10ft Pole": "Gable Mount + 10ft Pole", "Bipod + 5ft Pole": "Bipod",
-    "Tripod + 10ft Pole": "Tripod + 10ft Pole", "Tower": "No new mount", "Tower Leg": "No new mount" };
+  var NOTES_MOUNT = { "J-Arm": "J-Arm", "Gable Mount": "Gable Mount", "Bipod": "Bipod", "Tripod": "Tripod", "Tower": "No new mount", "Tower Leg": "No new mount",
+    // older Field Notes names
+    "J-Arm + Side Stays": "J-Arm", "Gable Mount + 10ft Pole": "Gable Mount + 10ft Pole", "Bipod + 5ft Pole": "Bipod", "Tripod + 10ft Pole": "Tripod + 10ft Pole" };
   function notesToSlots(j, st) {
     if (!j || !st) return;
     var ids = slotIds(j), D = slotSet(), seen = (j.notes && j.notes.applied) || {}, want = {};
     if (ids.indexOf("drop") >= 0 && st.drop_len && D.drop.opts.some(function (o) { return o[0] === st.drop_len; })) want.drop = st.drop_len;
-    if (ids.indexOf("mount") >= 0 && st.mount && NOTES_MOUNT[st.mount]) want.mount = st.mount_reused === true ? "No new mount" : NOTES_MOUNT[st.mount];   // a reused mount isn't deployed
+    if (ids.indexOf("mount") >= 0 && st.mount && NOTES_MOUNT[st.mount]) {
+      var nm = NOTES_MOUNT[st.mount];
+      if ((nm === "Gable Mount" || nm === "Tripod") && st.mount_pole === true) nm += " + 10ft Pole";   // Field Notes' 10ft pole tick
+      want.mount = st.mount_reused === true ? "No new mount" : nm;   // a reused mount isn't deployed
+    }
     var changed = false;
     Object.keys(want).forEach(function (k) {
       if (seen[k] === want[k]) return;   // already followed this answer

@@ -274,6 +274,7 @@ input:focus, textarea:focus, .choice:focus-visible, .link-btn:focus-visible, but
 
 /* discreet tick box (own router, splice already done, reused patch) */
 .mini-check-wrap { margin-top: 1rem; padding-top: 0.2rem; }
+.mini-check-wrap + .mini-check-wrap { margin-top: 0.15rem; }   /* ticks under one question sit together */
 .mini-check {
   display: flex; align-items: center; gap: 0.6rem; width: 100%; min-height: 2.9rem; padding: 0.3rem 0;
   font-family: var(--xp-font); font-weight: 400; font-size: 0.95rem; text-align: left; color: var(--xp-white);
@@ -1657,24 +1658,39 @@ function dropComps(dropOnly) {
 var CPE_TYPES = ['CAT12 2.5GHz', 'CAT12 3.5GHz', 'First Gen 5G', 'Next Gen 5G', 'First Gen High Gain', 'Next Gen High Gain', 'Pro Max'];
 var GROUND_SOURCES = [['Power Meter', 'Power meter'], ['Electrical Panel', 'Electrical panel'], ['Ground Rod', 'Ground rod'], ['Tower', 'Tower'], ['Copper Pipe', 'Copper pipe'], ['HVAC Disconnect', 'HVAC disconnect'], 'Other'];
 /* fixed wireless install and conversion mounts: the type, then a tick if an existing mount was reused */
-var FW_MOUNTS = [['J-Arm', 'j-arm'], ['J-Arm + Side Stays', 'j-arm with side stays'], ['Gable Mount + 10ft Pole', 'gable mount + 10ft pole'],
-  ['Bipod + 5ft Pole', 'bipod + 5ft pole'], ['Tripod + 10ft Pole', 'tripod + 10ft pole'], ['Tower', 'Tower'], 'Other'];
-function fwMountC() { return reuseMountC(FW_MOUNTS); }
+/* same mounts as the SA's Equipment Deployed (plus Tower). Ticks under it: Side stays (J-Arm), 10ft pole (Gable Mount, Tripod;
+   ticked when picked), and Reused existing mount. */
+var FW_MOUNTS = [['J-Arm', 'j-arm'], ['Gable Mount', 'gable mount'], ['Bipod', 'bipod'], ['Tripod', 'tripod'], ['Tower', 'Tower'], 'Other'];
+var FW_POLE = ['Gable Mount', 'Tripod'], FW_STAYS = ['J-Arm'];
+// answers saved with the old combined names
+function fwMountOld() {
+  var old = { 'J-Arm + Side Stays': ['J-Arm', 'mount_stays'], 'Gable Mount + 10ft Pole': ['Gable Mount', 'mount_pole'], 'Bipod + 5ft Pole': ['Bipod'], 'Tripod + 10ft Pole': ['Tripod', 'mount_pole'] }[STATE.mount];
+  if (old) { STATE.mount = old[0]; if (old[1]) STATE[old[1]] = true; }
+}
+function fwMountC() { fwMountOld(); return reuseMountC(FW_MOUNTS); }
 /* the mount type, with a Reused existing mount tick box always under it */
 function reuseMountC(list, noTick) {   // noTick: repairs, where a reused mount goes in the comments instead
+  var fw = list === FW_MOUNTS;
   var base = choiceC({ id: 'mount', label: 'Mount Type', options: list, cols: 2, out: false, otherLabel: 'Other Mount',
-    afterChange: function (o) { if (o === 'Tower') { STATE.mount_into = 'Tower'; STATE.mount_pos = 'Tower'; } } });   // a tower mount is on a tower
+    afterChange: function (o) {
+      if (o === 'Tower') { STATE.mount_into = 'Tower'; STATE.mount_pos = 'Tower'; }   // a tower mount is on a tower
+      if (fw) { STATE.mount_pole = FW_POLE.indexOf(o) >= 0 ? true : undefined; if (FW_STAYS.indexOf(o) < 0) STATE.mount_stays = undefined; }
+    } });
   function reusable() { return !!STATE.mount && STATE.mount !== 'Tower'; }   // a tower is never new or reused
   return {
     id: 'mount',
     render: function () {
-      var wrap = base.render();
-      if (!noTick) wrap.insertBefore(miniCheck('mount_reused', 'Reused existing mount'), wrap.querySelector('.field-error-msg'));
+      var wrap = base.render(), at = wrap.querySelector('.field-error-msg');
+      if (fw && FW_STAYS.indexOf(STATE.mount) >= 0) wrap.insertBefore(miniCheck('mount_stays', 'Side stays'), at);
+      if (fw && FW_POLE.indexOf(STATE.mount) >= 0) wrap.insertBefore(miniCheck('mount_pole', '10ft pole'), at);
+      if (!noTick) wrap.insertBefore(miniCheck('mount_reused', 'Reused existing mount'), at);
       return wrap;
     },
     check: function (need, issues) { base.check(need, issues); },
     out: function (m) {
       var v = base.value(m);
+      if (fw && FW_POLE.indexOf(STATE.mount) >= 0 && STATE.mount_pole === true) v += ' + 10ft pole';
+      if (fw && FW_STAYS.indexOf(STATE.mount) >= 0 && STATE.mount_stays === true) v += ' with side stays';
       if (noTick) return ['Mount: ' + cap(v)];
       if (reusable() && STATE.mount !== 'Other') v = (STATE.mount_reused === true ? 'Pre-existing ' : 'New ') + v;
       else if (STATE.mount === 'Other' && str(STATE.mount_other)) v = (STATE.mount_reused === true ? 'Pre-existing ' : 'New ') + lowerFirst(STATE.mount_other);
