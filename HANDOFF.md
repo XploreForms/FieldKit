@@ -47,7 +47,7 @@ No build step. Edit files, bump `version.js`, push.
 
 1. Make the change.
 2. Test in a phone-sized browser (Playwright on `python3 -m http.server`; seed `localStorage` with `fieldkit.profile`, `fieldkit.setupDone`, and `techstock.gs` connected so setup screens don't block).
-3. Bump `version.js` (both lines).
+3. Bump `version.js` (both lines). `updated` must be the **real** time of the release in Eastern: run `TZ=America/Toronto date +%Y-%m-%dT%H:%M:%S%:z` and paste it (don't estimate). The menu footer shows it in Eastern time with EST/EDT.
 4. New file? Add it to `sw.js` `FILES`.
 5. Push to `main`. GitHub Pages publishes in ~1 minute; phones update themselves.
 

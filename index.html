@@ -814,7 +814,19 @@ details.grp .btn{margin-bottom:12px}
   }
   function verLine() {
     var v = window.FIELDKIT_VERSION || { version: FK.version }, d = v.updated ? new Date(v.updated) : null;
-    return "Field Kit v" + v.version + (d && !isNaN(d) ? " · Updated " + d.toLocaleDateString("en-CA", { month: "short", day: "numeric", year: "numeric" }) + ", " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "");
+    // always in Eastern time with its label (EST, or EDT in summer), whatever time zone the phone is in
+    var when = "";
+    if (d && !isNaN(d)) {
+      try {
+        var tz = { timeZone: "America/Toronto" };
+        var day = d.toLocaleDateString("en-CA", Object.assign({ month: "short", day: "numeric", year: "numeric" }, tz));
+        var parts = new Intl.DateTimeFormat("en-US", Object.assign({ hour: "numeric", minute: "2-digit", timeZoneName: "short" }, tz)).formatToParts(d);
+        var time = parts.filter(function (x) { return x.type !== "timeZoneName"; }).map(function (x) { return x.value; }).join("").trim();
+        var zone = (parts.filter(function (x) { return x.type === "timeZoneName"; })[0] || {}).value || "ET";
+        when = day + ", " + time + " " + zone;
+      } catch (e) { when = d.toLocaleString(); }
+    }
+    return "Field Kit v" + v.version + (when ? " · Updated " + when : "");
   }
   $("foot").textContent = verLine();
 
