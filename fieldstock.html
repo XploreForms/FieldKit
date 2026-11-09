@@ -430,6 +430,9 @@ html.fk-slim .top .netbar{flex-basis:100%}
 .top h1{font:700 1.5rem/1.05 var(--f-display);letter-spacing:.01em}
 .top .who{opacity:1;color:var(--muted);font-size:.88rem;margin-top:3px}
 .mode{background:var(--surface-2);color:var(--muted)}
+/* the status pill is a button: it opens Field Kit settings, where Google Sheets is connected and synced */
+button.mode{border:0;font-family:inherit;cursor:pointer;min-height:34px;padding:0 12px;display:inline-flex;align-items:center}
+button.mode:active{filter:brightness(.94)}
 .mode.local,.mode.due{background:var(--fk-warn-bg);color:var(--fk-warn)}
 .mode.off{background:var(--fk-warn);color:var(--surface)}
 /* same column width as the rest of Field Kit */
@@ -445,7 +448,7 @@ html.fk-slim .top .netbar{flex-basis:100%}
       <h1>Field Stock</h1>
       <div class="who" id="who">Saved on this phone</div>
     </div>
-    <span class="mode" id="mode">No backup yet</span>
+    <button type="button" class="mode" id="mode" aria-label="Google Sheets backup status. Opens Field Kit settings">No backup yet</button>
   </div>
   <div class="netbar" id="netBar" hidden><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8.5a15 15 0 0 1 20 0M5 12a10 10 0 0 1 14 0M8.5 15.5a5 5 0 0 1 7 0M3 3l18 18"/></svg><span id="netTxt">Offline</span></div></div>
 </header>
@@ -2912,6 +2915,7 @@ async function gsSyncNow(){
   if(!gsErr) toast("Google Sheet is up to date");
 }
 document.addEventListener("click", async e=>{
+  if(e.target.closest("#mode")){ location.href="index.html#backup"; return; }   // Sign in / Waiting / Not backed up: on to settings, where Sync Now is
   if(e.target.closest("[data-gssync]")){ gsSyncNow(); return; }
   if(e.target.closest("#gsConnect, #gsConnectSetup, #gsSwitchSetup")){
     $("setupGErr").innerHTML="";
