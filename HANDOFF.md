@@ -81,8 +81,10 @@ No build step. Edit files, bump `version.js`, push.
 - Install & Conversion: Fixed Wireless = Mount, Surge (always Deployed), Radio, Router, XWH, XTV. Fibre Existing Drop = NID, ONT, Router, XWH, XTV. Fibre Drop Required/Only = Drop, NID, ONT, Router, XWH, XTV. Satellite (SurfBeam) = Trimast, AzEl, Dish, Modem, TRIA.
 - Repair: same slots by platform, **all optional** (Fibre repair gets every fibre slot).
 - Choices read **Deployed / Not Needed** (Trimast/AzEl/Dish also "Reused existing"). Mount options match Field Notes exactly: J-Arm, J-Arm + Side Stays, Gable Mount + 10ft Pole, Bipod + 5ft Pole, Tripod + 10ft Pole, Tower, Not Needed.
-- Field Notes' Mount Type and drop length fill the slots (a hand-picked slot sticks until the Notes answer changes). XWH/XTV get one slot per unit Field Notes says.
-- Serials: scan, type, or **Paste**; typed into a slot narrows the model; picker asks when ambiguous.
+- Field Notes' Mount Type and drop length fill the slots (a hand-picked slot sticks until the Notes answer changes). XWH/XTV get one slot per unit Field Notes says (none until then, unless scanned).
+- Serials: scan, type, or paste (clipboard icon **inside** the S/N box); **Add** puts a typed serial in (so does Done / tapping away); typed into a slot narrows the model; picker asks when ambiguous.
+- **XWH / XTV slots only appear** once Field Notes says how many were installed, or one is scanned/typed. No empty "If installed" slot.
+- SA home: no "Also logged in Field Stock: …" line under equipment, and no "You can leave any time…" line above Complete SA.
 - Cannot Complete / Not Required: **no equipment deployed** (entries voided; serials kept in case it changes back).
 - Conversions & repairs have a **Recovered** section; Field Cam's scanner has a **Deploy / Recovery** switch (installs always deploy). Recovered items log as Receive → Recovery on the job's SA-#.
 - Everything logged is sealed like Field Stock's own entries so **History Check stays Verified**.

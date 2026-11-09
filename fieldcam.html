@@ -2366,7 +2366,7 @@ function renderGallery() {
   const list = curPhotos().sort((a, b) => b.created - a.created);
   for (const id of [...S.selected]) if (!list.some(p => p.id === id)) S.selected.delete(id);
   const total = list.reduce((a, p) => a + p.blob.size, 0), und = list.filter(p => !p.downloaded).length;
-  $("galTitle").textContent = S.selected.size ? `${S.selected.size} selected` : "This job";
+  $("galTitle").textContent = S.selected.size ? `${S.selected.size} selected` : fkJob() ? "This SA" : "This job";
   $("galStats").textContent = list.length ? `${plural(list.length, "photo")} · ${kb(total)} · ${und ? und + " not saved" : "all saved"}` : "";
   $("selAllBtn").hidden = !list.length;
   $("selAllBtn").textContent = S.selected.size === list.length && list.length ? "Clear" : "Select all";
@@ -3276,6 +3276,8 @@ $("updGo").addEventListener("click", async () => {
 })();
 /* Field Kit job (Start New Job): Field Cam is the first step. Once every photo is saved to the phone, Field Notes opens */
 function fkJob() { return !!(window.FieldKit && FieldKit.job && FieldKit.job.inMode()); }
+// in a Field Kit SA, the job sheet is "This SA" (one-time-use Field Cam keeps "This job")
+if (fkJob()) { const h = document.querySelector("#jobSheet header h2"); if (h) h.textContent = "This SA"; $("jobSheet").setAttribute("aria-label", "SA"); }
 {
   const origDownload = downloadPhotos;
   downloadPhotos = async function (items) {
@@ -3314,6 +3316,8 @@ $("fkSlots").addEventListener("click", e => {
   if (rm) { if (!arm(rm, "Tap again")) return; j.serials = (j.serials || []).filter(x => x.code !== rm.dataset.slotRm); jobChanged(); renderSerials(); return; }
   const sc = e.target.closest("[data-slot-scan]");
   if (sc) { fkScanRec = "rec" in sc.dataset; closeSheets(); startScan(); return; }
+  const ad = e.target.closest("[data-slot-add]");
+  if (ad) { const row = ad.closest(".fkj-add"), inp = row.querySelector("input"); if (inp.dataset.busy) return; if (!inp.value.trim()) { inp.focus(); return; } fkTyped(row, ad.dataset.slotAdd); return; }
   const ps = e.target.closest("[data-slot-paste]");
   if (ps) { const row = ps.closest(".fkj-add"); FieldKit.job.pasteInto(row.querySelector("input")).then(ok => { if (ok) fkTyped(row, ps.dataset.slotPaste); else toast("Nothing to paste. Copy the S/N first, or type it in.", 2600); }); }
 });

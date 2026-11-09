@@ -70,7 +70,7 @@
   /* ---------- equipment slots: what each install usually deploys ----------
      Install and Conversion jobs get a slot for each piece of equipment their platform normally uses.
      Choice slots (mount, NID, drop...) are picked; serial slots are filled by scanning. A scanned serial goes in the
-     first slot that takes its item; anything else is listed as other equipment. XWH and XTV get one slot per unit
+     first slot that takes its item; anything else is listed as other equipment. XWH and XTV get one slot per unit (none at all until Field Notes says some were installed or one is scanned)
      Field Notes says was installed. Repairs, recoveries and VAS jobs have no slots (scan freely). */
   var SLOT_CACHE = null;
   function slotSet() {
@@ -137,7 +137,7 @@
       if (!d.multi) { rows.push({ id: id, kind: "serial", name: d.name, item: got[id][0] || null, done: !!got[id][0], optional: maybe, hint: maybe && !got[id][0] ? "If deployed" : "" }); return; }
       var want = unitsWanted(ns, d.multi), have = got[id], n = Math.max(want || 0, have.length);
       for (var k = 0; k < n; k++) rows.push({ id: id, kind: "serial", name: n > 1 ? d.name + " " + (k + 1) : d.name, item: have[k] || null, done: !!have[k], optional: maybe });
-      if (want === null && !have.length) rows.push({ id: id, kind: "serial", name: d.name, item: null, done: false, optional: true, hint: "If installed. Field Notes sets how many" });
+      // nothing scanned and Field Notes hasn't said any were installed: no XWH / XTV slot at all
     });
     var need = rows.filter(function (r) { return !r.optional; });
     return { rows: rows, extras: extras, recovered: recovered, canRecover: canRecover(src), total: need.length, done: need.filter(function (r) { return r.done; }).length,
@@ -186,6 +186,11 @@
   }
   /* One way to show the slots, used by Field Cam and the job summary.
      o.scan: html for an empty serial slot's button; o.status(code): line under a filled serial; o.pick: offer Pick Item */
+  // the Paste button that sits inside the serial box (clipboard icon)
+  function pasteIn(id) {
+    return '<button type="button" class="fkj-pastein" data-slot-paste="' + esc(id) + '" aria-label="Paste" title="Paste">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg></button>';
+  }
   function slotsHTML(model, o) {
     css(); o = o || {};
     var tick = '<i class="fkj-ok" aria-hidden="true">✓</i>', dot = '<i class="fkj-need" aria-hidden="true"></i>';
@@ -204,8 +209,8 @@
           '<button type="button" class="fkj-btn" data-slot-rm="' + esc(r.item.code) + '">Remove</button></div>';
       }
       return '<div class="fkj-slot"><div class="fkj-sh">' + (r.optional ? '<i class="fkj-need fkj-maybe" aria-hidden="true"></i>' : dot) + '<div class="fkj-txt"><b>' + esc(r.name) + '</b>' + (r.hint ? '<small>' + esc(r.hint) + '</small>' : "") + '</div></div>' +
-        '<div class="fkj-add"><input type="text" data-slot-in="' + esc(r.id) + '" placeholder="Type or paste S/N" aria-label="' + esc(r.name) + ' serial number" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="done">' +
-        '<button type="button" class="fkj-btn" data-slot-paste="' + esc(r.id) + '">Paste</button>' + (o.scan || "") + '</div></div>';
+        '<div class="fkj-add"><span class="fkj-in"><input type="text" data-slot-in="' + esc(r.id) + '" placeholder="Enter S/N" aria-label="' + esc(r.name) + ' serial number" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="done">' +
+        pasteIn(r.id) + '</span><button type="button" class="fkj-btn" data-slot-add="' + esc(r.id) + '">Add</button>' + (o.scan || "") + '</div></div>';
     }).join("");
     if (model.extras.length) {
       html += '<p class="fkj-grp">' + (model.has ? "Other equipment" : "Equipment") + '</p>' + model.extras.map(function (s) {
@@ -220,8 +225,8 @@
           (o.status ? o.status(s.code, s) : "") + '</div></div><div class="fkj-btns">' + (o.pick && !s.sku ? '<button type="button" class="fkj-btn" data-pick="' + esc(s.code) + '">Pick Item</button>' : "") +
           '<button type="button" class="fkj-btn" data-slot-rm="' + esc(s.code) + '">Remove</button></div></div>';
       }).join("") +
-        '<div class="fkj-slot"><div class="fkj-add"><input type="text" data-slot-in="__rec" placeholder="Recovered S/N" aria-label="Recovered equipment serial number" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="done">' +
-        '<button type="button" class="fkj-btn" data-slot-paste="__rec">Paste</button>' + (o.scanRec || "") + '</div>' +
+        '<div class="fkj-slot"><div class="fkj-add"><span class="fkj-in"><input type="text" data-slot-in="__rec" placeholder="Recovered S/N" aria-label="Recovered equipment serial number" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="done">' +
+        pasteIn("__rec") + '</span><button type="button" class="fkj-btn" data-slot-add="__rec">Add</button>' + (o.scanRec || "") + '</div>' +
         (model.recovered.length ? "" : '<small class="fkj-recnote">Only if you took equipment back. It goes into your stock in Field Stock.</small>') + '</div>';
     }
     return html + '</div>';
@@ -479,6 +484,9 @@
       ".fkj-val{flex:none;font-weight:600;color:var(--fk-accent-text,#23864A)}" +
       ".fkj-add{display:flex;gap:6px}.fkj-add input{flex:1;min-width:0;border:0;border-radius:10px;padding:0 12px;min-height:44px;background:var(--fk-surface-2,#E6EDE9);box-shadow:inset 0 0 0 1px var(--fk-line,rgba(0,43,43,.09));color:inherit;font:500 15px var(--fk-mono,monospace);text-transform:uppercase}" +
       ".fkj-add input::placeholder{font-family:var(--fk-body,sans-serif);text-transform:none;color:var(--fk-muted,#5A6F69)}.fkj-add input:focus{outline:none;box-shadow:inset 0 0 0 2px var(--fk-accent-text,#23864A)}.fkj-add .fkj-btn{min-height:44px}" +
+      ".fkj-in{position:relative;flex:1;min-width:0;display:flex}.fkj-in input{padding-right:46px}" +
+      ".fkj-pastein{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:38px;height:38px;border:0;border-radius:8px;background:transparent;color:var(--fk-muted,#5A6F69);display:grid;place-items:center;cursor:pointer;padding:0}" +
+      ".fkj-pastein svg{width:20px;height:20px}.fkj-pastein:active{background:var(--fk-line,rgba(0,43,43,.09))}" +
       ".fkj-rec{background:var(--fk-surface-2,#E6EDE9)!important;color:var(--fk-ink,#0E2A27)!important;font-size:.85rem!important}.fkj-recgrp{margin-top:14px!important}.fkj-recnote{display:block;margin-top:6px;font-size:.8rem;color:var(--fk-muted,#5A6F69)}" +
       ".fkj-err{margin:0;font-size:.85rem;color:var(--fk-warn,#B4400E);font-weight:600}" +
       ".fkj-seg button[aria-pressed=\"true\"]{background:var(--fk-accent,#58C774);color:var(--fk-accent-ink,#06301A)}" +
