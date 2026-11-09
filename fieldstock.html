@@ -3004,6 +3004,41 @@ document.addEventListener("visibilitychange", ()=>{ if(document.hidden) draftSav
   }
   // Field Stock always opens on Log (the tab it was last on isn't restored)
 })();
+
+/* ---------- TEST INVENTORY (remove before final rollout) ----------
+   fieldstock.html#testload loads Curtis's Dealer Inventory Visibility export (testdata-inventory.js) as received from
+   Warehouse; fieldstock.html#testremove deletes those entries again. Every entry carries TEST_NOTE. Nobody else gets
+   it unless they open that link. Remove this block, testdata-inventory.js and its HANDOFF note at rollout. */
+(function testInventory(){
+  const TEST_NOTE="Test inventory load (remove before rollout)";
+  const h=location.hash; if(h!=="#testload" && h!=="#testremove") return;
+  const done=m=>{ history.replaceState(null,"",location.pathname); renderAll(); setTab("stock"); setTimeout(()=>alert(m),50); };
+  if(h==="#testremove"){
+    const mine=Store.events.filter(e=>e.note===TEST_NOTE && !e.deleted);
+    if(!mine.length) return done("No test inventory to remove.");
+    if(!confirm(`Remove the test inventory? ${mine.length} entries will be deleted.`)) return done("Nothing removed.");
+    mine.forEach(e=>Store.deleteEvent(e.id,"Test inventory removed"));
+    return done(`Removed ${mine.length} test entries.`);
+  }
+  const sc=document.createElement("script"); sc.src="testdata-inventory.js?"+Date.now();
+  sc.onerror=()=>done("Couldn't load the test inventory. Check the connection and open the link again.");
+  sc.onload=()=>{
+    const T=window.FK_TESTLOAD; if(!T || !T.items) return done("The test inventory file is empty.");
+    if(Store.events.some(e=>e.note===TEST_NOTE && !e.deleted)) return done("The test inventory is already loaded.");
+    const its=T.items.filter(x=>SKU[x.sku]), units=its.reduce((a,x)=>a+(x.serial?1:x.qty),0);
+    if(!confirm(`Load test inventory as received from Warehouse?\n\n${units} units (${its.filter(x=>x.serial).length} with serial numbers)\nfrom: ${T.source}`)) return done("Nothing loaded.");
+    let n=0, skipped=0; const ts=Date.now();
+    its.forEach((x,i)=>{
+      if(x.serial && STOCK.serials.get(keyOf(x.serial))){ skipped++; return; }   // already in this phone's stock
+      const s=SKU[x.sku];
+      Store.add({type:"receive", sku:s.id, skuName:s.name, ts:ts-i, account:"", accountKey:"", toTech:"", from:"Warehouse", rma:"",
+        note:TEST_NOTE, lat:null, lng:null, acc:null, voided:false, serial:x.serial||"", serialKey:keyOf(x.serial||""), qty:x.serial?1:x.qty});
+      n++;
+    });
+    done(`Loaded ${n} test entries as received from Warehouse${skipped?` (${skipped} serials were already in stock)`:""}.`);
+  };
+  document.head.appendChild(sc);
+})();
 })();
 </script>
 

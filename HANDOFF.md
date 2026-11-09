@@ -115,6 +115,8 @@ No build step. Edit files, bump `version.js`, push.
 
 ## Open items / to do
 
+- ⚠️ **REMOVE BEFORE FINAL ROLLOUT — test inventory (added 1.20.1 at Curtis's request).** `testdata-inventory.js` holds his Dealer Inventory Visibility export (Brantford Central 3, 2026-11-09: 118 serialized + 67 counted units). Opening `fieldstock.html#testload` loads it into that phone's Field Stock as received from Warehouse (note "Test inventory load (remove before rollout)"); `fieldstock.html#testremove` deletes those entries. To finish: have Curtis open #testremove on his phone, then delete `testdata-inventory.js`, the "TEST INVENTORY" block at the end of `fieldstock.html`, and this note. **Remind Curtis about this before rollout.**
+
 - **Catalogue rules (1.20.0):** items sharing a plain name are one item to techs (the three Nokia XS-010X ONTs, the TRIA - 1 Watt radios): one row in Field Stock's stock list, one entry in pickers, and a serial that fits only that name needs no question. Drop names stay long (more drop types are coming). **Manual orders go by product family** (5G CPE, Router, Dish…, "Any model"); where a family has more than one item, "Choose a model" lets the tech pick one. The email shows the family and system family code, plus SKUs only for a chosen model. Extra order-only lines: Adtran 411 ONT, Nova remote, two aerial kits (HV2 modem/transceiver left off for now).
 - **Not done yet (asked to wait):** filtering SA equipment and pickers by the SA's Technology using the workbook's platform codes (several codes unconfirmed: CAB, CCW, CTX, XHP, XWR; Zyxel EMG6726 has none). Note: Satellite SA slots still use the Viasat (SurfBeam) parts even on Hughes technologies.
 
