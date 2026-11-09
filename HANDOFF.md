@@ -92,6 +92,8 @@ No build step. Edit files, bump `version.js`, push.
 - Conversions & repairs have a **Recovered** section; Field Cam's scanner has a **Deploy / Recovery** switch (installs always deploy). Recovered items log as Receive → Recovery on the job's SA-#.
 - Everything logged is sealed like Field Stock's own entries so **History Check stays Verified**.
 
+**Device photos** (`PHOTOS` in `fieldcam.html`, installs & conversions, Complete): Fibre adds ONT, XWR, XWH (optional), XTV (optional); Fixed Wireless adds CPE, XWR, XWH (opt), XTV (opt); Satellite adds Modem, TRIA, XWR, XWH (opt). The optional "VAS" label is gone from installs and conversions (repairs keep it). VAS installs need one photo named after the service: XWR, XWH or XTV. VAS services are listed XWR, XWH, XTV everywhere. The older "ONT Placement" / "Router Placement" / "Modem Placement" / "PoE Placement" labels are still there too.
+
 **Field Cam photo rules** (`PHOTO_RULES` in `fieldcam.html`)
 - Fixed Wireless: Install Overview, Line of Sight, CPE & Mount, Indoor Cable Run are each their own photo.
 - Satellite: Install Overview, Line of Sight, Dish & Mount, Indoor Cable Run are each their own photo.

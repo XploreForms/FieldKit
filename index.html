@@ -463,7 +463,7 @@ details.grp .btn{margin-bottom:12px}
   var NJ_PLATS = { INS: ["Fibre (Existing Drop)", "Fibre (Drop Required)", "Fibre (Drop Only)", "Fixed Wireless", "Satellite", "VAS"], CON: ["Fibre (Existing Drop)", "Fibre (Drop Required)", "Fixed Wireless", "Satellite"],
     REP: ["Fibre", "Fixed Wireless", "Satellite", "VAS"], REC: ["Fibre", "Fixed Wireless", "Satellite", "VAS"] };
   var NJ_FAMS = [["Fibre", "Fibre"], ["Fixed Wireless", "Fixed Wireless"], ["Satellite", "Satellite"], ["VAS", "Value Added Services"]];
-  var NJ_DROPS = ["Existing Drop", "Drop Required", "Drop Only"], NJ_VAS = ["XTV", "XWH", "XWR"];
+  var NJ_DROPS = ["Existing Drop", "Drop Required", "Drop Only"], NJ_VAS = ["XWR", "XWH", "XTV"];
   var nj = { work: null, fam: null, drop: null, vas: null };
   var famOf = function (p) { return /^Fibre/.test(p) ? "Fibre" : p; };
   function njSeg(k, items, cur, n) {
@@ -523,7 +523,7 @@ details.grp .btn{margin-bottom:12px}
     if (!nj.work) miss.push("job type");
     else if (!nj.fam) miss.push("platform");
     else if (!plat) miss.push("drop");
-    else if (plat === "VAS" && !nj.vas) miss.push("VAS service (XTV, XWH or XWR)");
+    else if (plat === "VAS" && !nj.vas) miss.push("VAS service (XWR, XWH or XTV)");
     if (miss.length) { $("njErr").innerHTML = '<div class="err">Still needed: ' + esc(miss.join(", ")) + '.</div>'; return; }
     // the Field Cam job, ready to shoot
     var camJobs = get("fieldcam.jobs", {}) || {}, cid = Date.now().toString(36);

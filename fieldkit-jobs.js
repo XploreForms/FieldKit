@@ -274,6 +274,8 @@
     "CPE & Mount": ["CPE & mount overview"], "Dish & Mount": ["Dish & mount overview"], "Outdoor Cable Run": ["Cable run"],
     "Ground Connection": ["Grounding overview"], "Grounding": ["Grounding overview"], "Indoor Cable Run": ["Indoor cable run"],
     "Modem Placement": ["Indoor equipment"], "XWR Placement": ["Indoor equipment"], "XWH Placement": ["Indoor equipment"], "PoE Placement": ["Indoor equipment"], "XTV Box Placement": ["Indoor equipment"],
+    // device photos (1.17.0)
+    "ONT": ["ONT placement"], "XWR": ["Indoor equipment"], "XWH": ["Indoor equipment"], "XTV": ["Indoor equipment"], "Modem": ["Indoor equipment"],
     "Issue(s) Found": ["Issue(s) found", "Issue found"], "Issue(s) Repaired": ["Issue resolved after repair", "Issue after repair"]
   };
   function notesFill(job, st) {
