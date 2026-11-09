@@ -68,9 +68,12 @@ No build step. Edit files, bump `version.js`, push.
 
 **Job flow**
 - New Job screen collects SA-# (auto "SA-", 7 digits only, Paste finds it in copied text), job type, platform, drop (Fibre installs/conversions), VAS service. Outcome starts as Complete.
+- **Wording: the guided flow calls a job an "SA" (service appointment)**: Start New SA, New SA, Start SA, SA summary, Complete SA, SA history, SA start/end cards. "Job type" stays (it matches Field Notes / FSL). One-time-use Field Cam still says "job" in its own screens.
+- Tapping the unfinished SA on the menu always opens its **SA home (summary)**, never the tool it was last in.
+- Field Cam's **SA START card** shows the time the SA was started (`started` on the Field Cam job); the END card is just after the last photo.
 - In a job, the way back in Field Cam and Field Notes reads **‹ SA-#######** (the job's SA number), and Field Cam's job pill drops its own SA-# so it isn't shown twice.
 - In a job, Field Cam has no "New Job"/"Start Next Job"; saving all photos goes straight to Field Notes.
-- **Back** (phone Back button, or "‹ Field Kit" / "‹ SA-#######") in Field Cam and Field Notes goes straight to the menu, or the job summary in a job (`FieldKit.goHome` in `fieldkit.js`). Field Cam closes an open panel/scanner first. Tools hand over to each other with `location.replace`, and the menu records `fieldkit.cameFrom` (sessionStorage) when it opens a tool, so going home is a real history Back.
+- **Back** (phone Back button, or "‹ Field Kit" / "‹ SA-#######") in Field Cam and Field Notes goes straight to the menu, or the job summary in a job (`FieldKit.goHome` in `fieldkit.js`). Field Cam closes an open panel/scanner first. Tools hand over to each other with `location.replace` (including links between them, e.g. Field Cam's "Go to Field Notes"), and the menu records `fieldkit.cameFrom` (sessionStorage) when it opens a tool, so going home is a real history Back.
 - Copying comments in Field Notes goes to the job summary. Outcome can be changed in Field Cam (chip ▾) or the summary; Field Notes follows and copied comments get "Needs update".
 - Complete Job asks for a second tap if photos aren't saved, comments aren't copied, or required slots are empty.
 

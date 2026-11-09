@@ -644,7 +644,7 @@ html:root[data-theme] .start{background:var(--ink)}
     <div hidden><label>Appearance</label><div class="seg two" id="themeSeg" role="group"><button type="button" data-t="dark"><b>Dark</b><span>Black, saves battery</span></button><button type="button" data-t="light"><b>Light</b><span>Easier in bright sun</span></button></div></div>
     <div><label>Photo size</label><div class="seg" id="sizeSeg" role="group"><button type="button" data-z="500"><b>500 KB</b><span>Best for low signal</span></button><button type="button" data-z="1000"><b>1 MB</b><span>More detail</span></button><button type="button" data-z="full"><b>Full quality</b><span>3–6 MB each</span></button></div><p class="hint" style="margin-top:6px">Applies to photos taken from now on. The HQ button still switches one job to full quality.</p></div>
     <div><label>Grid lines</label><div class="seg two" id="gridSeg" role="group"><button type="button" data-g="on"><b>On</b><span>Thirds, for straight, even framing</span></button><button type="button" data-g="off"><b>Off</b><span>Clear picture</span></button></div></div>
-    <div><label>Job start &amp; end cards</label><div class="seg two" id="divSeg" role="group"><button type="button" data-d="on"><b>On</b><span>Saved around each job’s photos</span></button><button type="button" data-d="off"><b>Off</b><span>Photos only</span></button></div></div>
+    <div><label>SA start &amp; end cards</label><div class="seg two" id="divSeg" role="group"><button type="button" data-d="on"><b>On</b><span>Saved around each SA’s photos</span></button><button type="button" data-d="off"><b>Off</b><span>Photos only</span></button></div></div>
     <div><label>Text size</label><div class="seg two" id="textSeg" role="group"><button type="button" data-x="normal"><b>Normal</b></button><button type="button" data-x="large"><b>Large</b><span>Bigger text and buttons</span></button></div></div>
     <!-- name and dealer come from Field Kit settings (the menu), so they're the same in every tool -->
     <div><label>Stamped on every photo</label><p class="hint" style="margin:4px 0 0;color:var(--fg)"><b id="inName"></b><br><span id="inDealer"></span></p><p class="hint" style="margin-top:6px">To change these, open <a href="index.html#settings" style="color:var(--accent)">Field Kit settings</a>.</p></div>
@@ -2191,7 +2191,9 @@ function prepDividers() {
 async function makeDivider(sid, kind) {
   const edge = edgeOfJob(sid, kind); if (!edge) return null;
   const start = kind === "start", j = jobs[sid] || edge.job || {};
-  const when = new Date(edge.created + (start ? -2000 : 2000)), Z = 1080, c = canvas(Z, Z), x = c.getContext("2d");
+  // START card: the time the SA was started (falls back to just before the first photo); END card: just after the last photo
+  const began = Number(j.started) || 0;
+  const when = new Date(start ? (began && began <= edge.created ? began : edge.created - 2000) : edge.created + 2000), Z = 1080, c = canvas(Z, Z), x = c.getContext("2d");
   // Built for thumbnails: flat colours (small JPEG), one huge word, SA-# and the time big underneath
   const F = (wt, sz) => `${wt} ${sz}px -apple-system, system-ui, "Segoe UI", Roboto, sans-serif`;
   const col = start ? "#58C774" : "#F2B84B";      // START green, END amber
@@ -2199,7 +2201,7 @@ async function makeDivider(sid, kind) {
   x.textAlign = "center"; x.textBaseline = "middle"; x.fillStyle = "#0B1413";
   const fit = (t, wt, sz, maxW) => { x.font = F(wt, sz); while (sz > 10 && x.measureText(t).width > maxW) { sz -= 2; x.font = F(wt, sz); } };
   const W = 990;
-  fit("JOB", 900, 130, 900); x.fillText("JOB", Z / 2, 130);
+  fit("SA", 900, 130, 900); x.fillText("SA", Z / 2, 130);
   const word = start ? "START" : "END";
   fit(word, 900, 340, W); x.fillText(word, Z / 2, 370);
   x.fillRect(0, 600, Z, Z - 600);                    // dark lower block
@@ -2213,10 +2215,10 @@ async function makeDivider(sid, kind) {
   x.fillStyle = "#E8EFEC"; fit(short, 700, 64, W); x.fillText(short, Z / 2, 953);
   x.fillStyle = "#8FA59D"; fit("Divider · don’t upload", 600, 44, W); x.fillText("Divider · don’t upload", Z / 2, 1035);
   let blob = await toBlob(c, 0.45);   // flat colours + big text stay crisp even at low quality (~11 KB)
-  try { blob = await addExif(blob, { when, tech:settings.name.trim(), dealer:(settings.dealer || "").trim(), labels:[start ? "Job start divider" : "Job end divider"], unlabelled:false, job:jobMeta(j.work ? j : null) }, Z, Z); } catch {}
+  try { blob = await addExif(blob, { when, tech:settings.name.trim(), dealer:(settings.dealer || "").trim(), labels:[start ? "SA start divider" : "SA end divider"], unlabelled:false, job:jobMeta(j.work ? j : null) }, Z, Z); } catch {}
   const d = when, head = [`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}${pad(d.getMinutes())}`, j.ref].filter(Boolean).join(" ");
   // "00" sorts before the photos in Files, "zz" after
-  return new File([blob], `${head} - ${start ? "00 JOB START" : "zz JOB END"} (divider).jpg`, { type:"image/jpeg", lastModified:when.getTime() });
+  return new File([blob], `${head} - ${start ? "00 SA START" : "zz SA END"} (divider).jpg`, { type:"image/jpeg", lastModified:when.getTime() });
 }
 // Cards to save with this batch: { starts, ends }
 async function dividersFor(list) {
@@ -2257,7 +2259,7 @@ async function downloadPhotos(items) {
         await navigator.share({ files });
         for (const p of list) { p.downloaded = true; p.savedAt = Date.now(); try { await DB.put(p); } catch {} }
         markDividers(all);
-        toast(`Saved ${plural(list.length, "photo")}${all.length ? ` + ${all.length === 1 ? "job " + all[0].kind + " card" : "job start and end cards"}` : ""}`, 2600);
+        toast(`Saved ${plural(list.length, "photo")}${all.length ? ` + ${all.length === 1 ? "SA " + all[0].kind + " card" : "SA start and end cards"}` : ""}`, 2600);
         return true;
       } catch (e) {
         if (e && e.name === "AbortError") { toast("Not saved. Tap Save again, then “Save Images” to put them in Photos.", 3200); return false; }
@@ -2280,7 +2282,7 @@ async function downloadPhotos(items) {
   dlBusy = false;
   if (n) markDividers(divOk);
   renderAll();
-  if (n) toast(`Saved ${plural(n, "photo")}${divOk.length ? ` + ${divOk.length === 1 ? "job " + divOk[0].kind + " card" : "job start and end cards"}` : ""}`, 3000);
+  if (n) toast(`Saved ${plural(n, "photo")}${divOk.length ? ` + ${divOk.length === 1 ? "SA " + divOk[0].kind + " card" : "SA start and end cards"}` : ""}`, 3000);
   return n > 0;
 }
 $("dlBtn").addEventListener("click", () => {

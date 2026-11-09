@@ -2534,7 +2534,7 @@ function onCopy() {
     // Field Kit job: the comment is kept with the job, then on to the job summary
     if (window.FieldKit && FieldKit.job && FieldKit.job.inMode()) {
       FieldKit.job.notesCopied(text, snapState);
-      showToast('Copied. Paste it into FSL. Opening the job summary\u2026', null, null, 1800);
+      showToast('Copied. Paste it into FSL. Opening the SA summary\u2026', null, null, 1800);
       setTimeout(function () { FieldKit.goHome(); }, 1500);
       return;
     }

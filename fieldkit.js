@@ -208,9 +208,15 @@
   if (APP === "cam" || APP === "notes") {
     // on-screen "‹ Field Kit" / "‹ SA-#######": same as the Back button
     document.addEventListener("click", function (e) {
-      var a = e.target && e.target.closest && e.target.closest("a.fk-back");
+      var a = e.target && e.target.closest && e.target.closest("a[href]");
       if (!a) return;
-      e.preventDefault(); goHome();
+      if (a.classList.contains("fk-back")) { e.preventDefault(); goHome(); return; }
+      // one tool opening the other (e.g. Field Cam's "Go to Field Notes"): replace, so Back never returns to the first tool
+      var h = a.getAttribute("href") || "";
+      if (/^(fieldcam|fieldnotes)\.html(#.*)?$/.test(h)) {
+        e.preventDefault();
+        if (typeof window.__fkNav === "function") window.__fkNav(h); else location.replace(h);
+      }
     }, true);
   }
   if (APP === "notes") {

@@ -158,7 +158,7 @@
   function slotEntry(src, slotId, text) {
     var code = keyOf(text).replace(/^(S\/?N|SN)[:#]?/, "");
     if (code.length < 5) return Promise.resolve({ error: "That serial number looks too short." });
-    if (((src && src.serials) || []).some(function (x) { return keyOf(x.code) === code; })) return Promise.resolve({ error: code + " is already on this job." });
+    if (((src && src.serials) || []).some(function (x) { return keyOf(x.code) === code; })) return Promise.resolve({ error: code + " is already on this SA." });
     var rec = slotId === "__rec", d = slotSet()[slotId], skus = (d && d.skus) || [];
     var all = modelsFor(code), fits = rec ? all : all.filter(function (id) { return skus.indexOf(id) >= 0; }), cand = rec ? fits : (fits.length ? fits : skus);
     var pick = cand.length === 1 ? Promise.resolve(cand[0]) : pickModel(code, cand);
@@ -293,8 +293,8 @@
   /* ---------- tools in a job: the way back goes to the job summary, and reads as the job's SA-# ---------- */
   if (jobMode && APP !== "home") {
     document.addEventListener("DOMContentLoaded", function () {
-      var j = active(), label = "‹ " + ((j && j.sa) || "Job");
-      [].forEach.call(document.querySelectorAll(".fk-back"), function (a) { a.setAttribute("href", "index.html#job"); a.textContent = label; a.setAttribute("aria-label", "Back to job " + ((j && j.sa) || "")); });
+      var j = active(), label = "‹ " + ((j && j.sa) || "SA");
+      [].forEach.call(document.querySelectorAll(".fk-back"), function (a) { a.setAttribute("href", "index.html#job"); a.textContent = label; a.setAttribute("aria-label", "Back to SA " + ((j && j.sa) || "")); });
     });
   }
 
@@ -393,13 +393,13 @@
       else if (e.sa === job.sa && !e.serialKey && wantItems.some(function (x) { return x.sku === e.sku && x.slot === e.slot; })) return;
       if (e.sa === job.sa && e.serialKey && want.some(function (s) { return keyOf(s.code) === e.serialKey && s.sku === e.sku; })) return;
       e.voided = true; e.voidedAt = ts;
-      e.voidReason = e.sa !== job.sa ? "SA-# changed in the job" : !okOutcome ? "Job outcome changed" : e.serialKey ? "Taken off the job" : "Changed in the job";
+      e.voidReason = e.sa !== job.sa ? "SA-# changed in the SA" : !okOutcome ? "SA outcome changed" : e.serialKey ? "Taken off the SA" : "Changed in the SA";
       e.vhash = sha256(voidText(e)); voided++;
     });
     want.forEach(function (s) {
       var k = keyOf(s.code);
       if (mine.some(function (e) { return e.type === "deploy" && !e.voided && e.serialKey === k && e.sku === s.sku && e.sa === job.sa; })) return;
-      var e = { type: "deploy", ts: ts + added, jobId: tag, sa: job.sa, account: "", accountKey: "", toTech: "", from: "", rma: "", note: "Logged from a Field Kit job",
+      var e = { type: "deploy", ts: ts + added, jobId: tag, sa: job.sa, account: "", accountKey: "", toTech: "", from: "", rma: "", note: "Logged from a Field Kit SA",
         lat: lastPos ? lastPos.latitude : null, lng: lastPos ? lastPos.longitude : null, acc: lastPos ? lastPos.accuracy : null,
         voided: false, sku: s.sku, skuName: SKU[s.sku].name, serial: s.code, serialKey: k, qty: 1, src: "fieldkit-job" };
       e.id = newId(); sealEntry(e, list); list.push(e); added++;
@@ -407,14 +407,14 @@
     wantRec.forEach(function (s) {
       var k = keyOf(s.code);
       if (mine.some(function (e) { return e.type === "receive" && !e.voided && e.serialKey === k && e.sku === s.sku && e.sa === job.sa; })) return;
-      var e = { type: "receive", ts: ts + added, jobId: tag, sa: job.sa, account: "", accountKey: "", toTech: "", from: "Recovery", rma: "", note: "Recovered on a Field Kit job",
+      var e = { type: "receive", ts: ts + added, jobId: tag, sa: job.sa, account: "", accountKey: "", toTech: "", from: "Recovery", rma: "", note: "Recovered on a Field Kit SA",
         lat: lastPos ? lastPos.latitude : null, lng: lastPos ? lastPos.longitude : null, acc: lastPos ? lastPos.accuracy : null,
         voided: false, sku: s.sku, skuName: SKU[s.sku].name, serial: s.code, serialKey: k, qty: 1, src: "fieldkit-job" };
       e.id = newId(); sealEntry(e, list); list.push(e); added++;
     });
     wantItems.forEach(function (x) {
       if (mine.some(function (e) { return e.type === "deploy" && !e.voided && !e.serialKey && e.sku === x.sku && e.slot === x.slot && e.sa === job.sa; })) return;
-      var e = { type: "deploy", ts: ts + added, jobId: tag, sa: job.sa, account: "", accountKey: "", toTech: "", from: "", rma: "", note: "Logged from a Field Kit job",
+      var e = { type: "deploy", ts: ts + added, jobId: tag, sa: job.sa, account: "", accountKey: "", toTech: "", from: "", rma: "", note: "Logged from a Field Kit SA",
         lat: lastPos ? lastPos.latitude : null, lng: lastPos ? lastPos.longitude : null, acc: lastPos ? lastPos.accuracy : null,
         voided: false, sku: x.sku, skuName: SKU[x.sku].name, serial: "", serialKey: "", qty: 1, src: "fieldkit-job", slot: x.slot };
       e.id = newId(); sealEntry(e, list); list.push(e); added++;

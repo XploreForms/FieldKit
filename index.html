@@ -280,7 +280,7 @@ details.grp .btn{margin-bottom:12px}
   <section aria-labelledby="toolsH"><h2 class="eyebrow" id="toolsH">Tools - One time use</h2><ul class="tools" id="tools"></ul></section>
   <section aria-labelledby="moreH"><h2 class="eyebrow" id="moreH">More</h2><ul class="links" id="links"></ul></section>
   <section id="histArea" hidden>
-    <button class="histbtn" type="button" id="histBtn" aria-expanded="false" aria-controls="hist"><span><b>Job history</b><small id="histCount"></small></span><em class="chev" aria-hidden="true">›</em></button>
+    <button class="histbtn" type="button" id="histBtn" aria-expanded="false" aria-controls="hist"><span><b>SA history</b><small id="histCount"></small></span><em class="chev" aria-hidden="true">›</em></button>
     <ul class="hist" id="hist" hidden></ul>
   </section>
   <p class="foot" id="foot"></p>
@@ -292,7 +292,7 @@ details.grp .btn{margin-bottom:12px}
     <a class="fk-back" href="index.html" id="njBack">‹ Field Kit</a>
     <header class="fk-head">
       <div class="fk-tile" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></div>
-      <div class="fk-head-txt"><h1 class="fk-title njtitle">New Job</h1><p class="fk-sub">Then straight into Field Cam</p></div>
+      <div class="fk-head-txt"><h1 class="fk-title njtitle">New SA</h1><p class="fk-sub">Then straight into Field Cam</p></div>
     </header>
   </div>
   <section class="njform">
@@ -303,7 +303,7 @@ details.grp .btn{margin-bottom:12px}
     <p class="help">Outcome starts as Complete. You can change it in Field Cam.</p>
   </section>
   <div id="njErr"></div>
-  <button class="btn primary block" type="button" id="njStart">Start Job</button>
+  <button class="btn primary block" type="button" id="njStart">Start SA</button>
 </div>
 
 <!-- ============ JOB SUMMARY ============ -->
@@ -321,8 +321,8 @@ details.grp .btn{margin-bottom:12px}
   <section class="card lcard" id="lbGear" aria-label="Equipment Deployed"></section>
   <div class="lfoot">
     <div id="lbWarn"></div>
-    <button class="btn primary block" type="button" id="lbDone">Complete Job</button>
-    <p class="help" id="lbHelp">You can leave any time. This job stays open until you tap Complete Job.</p>
+    <button class="btn primary block" type="button" id="lbDone">Complete SA</button>
+    <p class="help" id="lbHelp">You can leave any time. This SA stays open until you tap Complete SA.</p>
   </div>
 </div>
 
@@ -439,7 +439,7 @@ details.grp .btn{margin-bottom:12px}
     if (t >= today.getTime() - 864e5) return "Yesterday " + time;
     return d.toLocaleDateString("en-CA", { weekday: "short", month: "short", day: "numeric" }) + " " + time;
   }
-  function jobName(j) { return j.title || "Job details not set yet"; }
+  function jobName(j) { return j.title || "SA details not set yet"; }
   function goStep(j) { if (STEP_URL[j.step]) location.href = STEP_URL[j.step]; else openLobby(); }
   /* ---- new job: SA-# and job details here, then Field Cam opens straight into the camera ---- */
   // same lists as Field Cam (PLATFORMS there); the job stores Field Cam's platform value, e.g. "Fibre (Drop Required)"
@@ -526,17 +526,17 @@ details.grp .btn{margin-bottom:12px}
   function paintJobs() {
     var a = J.active();
     if (!a) {
-      $("jobArea").innerHTML = '<div class="jobwrap"><button class="job" type="button" id="jobStart"><i aria-hidden="true">' + PLUS + '</i><div><b>Start New Job</b><span>Photos, comments, job summary</span></div><em class="chev" aria-hidden="true">›</em></button></div>';
+      $("jobArea").innerHTML = '<div class="jobwrap"><button class="job" type="button" id="jobStart"><i aria-hidden="true">' + PLUS + '</i><div><b>Start New SA</b><span>Photos, comments, SA summary</span></div><em class="chev" aria-hidden="true">›</em></button></div>';
     } else {
       $("jobArea").innerHTML = '<div class="jobwrap busy"><button class="job" type="button" id="jobGo"><i aria-hidden="true">' +
         svg('<path d="M4 17H2V5h12v12"/><path d="M8 17h7"/><path d="M19 17h3v-4.5L18.5 8H14"/><circle cx="6" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 9h6M5 12.5h4"/>', 2.2) +   // truck roll with its work order
-        '</i><div><b>' + esc(a.sa || "New job") + ' <em class="live">' + (a.status === "complete" ? "Reopened" : "In progress") + '</em></b><span>' + esc(a.title ? a.title.split(" · ").slice(0, 2).join(" · ") : "Job details not set yet") + '</span></div><em class="chev" aria-hidden="true">›</em></button>' +
-        '<button class="newbtn" type="button" id="jobNew" aria-label="Replace with a new job. This one stays in Job history." title="Start over with a new job">' + RESTART + '</button></div>';
+        '</i><div><b>' + esc(a.sa || "New SA") + ' <em class="live">' + (a.status === "complete" ? "Reopened" : "In progress") + '</em></b><span>' + esc(a.title ? a.title.split(" · ").slice(0, 2).join(" · ") : "SA details not set yet") + '</span></div><em class="chev" aria-hidden="true">›</em></button>' +
+        '<button class="newbtn" type="button" id="jobNew" aria-label="Replace with a new SA. This one stays in SA history." title="Start over with a new SA">' + RESTART + '</button></div>';
     }
     var act = a ? a.id : "", hist = J.list().filter(function (j) { return j.id !== act; });
     $("histArea").hidden = !hist.length;
     var shown = hist;
-    $("histCount").textContent = hist.length + " job" + (hist.length === 1 ? "" : "s") + " in the last 7 days";
+    $("histCount").textContent = hist.length + " SA" + (hist.length === 1 ? "" : "s") + " in the last 7 days";
     $("hist").hidden = !histAll; $("histBtn").setAttribute("aria-expanded", String(histAll));
     $("hist").innerHTML = shown.map(function (j) {
       var done = j.status === "complete";
@@ -549,10 +549,10 @@ details.grp .btn{margin-bottom:12px}
   var jobSureT = null;
   document.addEventListener("click", function (e) {
     if (e.target.closest("#jobStart")) { newJob(); return; }
-    if (e.target.closest("#jobGo")) { var a = J.active(); if (a) goStep(a); return; }
+    if (e.target.closest("#jobGo")) { if (J.active()) openLobby(); return; }   // always the SA home, not the tool it was last in
     var nb = e.target.closest("#jobNew");
     if (nb) {
-      if (!nb.classList.contains("sure")) { nb.classList.add("sure"); nb.textContent = "Tap to start new"; nb.setAttribute("aria-label", "Tap again to replace it with a new job. This one stays in Job history."); clearTimeout(jobSureT); jobSureT = setTimeout(paintJobs, 4000); return; }
+      if (!nb.classList.contains("sure")) { nb.classList.add("sure"); nb.textContent = "Tap to start new"; nb.setAttribute("aria-label", "Tap again to replace it with a new SA. This one stays in SA history."); clearTimeout(jobSureT); jobSureT = setTimeout(paintJobs, 4000); return; }
       newJob(); return;
     }
     var h = e.target.closest("[data-job]");
@@ -638,15 +638,15 @@ details.grp .btn{margin-bottom:12px}
     $("lbNotes").innerHTML = html;
   }
   function gearWhy(j) {
-    if (!/^SA-\d{7}$/.test(j.sa || "")) return "Not logged: the job has no SA-# yet";
-    if (j.outcome && j.outcome !== "OK") return "Not logged: the job isn't Complete";
+    if (!/^SA-\d{7}$/.test(j.sa || "")) return "Not logged: no SA-# yet";
+    if (j.outcome && j.outcome !== "OK") return "Not logged: the SA isn't Complete";
     return "";
   }
   function paintLobbyGear(j) {
     var m = J.slotModel(j, j.notes && j.notes.state), dep = J.deployed(j), why = gearWhy(j);
     if (m.off) {
       lobbyState.gearLeft = 0;
-      $("lbGear").innerHTML = stepHead(3, "Equipment Deployed", true, "None", "") + '<p class="help">None. The job is ' + esc(j.outcome === "CC" ? "Cannot Complete" : "Not Required") + ', so no equipment is deployed or logged in Field Stock.</p>';
+      $("lbGear").innerHTML = stepHead(3, "Equipment Deployed", true, "None", "") + '<p class="help">None. The SA is ' + esc(j.outcome === "CC" ? "Cannot Complete" : "Not Required") + ', so no equipment is deployed or logged in Field Stock.</p>';
       return;
     }
     var keyOf = function (c) { return String(c).replace(/\s+/g, "").toUpperCase(); };
@@ -680,15 +680,15 @@ details.grp .btn{margin-bottom:12px}
     if (!lobbyState.photosOk) miss.push("the photos aren't all saved to your phone");
     if (!lobbyState.notesOk) miss.push(j.notes && j.notes.stale ? "the comments need updating for the new outcome" : "the comments aren't copied");
     if (lobbyState.gearLeft) miss.push(lobbyState.gearLeft + " equipment slot" + (lobbyState.gearLeft === 1 ? " is" : "s are") + " empty");
-    $("lbWarn").innerHTML = lobbySure && miss.length ? '<div class="err">' + esc(miss.join(", ").replace(/, ([^,]*)$/, " and $1").replace(/^./, function (m) { return m.toUpperCase(); })) + '. Tap Complete Job again to finish anyway.</div>' : "";
+    $("lbWarn").innerHTML = lobbySure && miss.length ? '<div class="err">' + esc(miss.join(", ").replace(/, ([^,]*)$/, " and $1").replace(/^./, function (m) { return m.toUpperCase(); })) + '. Tap Complete SA again to finish anyway.</div>' : "";
   }
   var lobbySure = false;
   function paintLobby() {
     var j = J.active(); if (!j) { openMenu(); return; }
     $("lbRef").textContent = j.sa || "New job";
     $("lbSub").textContent = (j.base || jobName(j)) + (j.status === "complete" ? " · Completed " + when(j.completedAt) : "");
-    $("lbDone").textContent = j.status === "complete" ? "Close Job" : "Complete Job";
-    $("lbHelp").textContent = j.status === "complete" ? "This job is in Job history for 7 days from its last change." : "You can leave any time. This job stays open until you tap Complete Job.";
+    $("lbDone").textContent = j.status === "complete" ? "Close SA" : "Complete SA";
+    $("lbHelp").textContent = j.status === "complete" ? "This SA is in SA history for 7 days from its last change." : "You can leave any time. This SA stays open until you tap Complete SA.";
     lobbySure = false; $("lbWarn").innerHTML = "";
     paintLobbyOut(j); paintLobbyPhotos(j); paintLobbyNotes(j); paintLobbyGear(j);
   }
@@ -707,7 +707,7 @@ details.grp .btn{margin-bottom:12px}
   $("lbDone").addEventListener("click", function () {
     var j = J.active(); if (!j) return openMenu();
     if (j.status !== "complete" && !lobbySure && (!lobbyState.photosOk || !lobbyState.notesOk || lobbyState.gearLeft)) { lobbySure = true; paintLobbyWarn(j); return; }
-    if (j.status === "complete") J.setActive(null); else { J.complete(j.id); toast("Job completed"); }
+    if (j.status === "complete") J.setActive(null); else { J.complete(j.id); toast("SA completed"); }
     leaveLobby();
   });
   var rmSureT = null;
@@ -726,7 +726,7 @@ details.grp .btn{margin-bottom:12px}
       if (!rm.classList.contains("sure")) { rm.classList.add("sure"); rm.textContent = "Remove?"; clearTimeout(rmSureT); rmSureT = setTimeout(function () { if (!$("lobby").hidden) paintLobbyGear(J.active()); }, 4000); return; }
       var j = J.active(); if (!j) return;
       var r = J.removeSerial(j, rm.getAttribute("data-rm") || rm.getAttribute("data-slot-rm"));
-      toast(r && r.voided ? "Removed, and voided in Field Stock" : "Removed from the job");
+      toast(r && r.voided ? "Removed, and voided in Field Stock" : "Removed from the SA");
       paintLobbyGear(J.active()); return;
     }
     var ps = e.target.closest("[data-slot-paste]");
