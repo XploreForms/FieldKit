@@ -79,9 +79,13 @@
     var inGroup = function () { var g = [].slice.call(arguments); return C.SKUS.filter(function (x) { return g.indexOf(x.group) >= 0 && x.serial && !x.hidden; }).map(function (x) { return x.id; }); };
     var DROPS = [["Not Needed", []], ["100m", ["00D101EB49R100MP"]], ["200m", ["00D101EB49R200MP"]], ["300m", ["00D101EB49R300MP"]], ["500m", ["00D101EB49R500MP"]], ["1000m", ["FK-DROP1000"]]];
     SLOT_CACHE = {
-      // same names as Field Notes' Mount Type
-      mount: { name: "Mount", opts: [["J-Arm", ["PVJM-39"]], ["J-Arm + Side Stays", ["PVJM-39", "FK-SIDESTAYS"]], ["Gable Mount + 10ft Pole", ["FK-GABLE", "FK-POLE10"]],
-        ["Bipod + 5ft Pole", ["FK-BIPOD", "FK-POLE5"]], ["Tripod + 10ft Pole", ["FK-TRIPOD", "FK-POLE10"]], ["Tower", []], ["Not Needed", []]] },
+      /* Mount (for stock levels): the mount type, a "Deploy 10ft pole with it" tick for Gable Mount and Tripod, and an
+         opt-out tick when no new mount went up (reused existing, or on a tower). Stored as one value:
+         "J-Arm", "Gable Mount" / "Gable Mount + 10ft Pole", "Bipod", "Tripod" / "Tripod + 10ft Pole", or "No new mount".
+         Bipod still logs its 5ft pole, as before. */
+      mount: { name: "Mount", ui: "mount", types: ["J-Arm", "Gable Mount", "Bipod", "Tripod"], poles: ["Gable Mount", "Tripod"], none: "No new mount",
+        opts: [["J-Arm", ["PVJM-39"]], ["Gable Mount", ["FK-GABLE"]], ["Gable Mount + 10ft Pole", ["FK-GABLE", "FK-POLE10"]], ["Bipod", ["FK-BIPOD", "FK-POLE5"]],
+          ["Tripod", ["FK-TRIPOD"]], ["Tripod + 10ft Pole", ["FK-TRIPOD", "FK-POLE10"]], ["No new mount", []]] },
       surge: { name: "Surge", opts: [["Deployed", ["PVFWSURGE"]]], def: "Deployed" },
       nid: { name: "NID", opts: [["Deployed", ["FTH602A010XP"]], ["Not Needed", []]] },
       drop: { name: "Drop", opts: DROPS },
@@ -128,11 +132,12 @@
       var d = D[id];
       if (d.opts) {
         var opts = d.opts.map(function (o) { return o[0]; }), def = maybe ? "" : (d.def || "");
-        if (maybe && opts.indexOf("Not Needed") < 0) opts = opts.concat(["Not Needed"]);   // Surge on a repair isn't a given
+        if (maybe && !d.ui && opts.indexOf("Not Needed") < 0) opts = opts.concat(["Not Needed"]);   // Surge on a repair isn't a given
         var v = picks[id] || def;
+        if (d.ui === "mount") v = MOUNT_OLD[v] || v;
         v = ({ Yes: "Deployed", No: "Not Needed", "J-arm": "J-Arm", "Bi-pod": "Bipod + 5ft Pole", "Gable mount + 10ft pole": "Gable Mount + 10ft Pole", "Tripod + 10ft pole": "Tripod + 10ft Pole" })[v] || v;   // answers saved before the wording changed
         if (v && opts.indexOf(v) < 0) v = def;
-        rows.push({ id: id, kind: "choice", name: d.name, opts: opts, value: v, done: !!v, optional: maybe }); return;
+        rows.push({ id: id, kind: "choice", ui: d.ui || "", name: d.name, opts: opts, value: v, done: !!v, optional: maybe }); return;
       }
       if (!d.multi) { rows.push({ id: id, kind: "serial", name: d.name, item: got[id][0] || null, done: !!got[id][0], optional: maybe, hint: maybe && !got[id][0] ? "If deployed" : "" }); return; }
       var want = unitsWanted(ns, d.multi), have = got[id], n = Math.max(want || 0, have.length);
@@ -141,8 +146,11 @@
     });
     var need = rows.filter(function (r) { return !r.optional; });
     return { rows: rows, extras: extras, recovered: recovered, canRecover: canRecover(src), total: need.length, done: need.filter(function (r) { return r.done; }).length,
-      deployedCount: rows.filter(function (r) { return r.kind === "serial" ? !!r.item : r.value && r.value !== "Not Needed" && r.value !== "Reused existing"; }).length + extras.length, has: ids.length > 0 };
+      deployedCount: rows.filter(function (r) { return r.kind === "serial" ? !!r.item : r.value && r.value !== "Not Needed" && r.value !== "Reused existing" && r.value !== "No new mount"; }).length + extras.length, has: ids.length > 0 };
   }
+  // mount answers saved before the mount slot changed (and Field Notes' Mount Type names)
+  var MOUNT_OLD = { "J-arm": "J-Arm", "J-Arm + Side Stays": "J-Arm", "Bi-pod": "Bipod", "Bipod + 5ft Pole": "Bipod", "Gable mount + 10ft pole": "Gable Mount + 10ft Pole",
+    "Tripod + 10ft pole": "Tripod + 10ft Pole", "Tower": "No new mount", "Tower Leg": "No new mount", "Not Needed": "No new mount", "No": "No new mount" };
   // the items a job's choice slots deploy: [{slot, sku}]
   function slotItems(src) {
     var D = slotSet(), out = [];
@@ -195,6 +203,19 @@
     css(); o = o || {};
     var tick = '<i class="fkj-ok" aria-hidden="true">✓</i>', dot = '<i class="fkj-need" aria-hidden="true"></i>';
     var html = '<div class="fkj-slots">' + model.rows.map(function (r) {
+      if (r.kind === "choice" && r.ui === "mount") {
+        var M = slotSet().mount, none = r.value === M.none, base = none ? "" : String(r.value || "").replace(/ \+ 10ft Pole$/, ""), pole = / \+ 10ft Pole$/.test(r.value || "");
+        var mh = '<div class="fkj-slot"><div class="fkj-sh">' + (r.done ? tick : r.optional ? '<i class="fkj-need fkj-maybe" aria-hidden="true"></i>' : dot) + '<b>' + esc(r.name) + '</b></div>' +
+          '<div class="fkj-seg' + (none ? ' fkj-off' : '') + '" role="group" aria-label="Mount type">' + M.types.map(function (t) {
+            var v = M.poles.indexOf(t) >= 0 ? t + " + 10ft Pole" : t;   // a gable mount or tripod starts with its pole ticked
+            if (t === base) v = r.value;                                   // tapping the picked one keeps the pole answer
+            return '<button type="button" style="grid-column:span 3" data-slot-set="mount" data-v="' + esc(v) + '" aria-pressed="' + (t === base) + '">' + esc(t) + '</button>';
+          }).join("") + '</div>';
+        if (M.poles.indexOf(base) >= 0)
+          mh += '<label class="fkj-chk"><input type="checkbox" data-slot-set="mount" data-v="' + esc(pole ? base : base + " + 10ft Pole") + '"' + (pole ? " checked" : "") + '><span>Deploy 10ft pole with it</span></label>';
+        mh += '<label class="fkj-chk"><input type="checkbox" data-slot-set="mount" data-v="' + (none ? "" : esc(M.none)) + '"' + (none ? " checked" : "") + '><span>No new mount deployed <small>Reused existing, or on a tower</small></span></label>';
+        return mh + '</div>';
+      }
       if (r.kind === "choice") {
         // only one possible answer (Surge): just shows it
         if (r.opts.length === 1) return '<div class="fkj-slot fkj-row"><div class="fkj-sh">' + tick + '<b>' + esc(r.name) + '</b></div><span class="fkj-val">' + esc(r.value) + '</span></div>';
@@ -484,6 +505,9 @@
       ".fkj-val{flex:none;font-weight:600;color:var(--fk-accent-text,#23864A)}" +
       ".fkj-add{display:flex;gap:6px}.fkj-add input{flex:1;min-width:0;border:0;border-radius:10px;padding:0 12px;min-height:44px;background:var(--fk-surface-2,#E6EDE9);box-shadow:inset 0 0 0 1px var(--fk-line,rgba(0,43,43,.09));color:inherit;font:500 15px var(--fk-mono,monospace);text-transform:uppercase}" +
       ".fkj-add input::placeholder{font-family:var(--fk-body,sans-serif);text-transform:none;color:var(--fk-muted,#5A6F69)}.fkj-add input:focus{outline:none;box-shadow:inset 0 0 0 2px var(--fk-accent-text,#23864A)}.fkj-add .fkj-btn{min-height:44px}" +
+      ".fkj-chk{display:flex;align-items:flex-start;gap:10px;margin-top:10px;font:600 .92rem/1.3 var(--fk-body,sans-serif);cursor:pointer}" +
+      ".fkj-chk input{flex:none;width:22px;height:22px;margin:0;accent-color:var(--fk-accent-text,#23864A)}.fkj-chk small{display:block;font-weight:400;font-size:.82rem;color:var(--fk-muted,#5A6F69)}" +
+      ".fkj-seg.fkj-off button{opacity:.55}" +
       ".fkj-in{position:relative;flex:1;min-width:0;display:flex}.fkj-in input{padding-right:46px}" +
       ".fkj-pastein{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:38px;height:38px;border:0;border-radius:8px;background:transparent;color:var(--fk-muted,#5A6F69);display:grid;place-items:center;cursor:pointer;padding:0}" +
       ".fkj-pastein svg{width:20px;height:20px}.fkj-pastein:active{background:var(--fk-line,rgba(0,43,43,.09))}" +
@@ -504,13 +528,14 @@
   }
   /* Answers in Field Notes that are also equipment slots: the drop length and the mount type.
      A slot follows Field Notes whenever that answer changes there; picking the slot by hand afterwards still sticks. */
-  var NOTES_MOUNT = { "J-Arm": "J-Arm", "J-Arm + Side Stays": "J-Arm + Side Stays", "Gable Mount + 10ft Pole": "Gable Mount + 10ft Pole", "Bipod + 5ft Pole": "Bipod + 5ft Pole",
-    "Tripod + 10ft Pole": "Tripod + 10ft Pole", "Tower": "Tower", "Tower Leg": "Tower" };
+  // Field Notes' Mount Type -> the mount slot (side stays aren't tracked; a tower or a reused mount means no new mount)
+  var NOTES_MOUNT = { "J-Arm": "J-Arm", "J-Arm + Side Stays": "J-Arm", "Gable Mount + 10ft Pole": "Gable Mount + 10ft Pole", "Bipod + 5ft Pole": "Bipod",
+    "Tripod + 10ft Pole": "Tripod + 10ft Pole", "Tower": "No new mount", "Tower Leg": "No new mount" };
   function notesToSlots(j, st) {
     if (!j || !st) return;
     var ids = slotIds(j), D = slotSet(), seen = (j.notes && j.notes.applied) || {}, want = {};
     if (ids.indexOf("drop") >= 0 && st.drop_len && D.drop.opts.some(function (o) { return o[0] === st.drop_len; })) want.drop = st.drop_len;
-    if (ids.indexOf("mount") >= 0 && st.mount && NOTES_MOUNT[st.mount]) want.mount = st.mount_reused === true ? "Not Needed" : NOTES_MOUNT[st.mount];   // a reused mount isn't deployed
+    if (ids.indexOf("mount") >= 0 && st.mount && NOTES_MOUNT[st.mount]) want.mount = st.mount_reused === true ? "No new mount" : NOTES_MOUNT[st.mount];   // a reused mount isn't deployed
     var changed = false;
     Object.keys(want).forEach(function (k) {
       if (seen[k] === want[k]) return;   // already followed this answer
