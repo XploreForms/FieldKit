@@ -104,6 +104,8 @@ No build step. Edit files, bump `version.js`, push.
 - Fibre Existing Drop: Indoor Cable Run alone; ONT Placement + Router Placement only with each other.
 - Fibre Drop Required: MPT, Install Overview, Drop Route, Indoor Cable Run alone; ONT + Router only with each other.
 
+**Old device photo labels are repaired on load** (`fixSnPhotos` in `fieldcam.html`): photos taken before the "… SN" rename (labelled ONT, XWR, XWH, XTV…) or labelled "Device SN" move onto the SA's matching SN tile (by label, else by the serial in the photo's note), so they tick it instead of making an extra tile; they're marked unsaved because the stamp changed. `devicePhoto` now follows the item's catalogue family (any CPE → CPE SN, any router → XWR SN, any Hughes/SurfBeam modem → Modem SN, any TRIA → TRIA SN…).
+
 **Scanned serials label their own photo**: the photo Field Cam takes of a scanned serial is labelled as the device photo the SA needs (radio → CPE SN, router → XWR SN, ONT → ONT SN, modem → Modem SN, TRIA → TRIA SN, XWH → XWH SN, XTV → XTV SN; `devicePhoto` in `fieldkit-jobs.js`), so it ticks that photo off. If the SA's photo list doesn't have that label, or it's a Recovery scan, it stays "<item> SN".
 
 **Field Cam "Other…" label**: the typing box (`#otherBar`) is moved to the top level of the page when opened, so it shows above the photo sorter ("To label") and sheets. It used to sit behind them, so techs typed blind.

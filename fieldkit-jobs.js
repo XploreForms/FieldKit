@@ -389,8 +389,13 @@
   /* The Field Cam photo a scanned serial counts as: radio -> CPE, router -> XWR, ONT -> ONT, modem -> Modem,
      TRIA -> TRIA, XWH -> XWH, XTV -> XTV. Found from the item the serial belongs to. */
   var DEVICE_PHOTO = { radio: "CPE SN", router: "XWR SN", ont: "ONT SN", modem: "Modem SN", tria: "TRIA SN", xwh: "XWH SN", xtv: "XTV SN" };
+  // by the item's product family in the catalogue, so every model counts (Hughes modems and TRIAs too), not just the ones in an SA slot
+  var FAM_PHOTO = { "5G CPE": "CPE SN", "HIGH-GAIN": "CPE SN", "CAT4 3.5GHZ": "CPE SN", "CAT12 2.5GHZ": "CPE SN", "CAT12 3.5GHZ": "CPE SN",
+    "ROUTER": "XWR SN", "CUBE": "XWH SN", "MESH": "XWH SN", "ONT": "ONT SN", "STB": "XTV SN",
+    "MODEM": "Modem SN", "HT2000": "Modem SN", "HT3000": "Modem SN", "1 WATT RADIO": "TRIA SN", "2 WATT RADIO": "TRIA SN", "ETRIA": "TRIA SN" };
   function devicePhoto(serial) {
-    var ids = modelsFor(serial), D = slotSet();
+    var ids = modelsFor(serial), D = slotSet(), i;
+    for (i = 0; i < ids.length; i++) { var s = SKU[ids[i]]; if (s && FAM_PHOTO[s.fam]) return FAM_PHOTO[s.fam]; }
     for (var k in DEVICE_PHOTO) { var d = D[k]; if (d && d.skus && ids.some(function (id) { return d.skus.indexOf(id) >= 0; })) return DEVICE_PHOTO[k]; }
     return "";
   }

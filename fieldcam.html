@@ -3309,7 +3309,25 @@ $("updGo").addEventListener("click", async () => {
   // outcome changed on the job summary: redraw the info band on photos not saved yet
   if (curJob() && curJob().fkRestamp) { delete curJob().fkRestamp; jobChanged(); }
   document.documentElement.classList.remove("fk-resuming");
+  fixSnPhotos().catch(e => console.error(e));
 })();
+/* Photos taken before the device photos were renamed (labelled ONT, XWR, XWH, XTV…), and scan photos that got a label of
+   their own ("Device SN"…), move onto the SA's matching "… SN" tile so they tick it off instead of making extra tiles. */
+const OLD_DEVICE_LABELS = ["ONT", "CPE", "Modem", "TRIA", "XWR", "XWH", "XTV"];
+async function fixSnPhotos() {
+  if (!(window.FieldKit && FieldKit.job && FieldKit.job.devicePhoto)) return;
+  let n = 0;
+  for (const p of [...S.photos]) {
+    const j = jobs[p.sessionId]; if (!j) continue;
+    const list = photosOf(j).map(x => x[0]); if (!list.length) continue;
+    const ls = labelsOf(p); if (ls.length !== 1 || list.includes(ls[0])) continue;
+    let want = "";
+    if (OLD_DEVICE_LABELS.includes(ls[0]) && list.includes(ls[0] + " SN")) want = ls[0] + " SN";
+    else { const m = /^Scanned S\/N (\S+)/.exec(p.note || ""); if (m) { const d = FieldKit.job.devicePhoto(m[1]); if (d && list.includes(d)) want = d; } }
+    if (want) { await relabel(p, [want]); n++; }
+  }
+  if (n) jobChanged();
+}
 /* Field Kit job (Start New Job): Field Cam is the first step. Once every photo is saved to the phone, Field Notes opens */
 function fkJob() { return !!(window.FieldKit && FieldKit.job && FieldKit.job.inMode()); }
 // in a Field Kit SA, the job sheet is "This SA" (one-time-use Field Cam keeps "This job")
