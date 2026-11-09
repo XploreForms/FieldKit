@@ -2249,6 +2249,8 @@ async function downloadPhotos(items) {
   if (unl.length) { toast(`Label ${plural(unl.length, "photo")} first, then save.`, 2600); openSorter(unl.map(p => p.id)); return false; }
   if (items.some(p => p.pending)) { toast("Updating a photo’s stamp. Tap Save again in a second.", 2600); return false; }
   const list = [...items].sort((a, b) => a.created - b.created);
+  // say why saving takes a moment: the photos are being compressed (smaller files, quicker to upload to FSL)
+  toast(`Compressing ${plural(list.length, "photo")}…`, 2400);
   if (isIOS && navigator.canShare && navigator.share) {
     const divs = await dividersFor(list);
     const all = [...divs.starts, ...divs.ends];
@@ -2274,7 +2276,7 @@ async function downloadPhotos(items) {
   const divs = await dividersFor(list), divOk = [];
   for (const d of divs.starts) { try { await saveFile(d.file.name, d.file); divOk.push(d); await sleep(700); } catch (e) { if (e && e.stop) { dlBusy = false; return false; } } }
   for (const p of list) {
-    toast(`Saving ${n + 1} of ${list.length}…`, 1600);
+    toast(`Compressing and saving ${n + 1} of ${list.length}…`, 1600);
     try { await saveFile(fileNameFor(p), p.blob); } catch (e) { if (e && e.stop) break; continue; }
     p.downloaded = true; p.savedAt = Date.now(); n++;
     try { await DB.put(p); } catch {}
