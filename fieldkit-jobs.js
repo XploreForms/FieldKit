@@ -201,7 +201,7 @@
   document.addEventListener("click", function (e) { var t = e.target && e.target.closest && e.target.closest("[data-slot-set]"); if (t) delete OPEN_SLOT[t.getAttribute("data-slot-set")]; }, true);
   // the Paste button that sits inside the serial box (clipboard icon)
   function pasteIn(id) {
-    return '<button type="button" class="fkj-pastein" data-slot-paste="' + esc(id) + '" aria-label="Paste" title="Paste">' +
+    return '<button type="button" class="fk-pastein fkj-pastein" data-slot-paste="' + esc(id) + '" aria-label="Paste" title="Paste">' +
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg></button>';
   }
   function slotsHTML(model, o) {

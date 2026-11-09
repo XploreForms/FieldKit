@@ -69,3 +69,12 @@ html.fk-slim .fk-sub,html.fk-slim .top .who{display:none}
 html.fk-slim .fk-title,html.fk-slim .top h1{font:650 15px/1.2 var(--fk-body);letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 html.fk-slim .fk-back{min-height:36px;font-size:15px}
 html.fk-slim .fk-head{gap:0}
+
+/* ---------- Paste: a clipboard icon inside the box, everywhere (SA-#, serials) ---------- */
+.fk-inwrap{position:relative;flex:1;min-width:0;display:flex}
+.fk-inwrap>input{flex:1;min-width:0;width:100%;padding-right:46px!important}
+.fk-pastein{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:38px;height:38px;border:0;border-radius:8px;padding:0;margin:0;
+  background:transparent;color:var(--fk-muted);display:grid;place-items:center;cursor:pointer;min-height:0}
+.fk-pastein svg{width:20px;height:20px}
+.fk-pastein:active{background:var(--fk-line)}
+

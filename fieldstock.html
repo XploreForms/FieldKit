@@ -82,8 +82,8 @@ button{cursor:pointer}
 .sa-in:focus-within{box-shadow:inset 0 0 0 2px var(--accent)}
 .sa-in span{display:grid;place-items:center;padding:0 2px 0 12px;font:600 1rem/1 var(--f-mono);color:var(--muted)}
 .sa-in input{box-shadow:none!important;background:transparent!important;padding-left:4px!important;flex:1;min-width:0}
-.sa-paste{flex:none;display:inline-flex;align-items:center;gap:6px;margin:6px;border:0;border-radius:var(--r-sm);padding:0 12px;background:var(--surface-2);color:var(--ink);font:600 .88rem/1 var(--f-body)}
-.sa-paste svg{width:16px;height:16px}
+.sa-paste{flex:none;display:grid;place-items:center;width:38px;height:38px;align-self:center;margin:0 4px;border:0;border-radius:8px;padding:0;background:transparent;color:var(--muted)}
+.sa-paste svg{width:20px;height:20px}.sa-paste:active{background:var(--line)}
 .lbl-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .mic{display:inline-flex;align-items:center;gap:6px;border:0;border-radius:99px;padding:6px 12px;background:var(--surface-2);color:var(--ink);font:600 .85rem/1 var(--f-body)}
 .mic svg{width:16px;height:16px}
@@ -480,8 +480,8 @@ html.fk-slim .top .netbar{flex-basis:100%}
     <form class="card" id="logForm" novalidate>
       <div class="field" id="accountBlock" hidden>
         <label for="accountIn">SA Number</label>
-        <div class="sa-in"><span aria-hidden="true">SA-</span><input type="text" id="accountIn" inputmode="numeric" autocomplete="off" placeholder="1234567" class="mono" maxlength="7" aria-describedby="saEx"><button type="button" class="sa-paste" data-sapaste="accountIn" aria-label="Paste SA number"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg>Paste</button></div>
-        <small class="ex" id="saEx">7 digits from the work order, e.g. SA-1234567. Copy it in FSL and tap Paste.</small>
+        <div class="sa-in"><span aria-hidden="true">SA-</span><input type="text" id="accountIn" inputmode="numeric" autocomplete="off" placeholder="1234567" class="mono" maxlength="7" aria-describedby="saEx"><button type="button" class="sa-paste" data-sapaste="accountIn" aria-label="Paste SA number" title="Paste"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg></button></div>
+        <small class="ex" id="saEx">7 digits from the work order, e.g. SA-1234567. Copy it in FSL and tap the clipboard.</small>
       </div>
       <div class="field" id="fromBlock" hidden>
         <span class="lbl" id="fromLbl">Received From</span>
@@ -492,7 +492,7 @@ html.fk-slim .top .netbar{flex-basis:100%}
           <button class="t-count" type="button" data-from="Other" aria-pressed="false">Other</button>
         </div>
         <input type="text" id="fromDealer" autocomplete="off" placeholder="Dealer you received the transfer from" hidden>
-        <div class="sa-in" id="fromSaBox" hidden><span aria-hidden="true">SA-</span><input type="text" id="fromAcct" inputmode="numeric" autocomplete="off" placeholder="1234567" class="mono" maxlength="7" aria-label="SA number it was recovered on"><button type="button" class="sa-paste" data-sapaste="fromAcct" aria-label="Paste SA number"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg>Paste</button></div>
+        <div class="sa-in" id="fromSaBox" hidden><span aria-hidden="true">SA-</span><input type="text" id="fromAcct" inputmode="numeric" autocomplete="off" placeholder="1234567" class="mono" maxlength="7" aria-label="SA number it was recovered on"><button type="button" class="sa-paste" data-sapaste="fromAcct" aria-label="Paste SA number"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg></button></div>
         <input type="text" id="fromIn" autocomplete="off" placeholder="Where did it come from?" hidden>
       </div>
       <div class="field" id="toBlock" hidden>

@@ -574,7 +574,7 @@ html:root[data-theme] .start{background:var(--ink)}
 <section class="sheet" id="jobSheet" aria-label="Job">
   <header><h2>This job</h2><button class="btn" data-close>Done</button></header>
   <div class="body">
-    <div><label for="inRefEdit">SA-#######</label><div class="refrow"><input id="inRefEdit" class="refin" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="numeric" placeholder="SA-1234567"><button type="button" class="btn pastebtn" data-paste="inRefEdit">Paste</button></div></div>
+    <div><label for="inRefEdit">SA-#######</label><div class="refrow"><span class="fk-inwrap"><input id="inRefEdit" class="refin" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="numeric" placeholder="SA-1234567"><button type="button" class="fk-pastein" data-paste="inRefEdit" aria-label="Paste SA number" title="Paste"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg></button></span></div></div>
     <div class="picker" id="sheetPicker"></div>
     <div class="picker" id="sheetOutcome"></div>
     <div id="fkSlots" hidden></div>
@@ -710,7 +710,7 @@ html:root[data-theme] .start{background:var(--ink)}
       <button class="btn primary" id="resumeBtn">Continue</button>
     </div>
     <h2 id="newJobH">New job</h2>
-    <div><label for="inRef">SA-#######</label><div class="refrow"><input id="inRef" class="refin" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="numeric" placeholder="SA-1234567"><button type="button" class="btn pastebtn" data-paste="inRef">Paste</button></div><p class="hint" style="margin-top:6px">Type the 7 digits or paste the full SA number.</p></div>
+    <div><label for="inRef">SA-#######</label><div class="refrow"><span class="fk-inwrap"><input id="inRef" class="refin" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="numeric" placeholder="SA-1234567"><button type="button" class="fk-pastein" data-paste="inRef" aria-label="Paste SA number" title="Paste"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg></button></span></div><p class="hint" style="margin-top:6px">Type the 7 digits or paste the full SA number.</p></div>
     <div class="picker" id="startPicker"></div>
     <div><label>Outcome <span style="text-transform:none;letter-spacing:0">(can be changed later)</span></label><button type="button" class="btn startout" id="startOutBtn" disabled>Select later</button></div>
     <div class="install" id="installTip" hidden></div>
