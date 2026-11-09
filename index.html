@@ -196,6 +196,23 @@ html.fk-slim .lhead .fk-title{font:650 15px/1.2 var(--fk-body);flex:none}
 .tool .cont{display:block;margin-top:2px;font-size:.8rem;line-height:1.3;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .chev{font-style:normal;color:var(--muted);font-size:1.4rem;line-height:1}
 
+/* the SA card is the main way in: taller than everything else on the menu */
+#jobArea .job{min-height:96px}
+/* Without an SA: Field Cam, Field Stock and Field Notes on their own, small, under the Tools links */
+.minitools{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.mini{position:relative;min-width:0}
+.mini a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:72px;padding:10px 4px;border-radius:var(--r);
+  border:1px solid var(--line);background:transparent;color:var(--fg);text-decoration:none;text-align:center}
+.mini a:active{background:var(--surface-2)}
+.mini svg{width:22px;height:22px;color:var(--muted)}
+.mini b{font:600 .88rem/1.15 var(--f-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.mini .live{padding:3px 6px;border-radius:99px;background:var(--btn);color:var(--btn-ink);font:600 .58rem/1 var(--f-body);font-style:normal;letter-spacing:.04em;text-transform:uppercase}
+.mini.busy a{border-color:var(--btn);box-shadow:inset 0 0 0 1px var(--btn)}
+.mini .newbtn{position:absolute;top:-8px;right:-6px;z-index:2;border:0;border-radius:99px;height:30px;min-width:30px;padding:0;display:grid;place-items:center;
+  background:var(--surface);box-shadow:var(--shadow),0 0 0 1px var(--line);color:var(--fg);font:600 .75rem/1 var(--f-body);cursor:pointer}
+.mini .newbtn svg{width:15px;height:15px;color:var(--fg)}
+.mini .newbtn.sure{background:var(--warn-bg);color:var(--warn);padding:0 10px;white-space:nowrap}
+
 /* more: secondary links, deliberately quieter than the tools */
 .links{list-style:none;margin:8px 0 0;padding:0;border-radius:var(--r);background:var(--surface);box-shadow:var(--shadow);overflow:hidden}
 .links li+li{border-top:1px solid var(--line)}
@@ -277,8 +294,9 @@ details.grp .btn{margin-bottom:12px}
 
   <section id="jobArea"></section>
 
-  <section aria-labelledby="toolsH"><h2 class="eyebrow" id="toolsH">Tools - One time use</h2><ul class="tools" id="tools"></ul></section>
-  <section aria-labelledby="moreH"><h2 class="eyebrow" id="moreH">More</h2><ul class="links" id="links"></ul></section>
+  <section aria-labelledby="moreH"><h2 class="eyebrow" id="moreH">Tools</h2><ul class="links" id="links"></ul></section>
+  <!-- Field Cam, Field Stock and Field Notes on their own: kept small, so Start New SA is the obvious way in -->
+  <section aria-labelledby="toolsH"><h2 class="eyebrow" id="toolsH">Without an SA</h2><ul class="minitools" id="tools"></ul></section>
   <section id="histArea" hidden>
     <button class="histbtn" type="button" id="histBtn" aria-expanded="false" aria-controls="hist"><span><b>SA history</b><small id="histCount"></small></span><em class="chev" aria-hidden="true">›</em></button>
     <ul class="hist" id="hist" hidden></ul>
@@ -415,9 +433,8 @@ details.grp .btn{margin-bottom:12px}
     $("tools").innerHTML = TOOLS.map(function (t) {
       var s = prog[t.id];
       var line = s ? (s.short || [s.title, s.detail].filter(Boolean).join(" · ")) : t.desc;
-      return '<li class="tool' + (s ? " busy" : "") + '"><a href="' + esc(t.href) + '"><i aria-hidden="true">' + svg(t.icon) + '</i><div><b>' + esc(t.name) +
-        (s ? ' <em class="live">In progress</em>' : '') + '</b><span>' + esc(line) + '</span>' +
-        '</div><em class="chev" aria-hidden="true">›</em></a>' +
+      return '<li class="mini' + (s ? " busy" : "") + '"><a href="' + esc(t.href) + '" title="' + esc(line) + '">' + svg(t.icon) + '<b>' + esc(t.name) + '</b>' +
+        (s ? '<em class="live">In progress</em>' : '') + '</a>' +
         (s ? '<button class="newbtn" type="button" data-new="' + t.id + '" aria-label="Start new in ' + esc(t.name) + '" title="Start new">' + RESTART + '</button>' : '') + '</li>';
     }).join("");
   }
