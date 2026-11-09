@@ -2437,7 +2437,16 @@ const SN_RULES = [
 ];
 const MAC_OUIS = new Set(["001FFB", "002445", "00A0BC", "2479EF", "2CD8AE", "38F8F6", "5422E0", "5C0FFB", "64A0AC", "80029C", "844D4C", "A0EEEE", "B41D62", "BC2106", "D41AD1", "D8ECE5", "F835DD"]);
 const snKey = v => String(v || "").replace(/\s+/g, "").toUpperCase();
-const snItem = v => { const k = snKey(v); const r = SN_RULES.find(([rx]) => rx.test(k)); return r ? r[1] : ""; };
+// the item's plain name from the catalogue (its family name when the serial fits more than one); the old list if it's missing
+const snItem = v => {
+  const C = window.FK_CATALOG, k = snKey(v);
+  if (C && C.match) {
+    const ids = C.match(k), sk = ids.map(id => C.SKUS.find(x => x.id === id)).filter(Boolean);
+    if (sk.length === 1) return sk[0].name;
+    if (sk.length > 1) return sk.every(x => x.fam === sk[0].fam) && sk[0].famName ? sk[0].famName : sk.map(x => x.name).join(" or ");
+  }
+  const r = SN_RULES.find(([rx]) => rx.test(k)); return r ? r[1] : "";
+};
 const snIsMac = v => { const k = snKey(v).replace(/[:.\-]/g, ""); return /^[0-9A-F]{12}$/.test(k) && MAC_OUIS.has(k.slice(0, 6)) && !snItem(k); };
 const SC = { on:false, bd:undefined, reader:null, pending:null, busy:false };
 const scanAllowed = () => { const j = curJob(); return !!(j && (j.outcome === "OK" || !j.outcome)); };

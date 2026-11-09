@@ -1,93 +1,111 @@
-/* Field Kit item catalogue: every stock item and the serial number patterns that identify them.
-   Shared by Field Stock and Field Kit jobs (scanned serials in a job are logged as deployments).
-   Edit items and patterns here only. */
+/* Field Kit item catalogue: every stock item, its plain-language name and family, and how serial numbers identify it.
+   Built from Curtis's FieldKit_Equipment_Catalogue.xlsx and FieldKit_Serial_Lookup.xlsx (inventory exports 2026-11-09).
+   id = the SKU (never change an id: entries already logged use it). name = what techs see. desc = the system description.
+   fam = the system Product Family; famName = its plain name (manual orders go by family). Items with the same name are one
+   item to techs (e.g. the three Nokia XS-010X ONTs). Shared by Field Stock, Field Cam and Field Kit SAs. Edit here only. */
 (function () {
 var SKUS = [
-  {"id": "O5-100M1", "name": "5G Next Generation Outdoor CPE", "group": "5G & fixed wireless", "serial": true},
-  {"id": "O5M-NA", "name": "5G NR Rel 15 Outdoor CPE with 1Gbps 2.5G", "group": "5G & fixed wireless", "serial": true},
-  {"id": "O5 PRO MAX", "name": "O5 PRO MAX High Gain Outdoor CPE", "group": "5G & fixed wireless", "serial": true},
-  {"id": "B5-100M", "name": "5G High Gain Outdoor CPE", "group": "5G & fixed wireless", "serial": true},
-  {"id": "B5-100M1", "name": "5G High Gain Outdoor CPE (T830)", "group": "5G & fixed wireless", "serial": true},
-  {"id": "OA-335 B42/43", "name": "CAT12 LTE - B42/43/48", "group": "LTE", "serial": true},
-  {"id": "FWCAT12-3.5M", "name": "CPE-CAT12 LTE Band 42/43 MassiveMIMO", "group": "LTE", "serial": true},
-  {"id": "FWCAT12-2.5M", "name": "2.5GHz CAT12 LTE Band 42/43 M MIMO", "group": "LTE", "serial": true},
-  {"id": "735060", "name": "DUAL MODE CPE 7000", "group": "LTE", "serial": true},
-  {"id": "854-V6", "name": "Adtran Wi-Fi 6 Router", "group": "Wi-Fi & routers", "serial": true},
-  {"id": "834-V6", "name": "Adtran Wi-Fi 6 Extender", "group": "Wi-Fi & routers", "serial": true},
-  {"id": "WAP6804-MT", "name": "Metroloop Zyxel Mesh", "group": "Wi-Fi & routers", "serial": true},
-  {"id": "EMG6726-B10A-MT", "name": "NLA Metroloop Zyxel Router", "group": "Wi-Fi & routers", "serial": true},
-  {"id": "3TN00665AA", "name": "Nokia XGSPON ONT XS-010X-R", "group": "Fiber ONTs", "serial": true},
-  {"id": "3TN01554AA", "name": "Nokia ONT XS-010X-D", "group": "Fiber ONTs", "serial": true},
-  {"id": "1287987F1", "name": "2.5GbE GPON ONT with VOIP 601qv", "group": "Fiber ONTs", "serial": true},
-  {"id": "1287835F1", "name": "Adtran 424 ONT", "group": "Fiber ONTs", "serial": true},
-  {"id": "00D101EB49R100MP", "name": "100M Evolv Dielectric Drop PushLok Tech", "group": "Fiber drops & NIDs", "serial": false},
-  {"id": "00D101EB49R200MP", "name": "200M Evolv Dielectric Drop PushLok Tech", "group": "Fiber drops & NIDs", "serial": false},
-  {"id": "00D101EB49R300MP", "name": "300M Evolv Dielectric Drop PushLok Tech", "group": "Fiber drops & NIDs", "serial": false},
-  {"id": "00D101EB49R500MP", "name": "500M Evolv Dielectric Drop PushLok Tech", "group": "Fiber drops & NIDs", "serial": false},
-  {"id": "FK-DROP1000", "name": "1000M Evolv Dielectric Drop PushLok Tech", "group": "Fiber drops & NIDs", "serial": false},
-  {"id": "FTH602A010XP", "name": "NID - HSG,FTH-602,1 SCAPC,NOGP,HEX,STD", "group": "Fiber drops & NIDs", "serial": false},
-  {"id": "EVOFORCE1", "name": "Android TV Streaming Player (IPA2112HDW)", "group": "TV", "serial": true},
-  {"id": "9988030065MFG", "name": "STB KAMAI 7XM W/NOVA REMOTE", "group": "TV", "serial": true},
-  {"id": "XTV LEAVE BEHIND", "name": "XTV Quick Start Guide (bundle of 50)", "group": "TV", "serial": false},
-  {"id": "1505216-0122", "name": "Hughes HT2000 Modem J2", "group": "Hughes satellite", "serial": true},
-  {"id": "1507883-1104", "name": "HT3000 XCI Modem", "group": "Hughes satellite", "serial": true},
-  {"id": "1507724-0002", "name": "RADIO ASSY, HC210-L, MULTI-J, LHCP", "group": "Hughes satellite", "serial": true},
-  {"id": "1507724-1004", "name": "HC210 2w Radio (LH)", "group": "Hughes satellite", "serial": true},
-  {"id": "1504000-0022", "name": "Assy, Radio, LHCP, Jupiter 2W", "group": "Hughes satellite", "serial": true},
-  {"id": "1502938-0001", "name": "HTJ RADIO ASSY", "group": "Hughes satellite", "serial": true},
-  {"id": "1502938-0002", "name": "HTJ RADIO ASSY, LHCP", "group": "Hughes satellite", "serial": true},
-  {"id": "1502938-0016", "name": "HTJ 1 WATT RADIO ASSY, LHCP", "group": "Hughes satellite", "serial": true},
-  {"id": "1505328-0014", "name": "Hughes 1 Watt Left Radio for J2", "group": "Hughes satellite", "serial": true},
-  {"id": "1504915-0013", "name": "Hughes 0.74m Steel Ka Antenna J1 and J2", "group": "Hughes satellite", "serial": false},
-  {"id": "1504915-0102", "name": "Hughes 0.74m Steel Azel for J1 and J2", "group": "Hughes satellite", "serial": false},
-  {"id": "1506560-0036", "name": "90cm Antenna", "group": "Hughes satellite", "serial": false},
-  {"id": "1506561-0031", "name": "90cm AzEl", "group": "Hughes satellite", "serial": false},
-  {"id": "1503931-0003", "name": "Hughes TRI MAST MOUNT FOR J1 and J2", "group": "Hughes satellite", "serial": false},
-  {"id": "RM4100N-043", "name": "Satellite Modem (30V) - SurfBeam 2", "group": "SurfBeam satellite", "serial": true},
-  {"id": "X01012000A001", "name": "eTRIA - SurfBeam 2 (4 pack)", "group": "SurfBeam satellite", "serial": true},
-  {"id": "1172769-004", "name": "SurfBeam 2 Probrand v2 Antenna (4-pack)", "group": "SurfBeam satellite", "serial": false},
-  {"id": "1172770", "name": "SurfBeam 2 Probrand v2 Az/El (4-pack)", "group": "SurfBeam satellite", "serial": false},
-  {"id": "1140662", "name": "SurfBeam 2 Probrand Mast Mount (4-pack)", "group": "SurfBeam satellite", "serial": false},
-  {"id": "PVJM-39", "name": "2 PK J PIPE ANTENNA MOUNT 39\" OD 1.66\"", "group": "Mounts & surge", "serial": false},
-  {"id": "PVFWSURGE", "name": "FWA SURGE ARRESTOR", "group": "Mounts & surge", "serial": false},
-  /* FK- items: added for job equipment slots. Replace each FK- id with the real part number before techs use them */
-  {"id": "FK-BIPOD", "name": "Bi-pod Mount", "group": "Mounts & surge", "serial": false},
-  {"id": "FK-GABLE", "name": "Gable Mount", "group": "Mounts & surge", "serial": false},
-  {"id": "FK-TRIPOD", "name": "Tripod Mount", "group": "Mounts & surge", "serial": false},
-  {"id": "FK-POLE10", "name": "10ft Pole", "group": "Mounts & surge", "serial": false},
-  {"id": "FK-POLE5", "name": "5ft Pole", "group": "Mounts & surge", "serial": false},
-  {"id": "FK-SIDESTAYS", "name": "Side Stays", "group": "Mounts & surge", "serial": false},
-  {"id": "FK-SATPOLE", "name": "Satellite Pole Mount", "group": "SurfBeam satellite", "serial": false},
-  {"id": "fiber-drop", "name": "Fiber Drop Cable (older entries)", "group": "Fiber drops & NIDs", "serial": true, "hidden": true}
+  {"id": "O5-100M1", "name": "Next Gen 5G", "desc": "5G Next Generation Outdoor CPE", "fam": "5G CPE", "famName": "5G CPE", "group": "5G & fixed wireless", "serial": true, "platforms": ["FWN"]},
+  {"id": "O5M-NA", "name": "First Gen 5G", "desc": "5G NR Rel 15 Outdoor CPE with 1Gbps 2.5G", "fam": "5G CPE", "famName": "5G CPE", "group": "5G & fixed wireless", "serial": true, "platforms": ["FWN"]},
+  {"id": "B5-100M", "name": "First Gen High Gain", "desc": "5G High Gain Outdoor CPE", "fam": "HIGH-GAIN", "famName": "5G High Gain CPE", "group": "5G & fixed wireless", "serial": true, "platforms": ["FWN"]},
+  {"id": "B5-100M1", "name": "Next Gen High Gain", "desc": "5G High Gain Outdoor CPE (T830)", "fam": "HIGH-GAIN", "famName": "5G High Gain CPE", "group": "5G & fixed wireless", "serial": true, "platforms": ["FWN"]},
+  {"id": "O5 PRO MAX", "name": "Pro Max", "desc": "O5 PRO MAX High Gain Outdoor CPE", "fam": "HIGH-GAIN", "famName": "5G High Gain CPE", "group": "5G & fixed wireless", "serial": true, "platforms": ["FWN"]},
+  {"id": "735060", "name": "CAT4 LTE", "desc": "DUAL MODE CPE 7000", "fam": "CAT4 3.5GHZ", "famName": "LTE CPE – CAT4 3.5 GHz", "group": "LTE", "serial": true, "platforms": ["FWA"]},
+  {"id": "FWCAT12-2.5M", "name": "Gemtek CAT12 LTE 2.5GHz", "desc": "2.5GHz CAT12 LTE Band 42/43 M MIMO", "fam": "CAT12 2.5GHZ", "famName": "LTE CPE – CAT12 2.5 GHz", "group": "LTE", "serial": true, "platforms": ["LTE"]},
+  {"id": "FWCAT12-3.5M", "name": "Gemtek CAT12 LTE 3.5GHz", "desc": "CPE-CAT12 LTE Band 42/43 MassiveMIMO", "fam": "CAT12 3.5GHZ", "famName": "LTE CPE – CAT12 3.5 GHz", "group": "LTE", "serial": true, "platforms": ["LTE"]},
+  {"id": "OA-335 B38/41", "name": "Greenpacket CAT12 LTE 2.5GHz", "desc": "CAT 12 LTE - B38/41 2.5GHz", "fam": "CAT12 2.5GHZ", "famName": "LTE CPE – CAT12 2.5 GHz", "group": "LTE", "serial": true, "platforms": ["LTE"]},
+  {"id": "OA-335 B42/43", "name": "Greenpacket CAT12 LTE 3.5GHz", "desc": "CAT12 LTE - B42/43/48", "fam": "CAT12 3.5GHZ", "famName": "LTE CPE – CAT12 3.5 GHz", "group": "LTE", "serial": true, "platforms": ["LTE"]},
+  {"id": "854-V6", "name": "Adtran 854-V6", "desc": "Adtran Wi-Fi 6 Router", "fam": "ROUTER", "famName": "Router", "group": "Wi-Fi & routers", "serial": true, "platforms": ["FTX", "XHP", "XWR", "HJ3", "LTE", "FWN", "ATX", "MTX"]},
+  {"id": "ARIA3321V-XPL", "name": "Hitron ARIA3321V", "desc": "2+2+2 Router w/Voice", "fam": "ROUTER", "famName": "Router", "group": "Wi-Fi & routers", "serial": true, "platforms": ["FTX", "XHP", "XWR", "HJ3", "LTE", "FWN", "ATX", "MTX"]},
+  {"id": "EMG6726-B10A-MT", "name": "Zyxel EMG6726-B10A", "desc": "NLA Metroloop Zyxel Router", "fam": "ROUTER", "famName": "Router", "group": "Wi-Fi & routers", "serial": true, "platforms": []},
+  {"id": "834-V6", "name": "Adtran 834-V6", "desc": "Adtran Wi-Fi 6 Extender", "fam": "CUBE", "famName": "XWH extender", "group": "Wi-Fi & routers", "serial": true, "platforms": ["XWH"]},
+  {"id": "WAP6804-MT", "name": "Zyxel WAP6804-MT", "desc": "Metroloop Zyxel Mesh", "fam": "MESH", "famName": "Mesh extender", "group": "Wi-Fi & routers", "serial": true, "platforms": ["MWH"]},
+  {"id": "1287835F1", "name": "Adtran 424", "desc": "Adtran 424 ONT", "fam": "ONT", "famName": "ONT", "group": "Fibre ONTs", "serial": true, "platforms": ["MTV"]},
+  {"id": "1287987F1", "name": "Adtran 601qv", "desc": "2.5GbE GPON ONT with VOIP 601qv", "fam": "ONT", "famName": "ONT", "group": "Fibre ONTs", "serial": true, "platforms": ["ATX", "MTX"]},
+  {"id": "3FE49328AA", "name": "Nokia XS-010X", "desc": "XGS PON Indoor ONT,US Power adaptor", "fam": "ONT", "famName": "ONT", "group": "Fibre ONTs", "serial": true, "platforms": ["FTX"]},
+  {"id": "3TN00665AA", "name": "Nokia XS-010X", "desc": "Nokia XGSPON ONT XS-010X-R", "fam": "ONT", "famName": "ONT", "group": "Fibre ONTs", "serial": true, "platforms": ["FTX"]},
+  {"id": "3TN01554AA", "name": "Nokia XS-010X", "desc": "Nokia ONT XS-010X-D", "fam": "ONT", "famName": "ONT", "group": "Fibre ONTs", "serial": true, "platforms": ["FTX"]},
+  {"id": "00D101EB49R100MP", "name": "Drop - 100m - Evolv Dielectric Drop PushLok Tech", "desc": "100M Evolv Dielectric Drop PushLok Tech", "fam": "DROP CABLE", "famName": "Drop cable", "group": "Fibre drops & NIDs", "serial": false, "platforms": ["FTX", "ATX"]},
+  {"id": "00D101EB49R200MP", "name": "Drop - 200m - Evolv Dielectric Drop PushLok Tech", "desc": "200M Evolv Dielectric Drop PushLok Tech", "fam": "DROP CABLE", "famName": "Drop cable", "group": "Fibre drops & NIDs", "serial": false, "platforms": ["FTX", "ATX"]},
+  {"id": "00D101EB49R300MP", "name": "Drop - 300m - Evolv Dielectric Drop PushLok Tech", "desc": "300M Evolv Dielectric Drop PushLok Tech", "fam": "DROP CABLE", "famName": "Drop cable", "group": "Fibre drops & NIDs", "serial": false, "platforms": ["FTX", "ATX"]},
+  {"id": "00D101EB49R500MP", "name": "Drop - 500m - Evolv Dielectric Drop PushLok Tech", "desc": "500M Evolv Dielectric Drop PushLok Tech", "fam": "DROP CABLE", "famName": "Drop cable", "group": "Fibre drops & NIDs", "serial": false, "platforms": ["FTX", "ATX"]},
+  {"id": "00D101EB49R750MP", "name": "Drop - 750m - Evolv Dielectric Drop PushLok Tech", "desc": "750M Evolv Dielectric Drop PushLok Tech", "fam": "DROP CABLE", "famName": "Drop cable", "group": "Fibre drops & NIDs", "serial": false, "platforms": ["FTX", "ATX"]},
+  {"id": "FTH602A010XP", "name": "NID", "desc": "NID - HSG,FTH-602,1 SCAPC,NOGP,HEX,STD", "fam": "NID", "famName": "NID", "group": "Fibre drops & NIDs", "serial": false, "platforms": ["FTX", "ATX", "CTX", "MTX"]},
+  {"id": "FK-DROP1000", "name": "Drop - 1000m - Evolv Dielectric Drop PushLok Tech", "desc": "1000M Evolv Dielectric Drop PushLok Tech", "fam": "DROP CABLE", "famName": "Drop cable", "group": "Fibre drops & NIDs", "serial": false, "platforms": [], "extra": true, "noOrder": true},
+  {"id": "fiber-drop", "name": "Fiber Drop Cable (older entries)", "desc": "Fiber Drop Cable (older entries)", "fam": "", "famName": "", "group": "Fibre drops & NIDs", "serial": true, "platforms": [], "extra": true, "hidden": true},
+  {"id": "9988030065MFG", "name": "Kamai 7XM", "desc": "STB KAMAI 7XM W/NOVA REMOTE", "fam": "STB", "famName": "TV box", "group": "TV", "serial": true, "platforms": ["MTV"]},
+  {"id": "EVOFORCE1", "name": "EVO FORCE 1", "desc": "Android TV Streaming Player (IPA2112HDW)", "fam": "STB", "famName": "TV box", "group": "TV", "serial": true, "platforms": ["XTV"]},
+  {"id": "XTV LEAVE BEHIND", "name": "XTV Quick Start Guide (bundle of 50)", "desc": "XTV Quick Start Guide (bundle of 50)", "fam": "", "famName": "", "group": "TV", "serial": false, "platforms": [], "extra": true, "noOrder": true},
+  {"id": "1504915-0102", "name": "AzEl - 74cm - Jupiter", "desc": "Hughes 0.74m Steel Azel for J1 and J2", "fam": "AZEL", "famName": "AzEl", "group": "Hughes satellite", "serial": false, "platforms": ["HTJ"]},
+  {"id": "1506561-0031", "name": "AzEl - 90cm - Jupiter", "desc": "90cm AzEl", "fam": "AZEL", "famName": "AzEl", "group": "Hughes satellite", "serial": false, "platforms": ["HJ3", "HJ2"]},
+  {"id": "1503931-0003", "name": "Trimast - Jupiter", "desc": "Hughes TRI MAST MOUNT FOR J1 and J2", "fam": "TRIMAST", "famName": "Trimast", "group": "Hughes satellite", "serial": false, "platforms": ["HTJ", "HJ2", "HJ3"]},
+  {"id": "1504915-0013", "name": "Dish - 74cm - Jupiter", "desc": "Hughes 0.74m Steel Ka Antenna J1 and J2", "fam": "ANTENNA", "famName": "Dish", "group": "Hughes satellite", "serial": false, "platforms": ["HTJ"]},
+  {"id": "1506560-0036", "name": "Dish - 90cm - Jupiter", "desc": "90cm Antenna", "fam": "ANTENNA", "famName": "Dish", "group": "Hughes satellite", "serial": false, "platforms": ["HJ3", "HJ2"]},
+  {"id": "1505216-0122", "name": "HT2000", "desc": "Hughes HT2000 Modem J2", "fam": "HT2000", "famName": "HT2000 modem", "group": "Hughes satellite", "serial": true, "platforms": ["HTJ", "HJ2"]},
+  {"id": "1507883-1104", "name": "HT3000", "desc": "HT3000 XCI Modem", "fam": "HT3000", "famName": "HT3000 modem", "group": "Hughes satellite", "serial": true, "platforms": ["HJ3", "HJ2"]},
+  {"id": "1502938-0001", "name": "TRIA - 1 Watt", "desc": "HTJ RADIO ASSY", "fam": "1 WATT RADIO", "famName": "TRIA - 1 Watt", "group": "Hughes satellite", "serial": true, "platforms": ["HTJ"]},
+  {"id": "1502938-0002", "name": "TRIA - 1 Watt", "desc": "HTJ  RADIO ASSY, LHCP", "fam": "1 WATT RADIO", "famName": "TRIA - 1 Watt", "group": "Hughes satellite", "serial": true, "platforms": ["HTJ"]},
+  {"id": "1502938-0016", "name": "TRIA - 1 Watt", "desc": "HTJ  1 WATT RADIO ASSY, LHCP", "fam": "1 WATT RADIO", "famName": "TRIA - 1 Watt", "group": "Hughes satellite", "serial": true, "platforms": ["HTJ"]},
+  {"id": "1504000-0022", "name": "TRIA - 2 Watt", "desc": "Assy, Radio, LHCP, Jupiter 2W", "fam": "2 WATT RADIO", "famName": "TRIA - 2 Watt", "group": "Hughes satellite", "serial": true, "platforms": ["HTJ", "HJ2", "HJ3"]},
+  {"id": "1505328-0014", "name": "TRIA - 1 Watt", "desc": "Hughes 1 Watt Left Radio for J2", "fam": "1 WATT RADIO", "famName": "TRIA - 1 Watt", "group": "Hughes satellite", "serial": true, "platforms": ["HTJ"]},
+  {"id": "1507724-0002", "name": "TRIA - 2 Watt", "desc": "RADIO ASSY, HC210-L, MULTI-J, LHCP", "fam": "2 WATT RADIO", "famName": "TRIA - 2 Watt", "group": "Hughes satellite", "serial": true, "platforms": ["HTJ", "HJ2", "HJ3"]},
+  {"id": "1507724-1004", "name": "TRIA - 2 Watt", "desc": "HC210 2w Radio (LH)", "fam": "2 WATT RADIO", "famName": "TRIA - 2 Watt", "group": "Hughes satellite", "serial": true, "platforms": [], "extra": true},
+  {"id": "1172770", "name": "AzEl - Viasat", "desc": "SurfBeam 2 Probrand v2 Az/El (4-pack)", "fam": "AZEL", "famName": "AzEl", "group": "SurfBeam satellite", "serial": false, "platforms": ["HTV", "KA2", "HV2"]},
+  {"id": "1140662", "name": "Trimast - Viasat", "desc": "SurfBeam 2 Probrand Mast Mount (4-pack)", "fam": "TRIMAST", "famName": "Trimast", "group": "SurfBeam satellite", "serial": false, "platforms": ["HTV", "KA2", "HV2"]},
+  {"id": "1172769-004", "name": "Dish - Viasat", "desc": "SurfBeam 2 Probrand v2 Antenna (4-pack)", "fam": "ANTENNA", "famName": "Dish", "group": "SurfBeam satellite", "serial": false, "platforms": ["HTV", "KA2", "HV2"]},
+  {"id": "RM4100N-043", "name": "SurfBeam 2", "desc": "Satellite Modem (30V) - SurfBeam 2", "fam": "MODEM", "famName": "SurfBeam 2 modem", "group": "SurfBeam satellite", "serial": true, "platforms": ["HTV", "KA2"]},
+  {"id": "X01012000A001", "name": "eTRIA - Viasat", "desc": "eTRIA - SurfBeam 2 (4 pack)", "fam": "ETRIA", "famName": "eTRIA - Viasat", "group": "SurfBeam satellite", "serial": true, "platforms": ["HTV", "KA2"]},
+  {"id": "FK-SATPOLE", "name": "Satellite Pole Mount", "desc": "Satellite Pole Mount", "fam": "", "famName": "", "group": "SurfBeam satellite", "serial": false, "platforms": [], "extra": true, "noOrder": true},
+  {"id": "PVJM-39", "name": "J-Arm", "desc": "2 PK J PIPE ANTENNA MOUNT 39\" OD 1.66\"", "fam": "J ARM", "famName": "J-Arm", "group": "Mounts & surge", "serial": false, "platforms": ["FWA", "CAB", "CCW", "LTE", "FWN"]},
+  {"id": "PVFWSURGE", "name": "Surge", "desc": "FWA SURGE ARRESTOR", "fam": "SURGE", "famName": "Surge", "group": "Mounts & surge", "serial": false, "platforms": ["FWA", "CAB", "CCW", "LTE", "FWN"]},
+  {"id": "FK-BIPOD", "name": "Bi-pod Mount", "desc": "Bi-pod Mount", "fam": "", "famName": "", "group": "Mounts & surge", "serial": false, "platforms": [], "extra": true, "noOrder": true},
+  {"id": "FK-GABLE", "name": "Gable Mount", "desc": "Gable Mount", "fam": "", "famName": "", "group": "Mounts & surge", "serial": false, "platforms": [], "extra": true, "noOrder": true},
+  {"id": "FK-TRIPOD", "name": "Tripod Mount", "desc": "Tripod Mount", "fam": "", "famName": "", "group": "Mounts & surge", "serial": false, "platforms": [], "extra": true, "noOrder": true},
+  {"id": "FK-POLE10", "name": "10ft Pole", "desc": "10ft Pole", "fam": "", "famName": "", "group": "Mounts & surge", "serial": false, "platforms": [], "extra": true, "noOrder": true},
+  {"id": "FK-POLE5", "name": "5ft Pole", "desc": "5ft Pole", "fam": "", "famName": "", "group": "Mounts & surge", "serial": false, "platforms": [], "extra": true, "noOrder": true},
+  {"id": "FK-SIDESTAYS", "name": "Side Stays", "desc": "Side Stays", "fam": "", "famName": "", "group": "Mounts & surge", "serial": false, "platforms": [], "extra": true, "noOrder": true}
 ];
-var GROUPS = ["5G & fixed wireless", "LTE", "Wi-Fi & routers", "Fiber ONTs", "Fiber drops & NIDs", "TV", "Hughes satellite", "SurfBeam satellite", "Mounts & surge"];
-/* serial number patterns from the inventory team's lists: first match wins; more than one model means the tech picks */
+var GROUPS = ["5G & fixed wireless", "LTE", "Wi-Fi & routers", "Fibre ONTs", "Fibre drops & NIDs", "TV", "Hughes satellite", "SurfBeam satellite", "Mounts & surge"];
+/* serial number patterns (Recognition rules R01–R22): first match wins; more than one item means the tech picks */
 var SERIAL_RULES = [
-  [/^854V6[A-Z0-9]{11}$/, ["854-V6"]],
-  [/^834V6[A-Z0-9]{11}$/, ["834-V6"]],
-  [/^O5SGS\d{9}$/, ["O5-100M1"]],
-  [/^O5MGS\d{9}$/, ["O5M-NA"]],
-  [/^O5PGS\d{9}$/, ["O5 PRO MAX"]],
-  [/^B5SGS\d{9}$/, ["B5-100M", "B5-100M1"]],
-  [/^OAK[A-Z]{2}\d{9}$/, ["OA-335 B42/43"]],
-  [/^GMK\d{12}$/, ["FWCAT12-3.5M", "FWCAT12-2.5M"]],
-  [/^GMB\d{9}$/, ["735060"]],
-  [/^BY\d{10}[A-Z0-9]{2}$/, ["1505216-0122"]],
-  [/^E\d{11}[A-Z0-9]{2}$/, ["1507883-1104"]],
-  [/^902\d{9}$/, ["1507724-0002", "1507724-1004"]],
-  [/^501\d{9}$/, ["1502938-0002", "1502938-0001", "1502938-0016", "1504000-0022"]],
-  [/^601\d{9}$/, ["1505328-0014"]],
-  [/^2837\d{8}$/, ["RM4100N-043"]],
-  [/^10\d{8}$/, ["X01012000A001"]],
-  [/^ALCLFF[0-9A-F]{6}$/, ["3TN00665AA"]],
-  [/^ALCLFE[0-9A-F]{6}$/, ["3TN01554AA"]],
-  [/^ALCL[0-9A-F]{8}$/, ["3TN00665AA", "3TN01554AA"]],
-  [/^ADTN21[0-9A-F]{6}$/, ["1287835F1"]],
-  [/^ADTN25[0-9A-F]{6}$/, ["1287987F1"]],
-  [/^ADTN[0-9A-F]{8}$/, ["1287987F1", "1287835F1"]],
-  [/^S2\d{2}Z\d{8}$/, ["WAP6804-MT", "EMG6726-B10A-MT"]],
-  [/^E66AV\d{10}$/, ["EVOFORCE1"]],
-  [/^101-\d{8}$/, ["9988030065MFG"]]
+  [/^854V6[0-9A-Z]{11}$/, ["854-V6"]],   // R01
+  [/^834V6[0-9A-Z]{11}$/, ["834-V6"]],   // R02
+  [/^G6126[0-9A-F]{7}$/, ["ARIA3321V-XPL"]],   // R03
+  [/^E66AV[0-9]{10}$/, ["EVOFORCE1"]],   // R04
+  [/^O5SGS[0-9]{9}$/, ["O5-100M1"]],   // R05
+  [/^O5MGS[0-9]{9}$/, ["O5M-NA"]],   // R06
+  [/^O5PGS[0-9]{9}$/, ["O5 PRO MAX"]],   // R07
+  [/^B5SGS[0-9]{9}$/, ["B5-100M", "B5-100M1"]],   // R08
+  [/^OAK[A-Z]{2}[0-9]{9}$/, ["OA-335 B42/43", "OA-335 B38/41"]],   // R09
+  [/^GMK[0-9]{12}$/, ["FWCAT12-2.5M", "FWCAT12-3.5M"]],   // R10
+  [/^GMB[0-9]{9}$/, ["735060"]],   // R11
+  [/^E0001[0-9]{7}[A-Z0-9]{2}$/, ["1507883-1104"]],   // R12
+  [/^BY00[0-9]{8}[A-Z0-9]{2}$/, ["1505216-0122"]],   // R13
+  [/^902[0-9]{9}$/, ["1507724-0002"]],   // R14
+  [/^601[0-9]{9}$/, ["1505328-0014"]],   // R15
+  [/^501[0-9]{9}$/, ["1502938-0001", "1502938-0002", "1502938-0016", "1504000-0022"]],   // R16
+  [/^283[0-9]{9}$/, ["RM4100N-043"]],   // R17
+  [/^10[0-9]{8}$/, ["X01012000A001"]],   // R18
+  [/^ALCL[0-9A-F]{8}$/, ["3TN01554AA", "3TN00665AA", "3FE49328AA"]],   // R19
+  [/^ADTN[0-9A-F]{8}$/, ["1287987F1", "1287835F1"]],   // R20
+  [/^S2[0-9]0Z[0-9]{8}$/, ["WAP6804-MT", "EMG6726-B10A-MT"]],   // R21
+  [/^101-[0-9]{8}$/, ["9988030065MFG"]]   // R22
 ];
-window.FK_CATALOG = { SKUS: SKUS, GROUPS: GROUPS, SERIAL_RULES: SERIAL_RULES };
+/* serial numbers inventory has already seen (Serial lookup): these name the exact item, before any pattern */
+var KNOWN = {"ADTN2112308B":"1287835F1","ADTN25216DE5":"1287987F1","ADTN25481D9E":"1287987F1","ADTN25481DE7":"1287987F1","ADTN25481E02":"1287987F1","ALCLF93C0910":"3FE49328AA","ALCLF97A97E2":"3FE49328AA","ALCLFDD59570":"3TN00665AA","ALCLFDD595C4":"3TN00665AA","ALCLFDD59BEF":"3TN00665AA","ALCLFF1B6447":"3TN00665AA","ALCLFF1B647E":"3TN00665AA","ALCLFF1B64F4":"3TN00665AA","ALCLFF1B6505":"3TN00665AA","ALCLFF1B6537":"3TN00665AA","ALCLFF1B654A":"3TN00665AA","ALCLFF1B6553":"3TN00665AA","ALCLFF1B6569":"3TN00665AA","ALCLFF1B65B7":"3TN00665AA","ALCLFF1B6625":"3TN00665AA","ALCLFF1B6648":"3TN00665AA","ALCLFF1B6659":"3TN00665AA","ALCLFF1B66E9":"3TN00665AA","ALCLFF1B6718":"3TN00665AA","ALCLFE49FE1D":"3TN01554AA","ALCLFE49FE3D":"3TN01554AA","ALCLFE49FEB2":"3TN01554AA","ALCLFE4F905C":"3TN01554AA","ALCLFE4F9090":"3TN01554AA","ALCLFE4F9306":"3TN01554AA","ALCLFE4F950E":"3TN01554AA","ALCLFE4F9668":"3TN01554AA","ALCLFE4F995F":"3TN01554AA","ALCLFE4F9DC1":"3TN01554AA","ALCLFE4FAC19":"3TN01554AA","ALCLFE4FAC7F":"3TN01554AA","ALCLFE4FB03C":"3TN01554AA","ALCLFE4FB245":"3TN01554AA","ALCLFE4FB604":"3TN01554AA","ALCLFE4FB60F":"3TN01554AA","ALCLFE4FB612":"3TN01554AA","ALCLFE4FBB10":"3TN01554AA","ALCLFE4FBB6D":"3TN01554AA","ALCLFE4FBB86":"3TN01554AA","ALCLFE4FBBD5":"3TN01554AA","ALCLFE4FBCDF":"3TN01554AA","ALCLFE4FC081":"3TN01554AA","ALCLFE4FC4B0":"3TN01554AA","ALCLFE4FC6A6":"3TN01554AA","ALCLFE4FC741":"3TN01554AA","ALCLFE4FC7A4":"3TN01554AA","ALCLFE4FC814":"3TN01554AA","ALCLFE4FC87B":"3TN01554AA","O5MGS232800033":"O5M-NA","O5MGS232800890":"O5M-NA","O5MGS232800957":"O5M-NA","O5MGS232801388":"O5M-NA","O5MGS232801414":"O5M-NA","O5MGS232801461":"O5M-NA","O5MGS232801999":"O5M-NA","O5MGS233200832":"O5M-NA","O5MGS233200904":"O5M-NA","O5MGS233201081":"O5M-NA","O5MGS233201153":"O5M-NA","O5MGS233201255":"O5M-NA","O5MGS234100612":"O5M-NA","O5MGS235101063":"O5M-NA","O5MGS241400059":"O5M-NA","O5MGS241400447":"O5M-NA","O5MGS241400464":"O5M-NA","O5MGS241400466":"O5M-NA","O5MGS242700120":"O5M-NA","O5MGS242701532":"O5M-NA","O5MGS242701676":"O5M-NA","O5MGS242702349":"O5M-NA","O5MGS243200742":"O5M-NA","O5MGS243202087":"O5M-NA","O5MGS243202229":"O5M-NA","O5MGS250200251":"O5M-NA","O5MGS250200937":"O5M-NA","O5MGS250201146":"O5M-NA","O5MGS250201155":"O5M-NA","O5MGS250202247":"O5M-NA","O5MGS250202487":"O5M-NA","O5MGS251100227":"O5M-NA","O5MGS251100690":"O5M-NA","O5MGS251101068":"O5M-NA","O5MGS251101071":"O5M-NA","O5MGS251102516":"O5M-NA","B5SGS235100339":"B5-100M","B5SGS235100346":"B5-100M","B5SGS235100350":"B5-100M","B5SGS240300103":"B5-100M","B5SGS240300329":"B5-100M","B5SGS240300495":"B5-100M","B5SGS241100058":"B5-100M","B5SGS241100091":"B5-100M","B5SGS241100327":"B5-100M","B5SGS241100450":"B5-100M","B5SGS243300456":"B5-100M","B5SGS243300687":"B5-100M","O5SGS245100251":"O5-100M1","O5SGS245100547":"O5-100M1","O5SGS245104164":"O5-100M1","O5SGS252400846":"O5-100M1","O5SGS252900397":"O5-100M1","O5SGS252901928":"O5-100M1","O5SGS252902436":"O5-100M1","O5SGS253400772":"O5-100M1","O5SGS253702194":"O5-100M1","O5SGS253703099":"O5-100M1","O5SGS254200906":"O5-100M1","O5SGS254202725":"O5-100M1","O5SGS261400896":"O5-100M1","O5SGS261401243":"O5-100M1","O5SGS262002606":"O5-100M1","O5SGS262002658":"O5-100M1","O5SGS262002690":"O5-100M1","O5SGS262002804":"O5-100M1","O5SGS262101467":"O5-100M1","O5SGS262401375":"O5-100M1","O5SGS262401936":"O5-100M1","O5SGS262800310":"O5-100M1","O5SGS262801744":"O5-100M1","O5SGS263300341":"O5-100M1","O5SGS263300343":"O5-100M1","O5SGS263300356":"O5-100M1","O5SGS263300359":"O5-100M1","O5SGS263300362":"O5-100M1","O5SGS263300372":"O5-100M1","O5SGS263300378":"O5-100M1","O5SGS263300385":"O5-100M1","O5SGS263300419":"O5-100M1","O5SGS263300430":"O5-100M1","O5SGS263300456":"O5-100M1","O5SGS263300484":"O5-100M1","O5SGS263301087":"O5-100M1","O5SGS263301195":"O5-100M1","O5SGS263301246":"O5-100M1","O5SGS263301257":"O5-100M1","O5SGS263301637":"O5-100M1","O5SGS263302094":"O5-100M1","O5SGS263500420":"O5-100M1","O5SGS263500424":"O5-100M1","O5SGS263500438":"O5-100M1","O5SGS263500439":"O5-100M1","O5SGS263500471":"O5-100M1","O5SGS263500667":"O5-100M1","O5SGS263500724":"O5-100M1","O5SGS263500725":"O5-100M1","O5SGS263500733":"O5-100M1","O5SGS263500735":"O5-100M1","O5SGS263500738":"O5-100M1","O5SGS263500745":"O5-100M1","O5SGS263500768":"O5-100M1","O5SGS263500894":"O5-100M1","O5SGS263501005":"O5-100M1","O5SGS263501169":"O5-100M1","O5SGS263501330":"O5-100M1","O5SGS263501733":"O5-100M1","O5SGS263501750":"O5-100M1","O5SGS263501755":"O5-100M1","O5SGS263502034":"O5-100M1","O5SGS263502038":"O5-100M1","O5SGS263502047":"O5-100M1","O5SGS263502603":"O5-100M1","B5SGS252400016":"B5-100M1","B5SGS252400321":"B5-100M1","B5SGS252400482":"B5-100M1","B5SGS252400575":"B5-100M1","O5PGS260400052":"O5 PRO MAX","O5PGS262202550":"O5 PRO MAX","O5PGS262600960":"O5 PRO MAX","O5PGS262601010":"O5 PRO MAX","O5PGS262601601":"O5 PRO MAX","O5PGS262601655":"O5 PRO MAX","O5PGS262601966":"O5 PRO MAX","O5PGS262601980":"O5 PRO MAX","O5PGS262602349":"O5 PRO MAX","O5PGS262602352":"O5 PRO MAX","O5PGS262602380":"O5 PRO MAX","O5PGS262602384":"O5 PRO MAX","O5PGS262602771":"O5 PRO MAX","O5PGS262602874":"O5 PRO MAX","GMB000155753":"735060","GMB000277237":"735060","GMB000279051":"735060","GMK210131001071":"FWCAT12-2.5M","GMK210528008081":"FWCAT12-2.5M","GMK201207004784":"FWCAT12-3.5M","OAKKG211901112":"OA-335 B42/43","OAKKG211904056":"OA-335 B42/43","OAKKG211904178":"OA-335 B42/43","OAKKG211904696":"OA-335 B42/43","OAKKG212401830":"OA-335 B42/43","OAKKG212404544":"OA-335 B42/43","OAKKG222901195":"OA-335 B42/43","OAKKG222901327":"OA-335 B42/43","OAKKG222902389":"OA-335 B42/43","OAKKG223701663":"OA-335 B42/43","OAKKG223702832":"OA-335 B42/43","OAKKG230301929":"OA-335 B42/43","OAKKG230303210":"OA-335 B42/43","OAKKG232700185":"OA-335 B42/43","OAKKG232700445":"OA-335 B42/43","OAKKG232700485":"OA-335 B42/43","OAKKG232702080":"OA-335 B42/43","OAKKG232802707":"OA-335 B42/43","OAKKG234100214":"OA-335 B42/43","OAKKG234100248":"OA-335 B42/43","OAKKG234900080":"OA-335 B42/43","OAKKG234900200":"OA-335 B42/43","OAKKG234900402":"OA-335 B42/43","OAKKG234900976":"OA-335 B42/43","OAKKG234902229":"OA-335 B42/43","OAKKG243101138":"OA-335 B42/43","OAKKG243600089":"OA-335 B42/43","OAKKG243801102":"OA-335 B42/43","OAKKG251802784":"OA-335 B42/43","OAKKG254200260":"OA-335 B42/43","OAKKJ202800174":"OA-335 B42/43","OAKKJ202802987":"OA-335 B42/43","OAKKJ202803940":"OA-335 B42/43","OAKKJ203904385":"OA-335 B42/43","OAKKJ203905080":"OA-335 B42/43","OAKKJ204901509":"OA-335 B42/43","OAKKJ205101029":"OA-335 B42/43","OAKKJ205103721":"OA-335 B42/43","OAKKJ211201286":"OA-335 B42/43","OAKKJ211403213":"OA-335 B42/43","OAKKJ211404205":"OA-335 B42/43","OAKKJ222000310":"OA-335 B42/43","OAKKJ222001481":"OA-335 B42/43","OAKKJ222200046":"OA-335 B42/43","OAKKJ222200696":"OA-335 B42/43","OAKKJ222201286":"OA-335 B42/43","OAKZJ194500695":"OA-335 B42/43","OAKZJ194500998":"OA-335 B42/43","834V6B4552002209":"834-V6","834V6B4552002241":"834-V6","834V6B4552002267":"834-V6","834V6B4552002270":"834-V6","834V6B4552002396":"834-V6","834V6B4552003300":"834-V6","834V6B4552003301":"834-V6","834V6B4552003302":"834-V6","834V6B4552004639":"834-V6","834V6B4552004730":"834-V6","834V6B4552004744":"834-V6","834V6B5752003073":"834-V6","854V6D0462000861":"854-V6","854V6D0762000053":"854-V6","854V6D0762000122":"854-V6","854V6D0762000135":"854-V6","854V6D0762000144":"854-V6","854V6D0762000219":"854-V6","854V6D0762000260":"854-V6","854V6D0762001944":"854-V6","854V6D0762002376":"854-V6","854V6D0762002378":"854-V6","854V6D0762002593":"854-V6","854V6D0762002618":"854-V6","854V6D0762002621":"854-V6","854V6D0762002623":"854-V6","854V6D0762002628":"854-V6","854V6D0762002633":"854-V6","854V6D0762002641":"854-V6","854V6D0762002663":"854-V6","854V6D0762002664":"854-V6","854V6D0762002671":"854-V6","854V6D0762002782":"854-V6","854V6D0762002806":"854-V6","854V6D0762002807":"854-V6","854V6D0762002818":"854-V6","854V6D0762002820":"854-V6","854V6D0762002856":"854-V6","854V6D0762002874":"854-V6","854V6D0762002889":"854-V6","854V6D0762002897":"854-V6","854V6D0762003003":"854-V6","854V6D0762003242":"854-V6","854V6D0762003278":"854-V6","854V6D0762003285":"854-V6","854V6D0762004537":"854-V6","854V6D2862000043":"854-V6","854V6D6562000106":"854-V6","854V6D6562000118":"854-V6","854V6D6562000133":"854-V6","854V6D6562000149":"854-V6","854V6D6562000171":"854-V6","854V6D6562000190":"854-V6","854V6D6562000318":"854-V6","854V6D6562000334":"854-V6","854V6D6562000348":"854-V6","854V6D6562004993":"854-V6","854V6D6862000035":"854-V6","854V6D8862000011":"854-V6","854V6DB262005459":"854-V6","854V6DB262005557":"854-V6","854V6DB262005567":"854-V6","854V6DB262005578":"854-V6","854V6DB262005848":"854-V6","854V6DB262005937":"854-V6","854V6DB362004764":"854-V6","854V6DC662000208":"854-V6","854V6DC662000555":"854-V6","854V6DC662001316":"854-V6","854V6DC662001324":"854-V6","854V6DC662001331":"854-V6","854V6DC662001350":"854-V6","854V6DC662003955":"854-V6","854V6DC662004061":"854-V6","854V6DC662004544":"854-V6","854V6DC662004545":"854-V6","854V6DC662004908":"854-V6","854V6DC662005092":"854-V6","854V6DC862000144":"854-V6","854V6DC862000713":"854-V6","854V6DC862000939":"854-V6","854V6DC862000971":"854-V6","854V6DC862000983":"854-V6","854V6DC862001051":"854-V6","854V6DC862001052":"854-V6","854V6DC862001216":"854-V6","854V6DC862001237":"854-V6","854V6DC862001329":"854-V6","854V6DC862001330":"854-V6","854V6DC862001341":"854-V6","854V6DC862001833":"854-V6","854V6DC862002165":"854-V6","854V6DC862002676":"854-V6","854V6DC862003243":"854-V6","854V6DC862003861":"854-V6","854V6DC862003887":"854-V6","854V6DC862003937":"854-V6","854V6DC862004199":"854-V6","854V6DC862004317":"854-V6","854V6DD762000451":"854-V6","854V6DD762000569":"854-V6","854V6DD762000637":"854-V6","854V6DD762000655":"854-V6","854V6DD762000660":"854-V6","854V6DD762000728":"854-V6","854V6DD762000749":"854-V6","854V6DD762000795":"854-V6","G6126800344A":"ARIA3321V-XPL","G61268003462":"ARIA3321V-XPL","G61268003464":"ARIA3321V-XPL","G61268003474":"ARIA3321V-XPL","G61268003478":"ARIA3321V-XPL","G6126800347D":"ARIA3321V-XPL","G6126800347F":"ARIA3321V-XPL","G61268003487":"ARIA3321V-XPL","G61268003F18":"ARIA3321V-XPL","G61268003F27":"ARIA3321V-XPL","G61268003F37":"ARIA3321V-XPL","G61268003F45":"ARIA3321V-XPL","G61268003FA2":"ARIA3321V-XPL","G61268003FA3":"ARIA3321V-XPL","G61268003FB0":"ARIA3321V-XPL","G61268003FB5":"ARIA3321V-XPL","G61268003FD1":"ARIA3321V-XPL","G61268003FD7":"ARIA3321V-XPL","G61268003FD8":"ARIA3321V-XPL","G61268003FDA":"ARIA3321V-XPL","S210Z46007759":"EMG6726-B10A-MT","S210Z42004107":"WAP6804-MT","S220Z16007156":"WAP6804-MT","S220Z16008373":"WAP6804-MT","S220Z41010320":"WAP6804-MT","S220Z41010326":"WAP6804-MT","S220Z41010396":"WAP6804-MT","BY0012468968AD":"1505216-0122","BY0012521236AY":"1505216-0122","BY0012659418A5":"1505216-0122","BY0012713233AY":"1505216-0122","BY0012734916A2":"1505216-0122","BY0013188930A2":"1505216-0122","BY0013395013M6":"1505216-0122","BY0013481362M9":"1505216-0122","BY0013972655A7":"1505216-0122","BY0013982585AA":"1505216-0122","BY0014174869A9":"1505216-0122","BY0014175411M5":"1505216-0122","BY0014255350M6":"1505216-0122","BY0014309050AY":"1505216-0122","BY0014381760MB":"1505216-0122","BY0014413508M7":"1505216-0122","BY0014418626A1":"1505216-0122","BY0014618266A3":"1505216-0122","E00018068591AJ":"1507883-1104","E00018069259AL":"1507883-1104","E00018069700AC":"1507883-1104","E00018072454AC":"1507883-1104","E00018103715A7":"1507883-1104","E00018103828AC":"1507883-1104","E00018103875AE":"1507883-1104","E00018103883AD":"1507883-1104","E00018103992AE":"1507883-1104","E00018104145A5":"1507883-1104","E00018123912A8":"1507883-1104","E00018128858AM":"1507883-1104","E00018137136AB":"1507883-1104","E00018137159AG":"1507883-1104","E00018137380AC":"1507883-1104","E00018157062AB":"1507883-1104","E00018158564AJ":"1507883-1104","E00018158697AQ":"1507883-1104","E00018158886AQ":"1507883-1104","283712103835":"RM4100N-043","283712428336":"RM4100N-043","283713450997":"RM4100N-043","283714272499":"RM4100N-043","283715043393":"RM4100N-043","501227002166":"1502938-0001","501314913895":"1502938-0001","501323810413":"1502938-0001","501413313112":"1502938-0001","501226301817":"1502938-0002","501408000732":"1502938-0002","501419812448":"1502938-0002","501411406470":"1502938-0016","501616010523":"1502938-0016","501616011141":"1502938-0016","501628601442":"1502938-0016","601716423061":"1505328-0014","601717319698":"1505328-0014","601724021808":"1505328-0014","501510000604":"1504000-0022","902229711525":"1507724-0002","902309502489":"1507724-0002","902309504204":"1507724-0002","902310304859":"1507724-0002","902311008822":"1507724-0002","902311009499":"1507724-0002","902311404203":"1507724-0002","902314401651":"1507724-0002","902314405017":"1507724-0002","902319407521":"1507724-0002","902320604140":"1507724-0002","902320611442":"1507724-0002","902320703538":"1507724-0002","902326505739":"1507724-0002","902327703275":"1507724-0002","902328909574":"1507724-0002","902329001991":"1507724-0002","902329005208":"1507724-0002","902331224052":"1507724-0002","902333309711":"1507724-0002","902333335179":"1507724-0002","902333402565":"1507724-0002","902335409022":"1507724-0002","902335414345":"1507724-0002","1020115631":"X01012000A001","1020182915":"X01012000A001","1020183503":"X01012000A001","1020584445":"X01012000A001","1020641036":"X01012000A001","1020660976":"X01012000A001","1020661068":"X01012000A001","1020661069":"X01012000A001","E66AV3261220485":"EVOFORCE1","E66AV3261221052":"EVOFORCE1","E66AV3261221233":"EVOFORCE1","E66AV3261221941":"EVOFORCE1","E66AV3261222410":"EVOFORCE1","E66AV3261222700":"EVOFORCE1","E66AV3261222860":"EVOFORCE1","E66AV3261222965":"EVOFORCE1","E66AV3261223015":"EVOFORCE1","E66AV3261223199":"EVOFORCE1","E66AV3261223416":"EVOFORCE1","E66AV3261223419":"EVOFORCE1","E66AV3261223511":"EVOFORCE1","E66AV3261223745":"EVOFORCE1","E66AV3261223935":"EVOFORCE1","E66AV3261224704":"EVOFORCE1","E66AV3261225619":"EVOFORCE1","E66AV3261225828":"EVOFORCE1","E66AV3261225835":"EVOFORCE1","E66AV3261225851":"EVOFORCE1","E66AV3261225870":"EVOFORCE1","E66AV3261225880":"EVOFORCE1","E66AV3261226804":"EVOFORCE1","E66AV3261226814":"EVOFORCE1","E66AV3261227345":"EVOFORCE1","E66AV3261227466":"EVOFORCE1","E66AV3261227698":"EVOFORCE1","E66AV3261227846":"EVOFORCE1","E66AV3261228123":"EVOFORCE1","E66AV3261228222":"EVOFORCE1","E66AV3261228399":"EVOFORCE1","E66AV3261228447":"EVOFORCE1","101-12324346":"9988030065MFG"};
+/* lines on the manual order form that aren't stock items */
+var ORDER_EXTRA = [{"fam": "ONT", "name": "Adtran 411", "label": "ATX&MTX - ONT - Adtran ONT Total Access 411"}, {"fam": "REMOTE", "famName": "TV remote", "name": "Nova universal remote", "label": "MTV - REMOTE - REMOTE CONTROL NOVA UNIVERSAL"}, {"fam": "AERIAL", "famName": "Aerial kit", "name": "Pushlok Optitap Converter Kit (20)", "label": "BBX - AERIAL - Pushlok Optitap Converter Kit (20)"}, {"fam": "AERIAL", "famName": "Aerial kit", "name": "AFL FASTConnector SC/APC 900UM & 250UM (100)", "label": "BBX - AERIAL - AFL FASTConnector SC/APC 900UM & 250UM (100)"}];
+var BY = {}; SKUS.forEach(function (s) { BY[s.id] = s; });
+var key = function (v) { return String(v || "").replace(/\s+/g, "").toUpperCase(); };
+/* items a serial could be: known serial first, then the patterns. Items sharing a name count once (the first one). */
+function match(serial) {
+  var k = key(serial); if (!k) return [];
+  if (KNOWN[k] && BY[KNOWN[k]]) return [KNOWN[k]];
+  for (var i = 0; i < SERIAL_RULES.length; i++) if (SERIAL_RULES[i][0].test(k)) return oneEach(SERIAL_RULES[i][1].filter(function (id) { return BY[id]; }));
+  return [];
+}
+function oneEach(ids) { var seen = {}; return ids.filter(function (id) { var n = BY[id].name; if (seen[n]) return false; seen[n] = 1; return true; }); }
+/* the first item of each name in a list of items (pickers show one entry per name) */
+function firstOfName(list) { var seen = {}; return list.filter(function (s) { var n = s.group + "|" + s.name; if (seen[n]) return false; seen[n] = 1; return true; }); }
+window.FK_CATALOG = { SKUS: SKUS, GROUPS: GROUPS, SERIAL_RULES: SERIAL_RULES, KNOWN: KNOWN, ORDER_EXTRA: ORDER_EXTRA, match: match, oneEach: oneEach, firstOfName: firstOfName };
 })();

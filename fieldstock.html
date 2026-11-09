@@ -307,6 +307,9 @@ button.link-row{font:inherit;text-align:left;width:100%;cursor:pointer}
 .ord-row:last-child{border-bottom:0}
 .ord-row .ord-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .ord-row .ord-txt b{font-weight:600;line-height:1.25}
+.ord-more{display:block;border:0;background:none;padding:2px 0 10px;color:var(--accent-text,var(--ink));font:600 .82rem var(--f-body);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.ord-models{margin:0 0 8px 14px;padding-left:10px;border-left:2px solid var(--line)}
+.ord-row.sub{padding:6px 0}.ord-row.sub .ord-txt b{font-weight:500;font-size:.92rem}
 .ord-row .ord-txt small{font-size:.75rem;color:var(--muted);letter-spacing:.02em}
 .ord-row.on .ord-txt b{color:var(--brand-2)}
 .qty.sm span.zero{color:var(--void)}
@@ -919,10 +922,9 @@ let STOCK = computeStock();
 
 /* Work out the item from a serial: this phone's records first, then the serial patterns
    from the inventory team's lists, then patterns of serials this tech has already logged. */
-function ruleSkus(serial){
-  const k=keyOf(serial);
-  for(const [rx,skus] of SERIAL_RULES) if(rx.test(k)) return skus.filter(id=>SKU[id]);
-  return null;
+function ruleSkus(serial){   // known serials first, then patterns; items sharing a name count once (fieldkit-catalog.js)
+  const r=window.FK_CATALOG.match(serial).filter(id=>SKU[id]);
+  return r.length ? r : null;
 }
 function learnedSku(key, among){
   const bySku={};
@@ -979,12 +981,16 @@ function renderStock(){
     return;
   }
   let html="", shown=0;
-  SKUS.forEach(s=>{
-    const items=STOCK.bySku[s.id];
+  // items sharing a name (e.g. the three Nokia XS-010X ONTs) are one row: serials and counts added together
+  const rows=[], byName={};
+  SKUS.forEach(s=>{ const k=s.group+"|"+s.name; if(byName[k]){ byName[k].ids.push(s.id); return; } byName[k]={s, ids:[s.id]}; rows.push(byName[k]); });
+  rows.forEach(({s,ids})=>{
+    const items=[].concat(...ids.map(id=>STOCK.bySku[id])).sort((a,b)=>b.ts-a.ts);
+    const qtyAll=ids.reduce((a,id)=>a+(STOCK.qty[id]||0),0);
     const nameHit=keyOf(s.name).includes(q);
     const matchItems = q ? items.filter(i=>i.key.includes(q)) : items;
     if(q && !nameHit && !matchItems.length) return;
-    const count = s.serial ? items.length : STOCK.qty[s.id];
+    const count = s.serial ? items.length : qtyAll;
     if(!q && count===0) return;
     shown++;
     const showItems = q && !nameHit ? matchItems : items;
@@ -993,7 +999,7 @@ function renderStock(){
       ? (showItems.length ? showItems.map(i=>`<div class="srow"><button type="button" class="mono ser-link" data-ser="${esc(i.key)}">${esc(i.serial)}</button><small>Received ${fmtDate(i.ts)}</small></div>`).join("")
         : `<div class="srow muted">None in stock</div>`)
       : `<div class="srow"><span style="flex:1" class="muted">Tracked by quantity</span></div>`;
-    html+=`<details class="sku"${open}><summary><div class="sku-name">${esc(s.name)}<small>${esc(s.hidden?s.group:s.id)} · ${s.serial?"Serialized":"Quantity"}</small></div>
+    html+=`<details class="sku"${open}><summary><div class="sku-name">${esc(s.name)}<small>${esc(s.hidden?s.group:(s.famName||ids.join(", ")))} · ${s.serial?"Serialized":"Quantity"}</small></div>
       <span class="count ${count<=0?"zero":""}">${count}</span></summary><div class="sku-body">${body}</div></details>`;
   });
   if(!shown) html = q ? `<div class="empty"><p>Nothing in your stock matches "${esc($("stockQ").value)}". Check History to see where it went.</p></div>`
@@ -1011,16 +1017,16 @@ document.addEventListener("click",e=>{
 /* ---------- log form ---------- */
 const F = {type:"receive", serials:[]};
 $("skuSel").innerHTML = `<option value="">Choose an item…</option>` + GROUPS.map(g=>
-  `<optgroup label="${esc(g)}">`+SKUS.filter(s=>s.group===g && !s.hidden).map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("")+`</optgroup>`).join("");
+  `<optgroup label="${esc(g)}">`+window.FK_CATALOG.firstOfName(SKUS.filter(s=>s.group===g && !s.hidden)).map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("")+`</optgroup>`).join("");
 
 /* Deploy is one job: one account, a few different pieces (radio + router, or drop + NID + router) */
 F.lines=[];
 $("dItemSel").innerHTML = `<option value="">Or pick an item without a serial…</option>` + GROUPS.map(g=>{
-  const items=SKUS.filter(s=>s.group===g && !s.serial && !s.hidden);
+  const items=window.FK_CATALOG.firstOfName(SKUS.filter(s=>s.group===g && !s.serial && !s.hidden));
   return items.length ? `<optgroup label="${esc(g)}">`+items.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join("")+`</optgroup>` : "";
 }).join("");
 const SERIAL_ITEMS_OPTS = `<option value="">Pick the item…</option>` + GROUPS.map(g=>{
-  const items=SKUS.filter(s=>s.group===g && s.serial && !s.hidden);
+  const items=window.FK_CATALOG.firstOfName(SKUS.filter(s=>s.group===g && s.serial && !s.hidden));
   return items.length ? `<optgroup label="${esc(g)}">`+items.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join("")+`</optgroup>` : "";
 }).join("");
 const lineMode=()=>true;
@@ -1179,7 +1185,7 @@ function syncForm(){
       if(F.type==="receive" && rec && rec.inStock){ bad=true; warns.push(`${v} is already in your stock.`); }
       if(F.type!=="receive" && !(rec && rec.inStock)) warns.push(`${v} isn't in your stock records. It will still be logged.`);
       if(s && rec && rec.sku!==s.id && rec.inStock) warns.push(`${v} is in your stock as ${SKU[rec.sku].name}.`);
-      else if(s){ const r=ruleSkus(v); if(r && r.length && !r.includes(s.id)) warns.push(`${v} looks like a ${r.map(id=>SKU[id].name).join(" or ")}, not a ${s.name}. Check the item.`); }
+      else if(s){ const r=ruleSkus(v); if(r && r.length && !r.some(id=>SKU[id].name===s.name)) warns.push(`${v} looks like a ${r.map(id=>SKU[id].name).join(" or ")}, not a ${s.name}. Check the item.`); }
       return `<span class="chip ${bad?"bad":""}"><span class="mono">${esc(v)}</span><button type="button" data-rm="${i}" aria-label="Remove ${esc(v)}">✕</button></span>`;
     }).join("");
     $("serialWarn").innerHTML = warns.map(w=>`<div class="note warn">${esc(w)}</div>`).join("");
@@ -1434,12 +1440,34 @@ function openTransferMail(jobId){
 }
 
 /* ---------- manual order request (replaces the Jotform) ---------- */
-const ORDER_ITEMS = [{"g": "Wi-Fi & Routers", "label": "FTX&XHP&XWR&HJ3 - ROUTER - Adtran Wi-Fi 6 Router", "max": 20}, {"g": "Wi-Fi & Routers", "label": "XWH - CUBE - Adtran Wi-Fi 6 Extender", "max": 20}, {"g": "Fixed Wireless & LTE", "label": "FW - J ARM - 2 PK J PIPE ANTENNA MOUNT 39\" OD 1.66\"", "max": 10}, {"g": "Fixed Wireless & LTE", "label": "FW - SURGE - FWA SURGE ARRESTOR", "max": 20}, {"g": "Fixed Wireless & LTE", "label": "LTE - CAT12 3.5GHZ - CAT12 LTE - B42/43/48", "max": 20}, {"g": "Fixed Wireless & LTE", "label": "LTE - CAT12 2.5GHZ - CAT 12 LTE - B38/41 2.5GHz", "max": 20}, {"g": "Fixed Wireless & LTE", "label": "FWN - 5G CPE", "max": 20}, {"g": "Fixed Wireless & LTE", "label": "FWN - HIGH-GAIN - 05 PRO MAX", "max": 10}, {"g": "Fixed Wireless & LTE", "label": "J ARM - 2 PK J PIPE ANTENNA MOUNT 39\" OD 1.66\"", "max": 10}, {"g": "Hughes Satellite", "label": "HTJ&HJ2 - 1 WATT RADIO - HTJ RADIO ASSY, LHCP", "max": 20}, {"g": "Hughes Satellite", "label": "HTJ&HJ2 - HT2000 - Hughes HT2000 Modem J2", "max": 20}, {"g": "Hughes Satellite", "label": "HTJ&HJ2&HJ3 - 2 WATT RADIO - RADIO ASSY, HC210-L, MULTI-J, LHCP", "max": 20}, {"g": "Hughes Satellite", "label": "HJ3 - HT3000 - HT3000 XCI Modem", "max": 20}, {"g": "Hughes Satellite", "label": "HJ2&HJ3 - ANTENNA - 90cm Antenna", "max": 20}, {"g": "Hughes Satellite", "label": "HJ2&HJ3 - AZEL - 90cm AzEl", "max": 20}, {"g": "Hughes Satellite", "label": "HTJ&HJ2&HJ3 - TRIMAST - Hughes TRI MAST MOUNT FOR J1 and J2", "max": 20}, {"g": "SurfBeam & Viasat", "label": "HTV&KA2 - MODEM - ASSY, IDU MODEM, XPLORNET, SURFBEAM 2+", "max": 20}, {"g": "SurfBeam & Viasat", "label": "HTV&KA2 - ETRIA - eTRIA - SurfBeam 2 (4 pack)", "max": 20}, {"g": "SurfBeam & Viasat", "label": "HV2 - MODEM - V2 Satellite Modem", "max": 20}, {"g": "SurfBeam & Viasat", "label": "HV2 - PTRIA - V2 Transceiver", "max": 20}, {"g": "SurfBeam & Viasat", "label": "HTV&KA2&HV2 - ANTENNA - SurfBeam 2 Probrand v2 Antenna (4-pack)", "max": 20}, {"g": "SurfBeam & Viasat", "label": "HTV&KA2&HV2 - AZEL - SurfBeam 2 Probrand v2 Az/El (4-pack)", "max": 20}, {"g": "SurfBeam & Viasat", "label": "HTV&KA2&HV2 - TRIMAST - SurfBeam 2 Probrand Mast Mount (4-pack)", "max": 20}, {"g": "Fiber, TV & Aerial", "label": "FTX - ONT - XGS PON Indoor ONT, US Power adaptor", "max": 20}, {"g": "Fiber, TV & Aerial", "label": "ATX&MTX - ONT - Adtran ONT Total Access 411", "max": 20}, {"g": "Fiber, TV & Aerial", "label": "MTV - ONT - Adtran 424 ONT", "max": 20}, {"g": "Fiber, TV & Aerial", "label": "MTV - REMOTE - REMOTE CONTROL NOVA UNIVERSAL", "max": 20}, {"g": "Fiber, TV & Aerial", "label": "MTV - STB - STB KAMAI 7XM W/NOVA REMOTE", "max": 20}, {"g": "Fiber, TV & Aerial", "label": "FTX&ATX&CTX&MTX - NID", "max": 20}, {"g": "Fiber, TV & Aerial", "label": "FTX&ATX - DROP CABLE - 100M Evolv Dielectric Drop PushLok Tech", "max": 20}, {"g": "Fiber, TV & Aerial", "label": "FTX&ATX - DROP CABLE - 200M Evolv Dielectric Drop PushLok Tech", "max": 20}, {"g": "Fiber, TV & Aerial", "label": "FTX&ATX - DROP CABLE - 300M Evolv Dielectric Drop PushLok Tech", "max": 20}, {"g": "Fiber, TV & Aerial", "label": "FTX&ATX - DROP CABLE - 500M Evolv Dielectric Drop PushLok Tech", "max": 20}, {"g": "Fiber, TV & Aerial", "label": "FTX&ATX - DROP CABLE - 750M Evolv Dielectric Drop PushLok Tech", "max": 20}, {"g": "Fiber, TV & Aerial", "label": "BBX - AERIAL - Pushlok Optitap Converter Kit (20)", "max": 20}, {"g": "Fiber, TV & Aerial", "label": "BBX - AERIAL - AFL FASTConnector SC/APC 900UM & 250UM (100)", "max": 20}];
+/* Manual orders go by product family (5G CPE, Router, Dish…): inventory sends what they have of that type.
+   Where a family has more than one item, the tech can still choose a specific one under "Choose a model".
+   Built from fieldkit-catalog.js (fam / famName / name) plus its ORDER_EXTRA lines. */
+const ORDER_SECTIONS = [["Wi-Fi & Routers",["Wi-Fi & routers"]],["Fixed Wireless & LTE",["5G & fixed wireless","LTE","Mounts & surge"]],
+  ["Satellite",["Hughes satellite","SurfBeam satellite"]],["Fibre & TV",["Fibre ONTs","Fibre drops & NIDs","TV"]]];
+const ORDER_MAX = {"J ARM":10, "HIGH-GAIN":10};
+const ORDER_FAMS = (()=>{
+  const C=window.FK_CATALOG, fams=[], by={};
+  const secOf=g=>{ const x=ORDER_SECTIONS.find(([,gs])=>gs.includes(g)); return x?x[0]:"Fibre & TV"; };
+  C.SKUS.forEach(sk=>{
+    if(!sk.fam || sk.hidden || sk.noOrder) return;
+    let f=by[sk.fam]; if(!f){ f=by[sk.fam]={fam:sk.fam, title:sk.famName, sec:secOf(sk.group), max:ORDER_MAX[sk.fam]||20, plats:new Set(), opts:[]}; fams.push(f); }
+    (sk.platforms||[]).forEach(p=>f.plats.add(p));
+    const o=f.opts.find(o=>o.name===sk.name); if(o) o.ids.push(sk.id); else f.opts.push({key:"sku:"+sk.id, name:sk.name, ids:[sk.id]});
+  });
+  (C.ORDER_EXTRA||[]).forEach(x=>{
+    let f=by[x.fam]; if(!f){ f=by[x.fam]={fam:x.fam, title:x.famName||x.fam, sec:"Fibre & TV", max:20, plats:new Set(), opts:[]}; fams.push(f); }
+    f.opts.push({key:"x:"+x.name, name:x.name, ids:[], label:x.label});
+  });
+  fams.forEach(f=>{ f.key="fam:"+f.fam; f.plats=[...f.plats]; });
+  return ORDER_SECTIONS.flatMap(([sec])=>fams.filter(f=>f.sec===sec));
+})();
+const ORDER_OPEN=new Set();   // families showing "Choose a model"
 const OK_ORDER="techstock.order", OK_MGR="techstock.manager";
 const ORD=Object.assign({qty:{}, reason:"", notes:""}, lsGet(OK_ORDER,{}));
+if(Object.keys(ORD.qty).some(k=>/^\d+$/.test(k))) ORD.qty={};   // an order started on the old item list: start the items again
 const saveOrd=()=>lsSet(OK_ORDER, ORD);
-const ordTitle=l=>{ const p=l.split(" - "); return p.length>=3 ? p.slice(2).join(" - ") : p[p.length-1]; };
-const ordSub=l=>{ const p=l.split(" - "); return p.length>=3 ? p[0]+" · "+p[1] : p.length===2 ? p[0] : ""; };
+const ordLines=()=>ORDER_FAMS.flatMap(f=>[{f, key:f.key, max:f.max}].concat(f.opts.length>1 ? f.opts.map(o=>({f, o, key:o.key, max:f.max})) : []));
 const validEmail=v=>/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
 /* transfers: your email is saved once; the receiving tech's email is remembered per dealer */
 const K_MYEMAIL="techstock.myEmail", K_DEALEREMAIL="techstock.dealerEmails";
@@ -1453,12 +1481,18 @@ $("ordReason").value=ORD.reason; $("ordNotes").value=ORD.notes;
 function renderOrder(){
   const q=$("ordQ").value.trim().toLowerCase();
   let html="", last="";
-  ORDER_ITEMS.forEach((it,i)=>{
-    if(q && !it.label.toLowerCase().includes(q)) return;
-    if(it.g!==last){ html+=`<div class="ord-group">${esc(it.g)}</div>`; last=it.g; }
-    const n=ORD.qty[i]||0;
-    html+=`<div class="ord-row${n?" on":""}"><div class="ord-txt"><b>${esc(ordTitle(it.label))}</b>${ordSub(it.label)?`<small>${esc(ordSub(it.label))}</small>`:""}</div>
-      <div class="qty sm"><button type="button" data-oq="${i}" data-d="-1" aria-label="Fewer"${n?"":" disabled"}>−</button><span class="${n?"":"zero"}">${n}</span><button type="button" data-oq="${i}" data-d="1" aria-label="More"${n>=it.max?" disabled":""}>+</button></div></div>`;
+  const qtyBtns=(key,n,max)=>`<div class="qty sm"><button type="button" data-oq="${esc(key)}" data-d="-1" aria-label="Fewer"${n?"":" disabled"}>−</button><span class="${n?"":"zero"}">${n}</span><button type="button" data-oq="${esc(key)}" data-d="1" aria-label="More"${n>=max?" disabled":""}>+</button></div>`;
+  ORDER_FAMS.forEach(f=>{
+    const hay=(f.title+" "+f.fam+" "+f.opts.map(o=>o.name).join(" ")+" "+f.plats.join(" ")).toLowerCase();
+    if(q && !hay.includes(q)) return;
+    if(f.sec!==last){ html+=`<div class="ord-group">${esc(f.sec)}</div>`; last=f.sec; }
+    const n=ORD.qty[f.key]||0, many=f.opts.length>1;
+    const one=f.opts[0], sub = many ? "Any model" : (one && !f.title.toLowerCase().includes(one.name.toLowerCase()) ? one.name : "");
+    const picked = many ? f.opts.filter(o=>ORD.qty[o.key]).length : 0;
+    const open = many && (ORDER_OPEN.has(f.key) || picked || (q && !f.title.toLowerCase().includes(q)));
+    html+=`<div class="ord-row${n?" on":""}"><div class="ord-txt"><b>${esc(f.title)}</b>${sub?`<small>${esc(sub)}</small>`:""}</div>${qtyBtns(f.key,n,f.max)}</div>`;
+    if(many) html+=`<button type="button" class="ord-more" data-ofam="${esc(f.key)}" aria-expanded="${!!open}">${open?"Hide models":"Choose a model"}${picked?` (${picked})`:""}</button>`+
+      (open ? `<div class="ord-models">`+f.opts.map(o=>{ const m=ORD.qty[o.key]||0; return `<div class="ord-row sub${m?" on":""}"><div class="ord-txt"><b>${esc(o.name)}</b></div>${qtyBtns(o.key,m,f.max)}</div>`; }).join("")+`</div>` : "");
   });
   $("ordList").innerHTML = html || `<div class="help" style="padding:10px 0">No items match "${esc($("ordQ").value)}".</div>`;
   const lines=Object.values(ORD.qty).filter(n=>n>0).length, units=Object.values(ORD.qty).reduce((a,b)=>a+(b||0),0);
@@ -1469,20 +1503,29 @@ function renderOrder(){
     (ME.shipNotes?`<br>Shipping instructions: ${esc(ME.shipNotes).replace(/\n/g,"<br>")}`:"")+
     `<br><span class="help">Change these in Field Kit settings.</span>` : "Finish your details in Field Kit settings first.";
 }
-$("ordList").addEventListener("click",e=>{ const b=e.target.closest("[data-oq]"); if(!b) return; const i=Number(b.dataset.oq), it=ORDER_ITEMS[i];
-  ORD.qty[i]=Math.max(0,Math.min(it.max,(ORD.qty[i]||0)+Number(b.dataset.d))); if(!ORD.qty[i]) delete ORD.qty[i]; saveOrd(); $("ordErr").innerHTML=""; renderOrder(); });
+$("ordList").addEventListener("click",e=>{
+  const t=e.target.closest("[data-ofam]"); if(t){ const k=t.dataset.ofam; ORDER_OPEN.has(k)?ORDER_OPEN.delete(k):ORDER_OPEN.add(k); renderOrder(); return; }
+  const b=e.target.closest("[data-oq]"); if(!b) return; const k=b.dataset.oq, it=ordLines().find(x=>x.key===k); if(!it) return;
+  ORD.qty[k]=Math.max(0,Math.min(it.max,(ORD.qty[k]||0)+Number(b.dataset.d))); if(!ORD.qty[k]) delete ORD.qty[k]; saveOrd(); $("ordErr").innerHTML=""; renderOrder(); });
 $("ordQ").addEventListener("input",renderOrder);
 $("ordReason").addEventListener("input",()=>{ ORD.reason=$("ordReason").value; saveOrd(); $("ordErr").innerHTML=""; });
 $("ordNotes").addEventListener("input",()=>{ ORD.notes=$("ordNotes").value; saveOrd(); });
 $("ordMgr").addEventListener("change",()=>{ const v=$("ordMgr").value.trim().toLowerCase(); $("ordMgr").value=v;
   if(v && !validEmail(v)){ showMgrErr("Enter a full email address, e.g. first.last@xplore.ca."); return; } showMgrErr(""); $("ordErr").innerHTML=""; lsSet(OK_MGR,v); if(v) toast("Manager's email saved"); });
+/* how a line reads in the order email: the family, and the model only when the tech chose one */
+function ordLine(it){
+  const f=it.f;
+  if(!it.o){ const one=f.opts.length===1 ? f.opts[0] : null;
+    return one ? (one.label || `${f.title}${one.name!==f.title?`: ${one.name}`:""} (${f.fam}${one.ids.length?` · ${one.ids.join(" / ")}`:""})`) : `${f.title}, any model (${f.fam})`; }
+  return it.o.label || `${f.title}: ${it.o.name} (${f.fam} · ${it.o.ids.join(" / ")})`;
+}
 function showMgrErr(m){ $("ordMgr").classList.toggle("bad",!!m); $("ordMgr_err").hidden=!m; $("ordMgr_err").textContent=m; }
 function clearOrder(){ ORD.qty={}; ORD.reason=""; ORD.notes=""; saveOrd(); $("ordReason").value=""; $("ordNotes").value=""; $("ordErr").innerHTML=""; renderOrder(); }
 $("ordClear").addEventListener("click",clearOrder);
 $("ordSend").addEventListener("click",()=>{
   const err=(m,f)=>{ $("ordErr").innerHTML=`<div class="note warn">${esc(m)}</div>`; if(f) $(f).focus(); };
   $("ordErr").innerHTML="";
-  const picked=ORDER_ITEMS.map((it,i)=>({it,n:ORD.qty[i]||0})).filter(x=>x.n>0);
+  const picked=ordLines().map(it=>({it,n:ORD.qty[it.key]||0})).filter(x=>x.n>0);
   if(!picked.length) return err("Add at least one item.");
   const reason=$("ordReason").value.trim(); if(!reason) return err("Enter the reason for the manual order.","ordReason");
   const mgr=$("ordMgr").value.trim().toLowerCase();
@@ -1501,7 +1544,7 @@ Ship to: ${addrLine(ME)}${ME.shipHold?`\nDelivery: Hold for pickup at the neares
 Reason for manual order: ${reason}${notes?`\nSpecial instructions for this order: ${notes}`:""}
 
 Items (${units}):
-${picked.map(x=>`- ${x.n} x ${x.it.label}`).join("\n")}
+${picked.map(x=>`- ${x.n} x ${ordLine(x.it)}`).join("\n")}
 
 Thank you,`;
   openMailSheet({title:"Send the order to your manager", to:mgr, subject, body,

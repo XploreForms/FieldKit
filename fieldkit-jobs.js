@@ -77,7 +77,7 @@
     if (SLOT_CACHE) return SLOT_CACHE;
     var C = window.FK_CATALOG || { SKUS: [] };
     var inGroup = function () { var g = [].slice.call(arguments); return C.SKUS.filter(function (x) { return g.indexOf(x.group) >= 0 && x.serial && !x.hidden; }).map(function (x) { return x.id; }); };
-    var DROPS = [["Not Needed", []], ["100m", ["00D101EB49R100MP"]], ["200m", ["00D101EB49R200MP"]], ["300m", ["00D101EB49R300MP"]], ["500m", ["00D101EB49R500MP"]], ["1000m", ["FK-DROP1000"]]];
+    var DROPS = [["Not Needed", []], ["100m", ["00D101EB49R100MP"]], ["200m", ["00D101EB49R200MP"]], ["300m", ["00D101EB49R300MP"]], ["500m", ["00D101EB49R500MP"]], ["750m", ["00D101EB49R750MP"]], ["1000m", ["FK-DROP1000"]]];
     SLOT_CACHE = {
       /* Mount (for stock levels): the mount type, a "Deployed 10ft pole" tick for Gable Mount and Tripod, and an
          opt-out tick when no new mount went up (reused existing, or on a tower). Stored as one value:
@@ -93,8 +93,8 @@
       azel: { name: "AzEl", opts: [["Deployed", ["1172770"]], ["Reused existing", []]] },
       dish: { name: "Dish", opts: [["Deployed", ["1172769-004"]], ["Reused existing", []]] },
       radio: { name: "Radio", skus: inGroup("5G & fixed wireless", "LTE") },
-      ont: { name: "ONT", skus: inGroup("Fiber ONTs") },
-      router: { name: "Router", skus: ["854-V6", "EMG6726-B10A-MT"] },
+      ont: { name: "ONT", skus: inGroup("Fibre ONTs") },
+      router: { name: "Router", skus: ["854-V6", "ARIA3321V-XPL", "EMG6726-B10A-MT"] },
       modem: { name: "Modem", skus: ["RM4100N-043"] },
       tria: { name: "TRIA", skus: ["X01012000A001"] },
       xwh: { name: "XWH", skus: ["834-V6", "WAP6804-MT"], multi: "xwh" },
@@ -383,9 +383,8 @@
   // which item a serial is: this phone's stock records first, then the inventory team's patterns
   function modelsFor(serial) {
     var rec = stockRecord(serial); if (rec && SKU[rec.sku]) return [rec.sku];
-    var k = keyOf(serial);
-    for (var i = 0; i < CAT.SERIAL_RULES.length; i++) if (CAT.SERIAL_RULES[i][0].test(k)) return CAT.SERIAL_RULES[i][1].filter(function (id) { return SKU[id]; });
-    return [];
+    // known serials, then patterns; items sharing a name count once, so e.g. any Nokia XS-010X needs no question
+    return CAT.match ? CAT.match(serial).filter(function (id) { return SKU[id]; }) : [];
   }
   /* The Field Cam photo a scanned serial counts as: radio -> CPE, router -> XWR, ONT -> ONT, modem -> Modem,
      TRIA -> TRIA, XWH -> XWH, XTV -> XTV. Found from the item the serial belongs to. */
@@ -501,9 +500,9 @@
       css();
       var ids = choices && choices.length ? choices : null;
       var w = document.createElement("div"); w.className = "fkj-pick"; w.setAttribute("role", "dialog"); w.setAttribute("aria-label", "Which item is this?");
-      function btn(id) { return '<button type="button" class="fkj-opt" data-id="' + esc(id) + '"><b>' + esc(SKU[id].name) + '</b><span>' + esc(id) + '</span></button>'; }
+      function btn(id) { return '<button type="button" class="fkj-opt" data-id="' + esc(id) + '"><b>' + esc(SKU[id].name) + '</b><span>' + esc(SKU[id].famName || id) + '</span></button>'; }
       var body = ids ? ids.map(btn).join("") : CAT.GROUPS.map(function (g) {
-        var its = CAT.SKUS.filter(function (s) { return s.group === g && s.serial && !s.hidden; });
+        var its = (CAT.firstOfName || function (l) { return l; })(CAT.SKUS.filter(function (s) { return s.group === g && s.serial && !s.hidden; }));
         return its.length ? '<p class="fkj-grp">' + esc(g) + '</p>' + its.map(function (s) { return btn(s.id); }).join("") : "";
       }).join("");
       w.innerHTML = '<div class="fkj-card"><h3>Which item is this?</h3><p class="fkj-sn">' + esc(serial) + '</p><p class="fkj-sub">' +
