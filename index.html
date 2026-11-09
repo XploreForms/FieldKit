@@ -464,7 +464,9 @@ details.grp .btn{margin-bottom:12px}
     REP: ["Fibre", "Fixed Wireless", "Satellite", "VAS"], REC: ["Fibre", "Fixed Wireless", "Satellite", "VAS"] };
   var NJ_FAMS = [["Fibre", "Fibre"], ["Fixed Wireless", "Fixed Wireless"], ["Satellite", "Satellite"], ["VAS", "Value Added Services"]];
   var NJ_DROPS = ["Existing Drop", "Drop Required", "Drop Only"], NJ_VAS = ["XWR", "XWH", "XTV"];
-  var nj = { work: null, fam: null, drop: null, vas: null };
+  // Technology, asked for every platform except VAS
+  var NJ_TECH = { "Fibre": ["FTX", "ATX", "CTX"], "Fixed Wireless": ["FWN", "LTE"], "Satellite": ["HJ3", "HJ2", "HTJ", "HV2", "HTV"] };
+  var nj = { work: null, fam: null, drop: null, vas: null, tech: null };
   var famOf = function (p) { return /^Fibre/.test(p) ? "Fibre" : p; };
   function njSeg(k, items, cur, n) {
     return '<div class="seg" style="--n:' + n + '" role="group">' + items.map(function (it) {
@@ -483,6 +485,7 @@ details.grp .btn{margin-bottom:12px}
     if (nj.fam && nj.work && !ps.some(function (p) { return famOf(p) === nj.fam; })) nj.fam = null;
     var html = '<div class="field"><span class="lbl">Job type</span>' + njSeg("work", NJ_TYPES, nj.work, 4) + '</div>' +
       '<div class="field"><span class="lbl">Platform</span>' + njSeg("fam", NJ_FAMS.map(function (f) { return [f[0], f[1], nj.work && !ps.some(function (p) { return famOf(p) === f[0]; })]; }), nj.fam, 2) + '</div>';
+    if (NJ_TECH[nj.fam]) html += '<div class="field"><span class="lbl">Technology</span>' + njSeg("tech", NJ_TECH[nj.fam].map(function (t) { return [t, t]; }), nj.tech, NJ_TECH[nj.fam].length) + '</div>';
     if (nj.fam === "Fibre" && njDrops().length) html += '<div class="field"><span class="lbl">Drop</span>' + njSeg("drop", NJ_DROPS.map(function (d) { return [d, d, ps.indexOf("Fibre (" + d + ")") < 0]; }), nj.drop, 3) + '</div>';
     if (njPlat() === "VAS") html += '<div class="field"><span class="lbl">VAS service</span>' + njSeg("vas", NJ_VAS.map(function (v) { return [v, v]; }), nj.vas, 3) + '</div>';
     $("njPick").innerHTML = html;
@@ -490,7 +493,7 @@ details.grp .btn{margin-bottom:12px}
   $("njPick").addEventListener("click", function (e) {
     var b = e.target.closest("[data-nj]"); if (!b || b.disabled) return;
     var k = b.getAttribute("data-nj"), v = b.getAttribute("data-v");
-    nj[k] = v; if (k === "fam") { nj.drop = null; nj.vas = null; }
+    nj[k] = v; if (k === "fam") { nj.drop = null; nj.vas = null; nj.tech = null; }
     $("njErr").innerHTML = ""; paintNewJob();
   });
   function normRef(v) { v = String(v || "").trim().toUpperCase().replace(/\s+/g, ""); var m = v.match(/^(?:SA[-#:]?)?(\d+)$/); return m ? "SA-" + m[1] : v.replace(/[^A-Z0-9-]/g, ""); }
@@ -510,7 +513,7 @@ details.grp .btn{margin-bottom:12px}
     navigator.clipboard.readText().then(function (t) { var r = refFromText(t); if (r) { $("njRef").value = r; $("njErr").innerHTML = ""; } else toast("No SA-# found in what you copied"); }, function () { $("njRef").focus(); });
   });
   function openNewJob() {
-    nj = { work: null, fam: null, drop: null, vas: null }; $("njRef").value = ""; $("njErr").innerHTML = "";
+    nj = { work: null, fam: null, drop: null, vas: null, tech: null }; $("njRef").value = ""; $("njErr").innerHTML = "";
     paintNewJob();
     if (!/^#new-job/.test(location.hash)) history.pushState(null, "", "#new-job");
     showView("newjob");
@@ -522,16 +525,18 @@ details.grp .btn{margin-bottom:12px}
     else if (!/^SA-\d{7}$/.test(ref)) { $("njErr").innerHTML = '<div class="err">\u201c' + esc(ref) + '\u201d isn\'t an SA-#. It needs 7 digits, e.g. SA-1234567.</div>'; return; }
     if (!nj.work) miss.push("job type");
     else if (!nj.fam) miss.push("platform");
+    else if (NJ_TECH[nj.fam] && !nj.tech) miss.push("technology");
     else if (!plat) miss.push("drop");
     else if (plat === "VAS" && !nj.vas) miss.push("VAS service (XWR, XWH or XTV)");
     if (miss.length) { $("njErr").innerHTML = '<div class="err">Still needed: ' + esc(miss.join(", ")) + '.</div>'; return; }
     // the Field Cam job, ready to shoot
     var camJobs = get("fieldcam.jobs", {}) || {}, cid = Date.now().toString(36);
-    camJobs[cid] = { work: nj.work, plat: plat, vas: plat === "VAS" ? nj.vas : null, outcome: "OK", reason: null, ref: ref, started: Date.now() };
+    camJobs[cid] = { work: nj.work, plat: plat, vas: plat === "VAS" ? nj.vas : null, tech: NJ_TECH[nj.fam] ? nj.tech : null, outcome: "OK", reason: null, ref: ref, started: Date.now() };
     set("fieldcam.jobs", camJobs);
     var job = J.start(), tname = NJ_TYPES.filter(function (t) { return t[0] === nj.work; })[0][1];
     job.sa = ref; job.work = nj.work; job.plat = plat; job.outcome = "OK"; job.camJobId = cid; job.camJobIds = [cid];
-    job.base = tname + " · " + (plat === "VAS" ? "VAS · " + nj.vas : plat);
+    job.tech = NJ_TECH[nj.fam] ? nj.tech : "";
+    job.base = J.withTech(tname + " · " + (plat === "VAS" ? "VAS · " + nj.vas : plat), job.tech);
     job.title = job.base + " · Complete";
     J.save(job);
     history.replaceState(null, "", "#job");   // Back from Field Cam comes to the job summary, not the New Job form
@@ -546,7 +551,7 @@ details.grp .btn{margin-bottom:12px}
     } else {
       $("jobArea").innerHTML = '<div class="jobwrap busy"><button class="job" type="button" id="jobGo"><i aria-hidden="true">' +
         svg('<path d="M4 17H2V5h12v12"/><path d="M8 17h7"/><path d="M19 17h3v-4.5L18.5 8H14"/><circle cx="6" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 9h6M5 12.5h4"/>', 2.2) +   // truck roll with its work order
-        '</i><div><b>' + esc(a.sa || "New SA") + ' <em class="live">' + (a.status === "complete" ? "Reopened" : "In progress") + '</em></b><span>' + esc(a.title ? a.title.split(" · ").slice(0, 2).join(" · ") : "SA details not set yet") + '</span></div><em class="chev" aria-hidden="true">›</em></button>' +
+        '</i><div><b>' + esc(a.sa || "New SA") + ' <em class="live">' + (a.status === "complete" ? "Reopened" : "In progress") + '</em></b><span>' + esc(a.base || (a.title ? a.title.split(" · ").slice(0, 2).join(" · ") : "SA details not set yet")) + '</span></div><em class="chev" aria-hidden="true">›</em></button>' +
         '<button class="newbtn" type="button" id="jobNew" aria-label="Replace with a new SA. This one stays in SA history." title="Start over with a new SA">' + RESTART + '</button></div>';
     }
     var act = a ? a.id : "", hist = J.list().filter(function (j) { return j.id !== act; });

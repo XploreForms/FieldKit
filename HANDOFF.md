@@ -69,6 +69,7 @@ No build step. Edit files, bump `version.js`, push.
 - Name and dealer can only be changed in Field Kit settings (not in Field Cam). **Grid lines** live in Field Cam's own settings.
 
 **Job flow**
+- New SA screen asks **Technology** for every platform except VAS (required): Fibre FTX / ATX / CTX; Fixed Wireless FWN / LTE; Satellite HJ3 / HJ2 / HTJ / HV2 / HTV. Saved as `tech` on the SA and its Field Cam job, shown after the platform ("Install · Fixed Wireless · LTE") on the menu card, SA page and SA history (`withTech` in `fieldkit-jobs.js`), and fills Field Notes' Fixed Wireless Platform (FWN/LTE).
 - New SA screen collects SA-# (auto "SA-", 7 digits only, Paste finds it in copied text), job type, platform, drop (Fibre installs/conversions), VAS service. Outcome starts as Complete (no note about it on the New SA screen).
 - **Wording: the guided flow calls a job an "SA" (service appointment)**: Start New SA, New SA, Start SA, SA summary, Complete SA, SA history, SA start/end cards. "Job type" stays (it matches Field Notes / FSL). One-time-use Field Cam still says "job" in its own screens.
 - Tapping the unfinished SA on the menu always opens its **SA home (summary)**, never the tool it was last in.

@@ -286,6 +286,7 @@
     if (!st.job_type && NOTE_TYPE[job.work]) st.job_type = NOTE_TYPE[job.work];
     if (!st.job_plat && plat) st.job_plat = plat;
     if (!st.job_outcome) st.job_outcome = NOTE_OUT[job.outcome] || "Complete";
+    if (!st.fw_plat && plat === "Fixed Wireless" && (job.tech === "FWN" || job.tech === "LTE")) st.fw_plat = job.tech;
     if (!st.job_drop && drop && (st.job_type === "Install" || st.job_type === "Conversion") && st.job_outcome === "Complete") st.job_drop = drop;
     // drop length picked in the Drop slot; XWH / XTV counts from what was scanned
     var dsl = job.slots && job.slots.drop;
@@ -343,6 +344,12 @@
     if (st && name && st.job_outcome !== name) { st.job_outcome = name; if (st.job_drop && name !== "Complete") delete st.job_drop; }
     if (j.notes && j.notes.comment) j.notes.stale = true;
   }
+  // the SA's Technology (FTX, FWN, HJ3...) goes after the platform: "Install · Fixed Wireless · FWN"
+  function withTech(s, tech) {
+    if (!s || !tech) return s;
+    var p = String(s).split(" · "); if (p.indexOf(tech) >= 0) return s;
+    p.splice(Math.min(2, p.length), 0, tech); return p.join(" · ");
+  }
   function fromCam(info) {
     var j = active(); if (!j || !info) return;
     if (info.outcome != null && (j.outcome || "") !== info.outcome && (j.outcome || info.outcome !== "OK")) outcomeFollow(j, info.outcome);
@@ -350,6 +357,7 @@
     if (info.outcomes) j.outcomeOpts = info.outcomes;
     if (info.camJobId) { j.camJobId = info.camJobId; if (j.camJobIds.indexOf(info.camJobId) < 0) j.camJobIds.push(info.camJobId); }
     ["sa", "work", "plat", "outcome", "reason", "title"].forEach(function (k) { if (info[k] != null) j[k] = info[k]; });
+    if (j.tech) { j.base = withTech(j.base, j.tech); j.title = withTech(j.title, j.tech); }
     if (info.photos != null) j.photos = info.photos;
     if (info.unsaved != null) j.unsaved = info.unsaved;
     if (info.labels) j.labels = info.labels;
@@ -582,6 +590,6 @@
   FK.job = {
     inMode: function () { return jobMode; }, active: active, get: byId, list: list, start: start, complete: complete, open: open, save: save, setActive: setActive,
     fromCam: fromCam, modelsFor: modelsFor, modelName: function (id) { return SKU[id] ? SKU[id].name : ""; }, pickModel: pickModel, stockNote: stockNote,
-    deployed: deployed, recoveredEvents: recoveredEvents, canRecover: canRecover, removeSerial: removeSerial, slotModel: slotModel, slotsHTML: slotsHTML, openSlot: openSlot, setSlot: setSlot, setOutcome: setOutcome, slotEntry: slotEntry, addSerial: addSerial, pasteInto: pasteInto, hasSlots: function (src) { return slotIds(src).length > 0; }, syncDeploys: syncDeploys, notesCopied: notesCopied, setStep: setStep, keepDays: 7
+    deployed: deployed, recoveredEvents: recoveredEvents, canRecover: canRecover, removeSerial: removeSerial, slotModel: slotModel, slotsHTML: slotsHTML, openSlot: openSlot, withTech: withTech, setSlot: setSlot, setOutcome: setOutcome, slotEntry: slotEntry, addSerial: addSerial, pasteInto: pasteInto, hasSlots: function (src) { return slotIds(src).length > 0; }, syncDeploys: syncDeploys, notesCopied: notesCopied, setStep: setStep, keepDays: 7
   };
 })();
