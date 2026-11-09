@@ -186,7 +186,7 @@ html[data-text="large"] .snlist .sn b{font-size:17px} html[data-text="large"] .s
 .qcheck b{display:block;color:var(--warn);font-size:14px}
 .qcheck span{display:block;font-size:12.5px;color:var(--muted)}
 .qcheck .btn{min-height:38px;padding:0 12px;font-size:14px}
-#otherBar{position:fixed;top:calc(env(safe-area-inset-top,0px) + 64px);bottom:auto;z-index:60;border:1px solid var(--line)}
+#otherBar{position:fixed;top:calc(env(safe-area-inset-top,0px) + 64px);bottom:auto;z-index:90;border:1px solid var(--line);box-shadow:0 8px 30px rgba(0,0,0,.45)}
 .notebar{position:absolute;left:10px;right:10px;bottom:10px;display:flex;gap:8px;align-items:center;padding:8px;border-radius:14px;background:rgba(10,18,17,.9);z-index:3}
 .notebar input{flex:1;min-width:0;padding:9px 11px}
 .notebar .btn{min-height:40px;padding:0 12px}
@@ -2874,6 +2874,9 @@ $("toLabelBtn").addEventListener("click", () => openSorter(curPhotos().filter(is
 let otherCb = null;
 function askOther(cb) {
   hideSnack(); otherCb = cb;
+  // the box lives in the camera area; over the photo sorter (and sheets) it was hidden behind them, so techs typed blind.
+  // Move it to the top level of the page so it always shows above whatever is open.
+  const ob = $("otherBar"); if (ob.parentNode !== document.body) document.body.appendChild(ob);
   $("inOther").value = ""; $("otherBar").hidden = false; $("inOther").focus();
 }
 function useOther() {

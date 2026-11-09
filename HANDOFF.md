@@ -103,6 +103,8 @@ No build step. Edit files, bump `version.js`, push.
 - Fibre Existing Drop: Indoor Cable Run alone; ONT Placement + Router Placement only with each other.
 - Fibre Drop Required: MPT, Install Overview, Drop Route, Indoor Cable Run alone; ONT + Router only with each other.
 
+**Field Cam "Other…" label**: the typing box (`#otherBar`) is moved to the top level of the page when opened, so it shows above the photo sorter ("To label") and sheets. It used to sit behind them, so techs typed blind.
+
 **Field Cam scanning**: no instruction panel or Done button while scanning (removed at Curtis's request). Results and problems (Added…, No barcode read…, MAC address…) show as a short toast; leave scanning with the green scan button or Back.
 
 **Field Notes**
