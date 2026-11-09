@@ -31,7 +31,7 @@ One installable web app (PWA) with three tools and a guided job flow:
 |---|---|
 | `index.html` | Menu, first-launch setup (3 steps), settings, New Job screen, job summary, job history |
 | `fieldcam.html` | Field Cam (labelled, compressed, stamped photos; serial scanning; equipment slots in job mode) |
-| `fieldstock.html` | Field Stock (receive, deploy, transfer, RMA, recycle, return; tamper-evident history; Google Sheets sync; manual order) |
+| `fieldstock.html` | Field Stock — always opens on the **Log** tab (renamed from "Logs"; the last tab isn't restored), except `#order`. (receive, deploy, transfer, RMA, recycle, return; tamper-evident history; Google Sheets sync; manual order) |
 | `fieldnotes.html` | Field Notes (FSL completion comment generator) |
 | `fieldkit.js` | Shared: profile/prefs sync into each tool, setup redirect, theme, sessions (8 h), slim header on scroll, service worker + aggressive updates |
 | `fieldkit-jobs.js` | Job flow: job store, hand-offs between tools, Field Notes prefill, equipment slots, deploy/recovery logging into Field Stock (sealed), model picker |
