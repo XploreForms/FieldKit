@@ -2546,7 +2546,10 @@ async function scanOnce() {
 // with the scanned number on the info band, so FSL gets the picture and the stamp gets the text.
 async function snPhoto(code, item) {
   const keepSel = S.sel, keepNote = S.note;
-  S.sel = [`${item || "Device"} SN`]; S.note = `Scanned S/N ${code}`;
+  // the photo this device needs (XWR, ONT, CPE…) when the SA's photo list has it; otherwise "<item> SN"
+  let dev = "";
+  try { dev = !fkScanRec && window.FieldKit && FieldKit.job && FieldKit.job.devicePhoto ? FieldKit.job.devicePhoto(code) : ""; } catch {}
+  S.sel = [dev && shotList(curJob()).includes(dev) ? dev : `${item || "Device"} SN`]; S.note = `Scanned S/N ${code}`;
   let rec = null;
   try { rec = await capture(true, { quiet:true }); } catch {}
   S.sel = keepSel; S.note = keepNote; if (current) { current.sel = keepSel; save(); }

@@ -383,6 +383,14 @@
     for (var i = 0; i < CAT.SERIAL_RULES.length; i++) if (CAT.SERIAL_RULES[i][0].test(k)) return CAT.SERIAL_RULES[i][1].filter(function (id) { return SKU[id]; });
     return [];
   }
+  /* The Field Cam photo a scanned serial counts as: radio -> CPE, router -> XWR, ONT -> ONT, modem -> Modem,
+     TRIA -> TRIA, XWH -> XWH, XTV -> XTV. Found from the item the serial belongs to. */
+  var DEVICE_PHOTO = { radio: "CPE", router: "XWR", ont: "ONT", modem: "Modem", tria: "TRIA", xwh: "XWH", xtv: "XTV" };
+  function devicePhoto(serial) {
+    var ids = modelsFor(serial), D = slotSet();
+    for (var k in DEVICE_PHOTO) { var d = D[k]; if (d && d.skus && ids.some(function (id) { return d.skus.indexOf(id) >= 0; })) return DEVICE_PHOTO[k]; }
+    return "";
+  }
   function stockNote(serial, sa) {
     var r = stockRecord(serial);
     if (!r) return "Not in your stock records";
@@ -590,6 +598,6 @@
   FK.job = {
     inMode: function () { return jobMode; }, active: active, get: byId, list: list, start: start, complete: complete, open: open, save: save, setActive: setActive,
     fromCam: fromCam, modelsFor: modelsFor, modelName: function (id) { return SKU[id] ? SKU[id].name : ""; }, pickModel: pickModel, stockNote: stockNote,
-    deployed: deployed, recoveredEvents: recoveredEvents, canRecover: canRecover, removeSerial: removeSerial, slotModel: slotModel, slotsHTML: slotsHTML, openSlot: openSlot, withTech: withTech, setSlot: setSlot, setOutcome: setOutcome, slotEntry: slotEntry, addSerial: addSerial, pasteInto: pasteInto, hasSlots: function (src) { return slotIds(src).length > 0; }, syncDeploys: syncDeploys, notesCopied: notesCopied, setStep: setStep, keepDays: 7
+    deployed: deployed, recoveredEvents: recoveredEvents, canRecover: canRecover, removeSerial: removeSerial, slotModel: slotModel, slotsHTML: slotsHTML, openSlot: openSlot, devicePhoto: devicePhoto, withTech: withTech, setSlot: setSlot, setOutcome: setOutcome, slotEntry: slotEntry, addSerial: addSerial, pasteInto: pasteInto, hasSlots: function (src) { return slotIds(src).length > 0; }, syncDeploys: syncDeploys, notesCopied: notesCopied, setStep: setStep, keepDays: 7
   };
 })();

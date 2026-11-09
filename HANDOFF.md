@@ -103,6 +103,8 @@ No build step. Edit files, bump `version.js`, push.
 - Fibre Existing Drop: Indoor Cable Run alone; ONT Placement + Router Placement only with each other.
 - Fibre Drop Required: MPT, Install Overview, Drop Route, Indoor Cable Run alone; ONT + Router only with each other.
 
+**Scanned serials label their own photo**: the photo Field Cam takes of a scanned serial is labelled as the device photo the SA needs (radio → CPE, router → XWR, ONT → ONT, modem → Modem, TRIA → TRIA, XWH → XWH, XTV → XTV; `devicePhoto` in `fieldkit-jobs.js`), so it ticks that photo off. If the SA's photo list doesn't have that label, or it's a Recovery scan, it stays "<item> SN".
+
 **Field Cam "Other…" label**: the typing box (`#otherBar`) is moved to the top level of the page when opened, so it shows above the photo sorter ("To label") and sheets. It used to sit behind them, so techs typed blind.
 
 **Field Cam scanning**: no instruction panel or Done button while scanning (removed at Curtis's request). Results and problems (Added…, No barcode read…, MAC address…) show as a short toast; leave scanning with the green scan button or Back.
