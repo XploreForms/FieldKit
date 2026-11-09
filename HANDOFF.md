@@ -102,6 +102,8 @@ No build step. Edit files, bump `version.js`, push.
 
 ## Open items / to do
 
+- **Stock item names (in progress, Curtis):** tool at https://claude.ai/artifact/96n4GHyRNBzzY9YNhP6pPG gives every SKU a simple name and a category (suggestions pre-filled). Choices are saved in that artifact's database: collection `skus` (one doc per SKU: `sku`, `name`, `category`, `done`) and doc `settings/categories` (`list`, in order). When Curtis says **"apply the stock names"**: read them with the Artifact tool (`read_db`), update `name` / `group` in `fieldkit-catalog.js` (and `GROUPS` order), never change an `id`, then test Field Stock and SA equipment, bump `version.js`, push.
+
 - **Placeholder part numbers** in `fieldkit-catalog.js` (ids starting `FK-`): Bi-pod Mount, Gable Mount, Tripod Mount, 10ft Pole, 5ft Pole, Side Stays, Satellite Pole Mount, 1000M drop. Replace with real part numbers before techs rely on them (changing an id later orphans old entries).
 - Not yet decided: photo rules for **Fibre Drop Only** (MPT, Drop Route); whether Install Overview should be alone on **Fibre Existing Drop**; whether the **job summary header** should use the truck icon too.
 - Field Cam still shows its own generic "Install" tip in settings (harmless).
