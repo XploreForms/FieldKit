@@ -98,6 +98,8 @@ No build step. Edit files, bump `version.js`, push.
 - Fibre Existing Drop: Indoor Cable Run alone; ONT Placement + Router Placement only with each other.
 - Fibre Drop Required: MPT, Install Overview, Drop Route, Indoor Cable Run alone; ONT + Router only with each other.
 
+**Field Cam scanning**: no instruction panel or Done button while scanning (removed at Curtis's request). Results and problems (Added…, No barcode read…, MAC address…) show as a short toast; leave scanning with the green scan button or Back.
+
 **Field Notes**
 - Focus ring stays inside boxes. Keyboard closes after 3 RSRP digits / 2 SINR digits.
 

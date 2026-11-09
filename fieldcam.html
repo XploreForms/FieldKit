@@ -2470,7 +2470,7 @@ async function startScan() {
     if (!(await loadZXing()) || !makeZX()) return toast("The scanner didn’t load. Connect to the internet once, then try again.", 3600);
   }
   if (SC.bd && !SC.reader) loadZXing().then(ok => { if (ok) makeZX(); });   // backup reader, loaded quietly
-  SC.on = true; $("aim").hidden = false; $("scanTop").hidden = false; $("hud").classList.add("scan");
+  SC.on = true; $("aim").hidden = false; $("hud").classList.add("scan");
   $("shutter").classList.add("scanmode"); $("shutter").setAttribute("aria-label", "Scan barcode"); $("snBtn").classList.add("on");
   const fkLeft = fkJob() && curJob() && !fkScanRec ? fkSlotsLeft(curJob()) : [];
   fkModeShow();
@@ -2481,7 +2481,13 @@ function stopScan() {
   SC.on = false; SC.busy = false; $("aim").hidden = true; $("scanTop").hidden = true; $("hud").classList.remove("scan"); $("fkScanMode").hidden = true;
   const sh = $("shutter"); sh.classList.remove("scanmode", "busy"); sh.setAttribute("aria-label", "Take photo"); $("snBtn").classList.remove("on");
 }
-const scanMsg = html => { $("scanMsg").innerHTML = html; };
+/* No instruction panel while scanning (the red line and the red button say it all). Results and problems show as a
+   short toast instead; the instructions and "Reading…" aren't shown. Leave scanning with the scan button or Back. */
+const scanMsg = html => {
+  const plain = String(html).replace(/<small[^>]*>\[[^<]*<\/small>/g, "").replace(/<br\s*\/?>/g, " ").replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+  if (!plain || /^(Red line|Reading|Scanning (recovered|equipment))/.test(plain)) return;
+  toast(esc(plain.replace(/\.? ?Scan another or tap Done$/, "").replace(/ Scan another or tap Done\.?$/, "")), /^(No barcode|That|.*already on)/.test(plain) ? 3200 : 2600);
+};
 const SCV = document.createElement("canvas"), SCG = SCV.getContext("2d", { willReadFrequently:true });
 const SCV2 = document.createElement("canvas"), SCG2 = SCV2.getContext("2d", { willReadFrequently:true });
 function zxRead(cv) {
@@ -2531,7 +2537,7 @@ async function scanOnce() {
   j.serials = [...(j.serials || []), { code, item }]; jobChanged();
   aimFlash("hit"); try { navigator.vibrate && navigator.vibrate(40); } catch {}
   const shot = await snPhoto(code, item);
-  scanMsg(`Added <b>${esc(code)}</b>${item ? " · " + esc(item) : ""}${shot ? " + photo" : ""}. Scan another or tap Done`);
+  scanMsg(`Added <b>${esc(code)}</b>${item ? " · " + esc(item) : ""}${shot ? " + photo" : ""}`);
   fkIdentify(code);
 }
 // Every scanned serial also saves a photo of its label: named after the device ("Adtran Router SN"),
@@ -3368,10 +3374,10 @@ async function fkIdentify(code) {
   if (rec) s.rec = true;
   save(); renderSerials();
   if (fkScanBack === "one") setTimeout(() => { if (SC.on) stopScan(); else fkScanDone(); }, 1300);   // from the SA home: show "Added", then back
-  if (rec) { if (SC.on) scanMsg(`Recovered <b>${esc(code)}</b>${s.item ? " · " + esc(s.item) : ""}. ${sku ? "Goes into your stock" : "Not logged in Field Stock"}. Scan another or tap Done`); return; }
+  if (rec) { if (SC.on) scanMsg(`Recovered <b>${esc(code)}</b>${s.item ? " · " + esc(s.item) : ""}. ${sku ? "Goes into your stock" : "Not logged in Field Stock"}`); return; }
   const note = J.stockNote(code, j.ref);
   const row = fkModel(j).rows.find(r => r.item && r.item.code === code), left = fkSlotsLeft(j);
-  if (SC.on) scanMsg(`Added <b>${esc(code)}</b>${row ? " as " + esc(row.name) : s.item ? " · " + esc(s.item) : ""}. ${sku ? esc(note) : "Not logged in Field Stock"}. ${left.length ? "Still to do: " + esc(left.join(", ")) : "Scan another or tap Done"}`);
+  if (SC.on) scanMsg(`Added <b>${esc(code)}</b>${row ? " as " + esc(row.name) : s.item ? " · " + esc(s.item) : ""}. ${sku ? esc(note) : "Not logged in Field Stock"}. ${left.length ? "Still to do: " + esc(left.join(", ")) : ""}`);
 }
 /* Scan from the SA home: its Scan buttons open Field Cam straight into the scanner and come back afterwards
    ("one": back after one serial is added; "many", from Scan More: back when the tech taps Done). */
