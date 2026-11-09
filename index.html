@@ -493,7 +493,7 @@ details.grp .btn{margin-bottom:12px}
       '<div class="field"><span class="lbl">Platform</span>' + njSeg("fam", NJ_FAMS.map(function (f) { return [f[0], f[1], nj.work && !ps.some(function (p) { return famOf(p) === f[0]; })]; }), nj.fam, 2) + '</div>';
     if (NJ_TECH[nj.fam]) html += '<div class="field"><span class="lbl">Technology</span>' + njSeg("tech", NJ_TECH[nj.fam].map(function (t) { return [t, t]; }), nj.tech, NJ_TECH[nj.fam].length) + '</div>';
     if (nj.fam === "Fibre" && njDrops().length) html += '<div class="field"><span class="lbl">Drop</span>' + njSeg("drop", NJ_DROPS.map(function (d) { return [d, d, ps.indexOf("Fibre (" + d + ")") < 0]; }), nj.drop, 3) + '</div>';
-    if (njPlat() === "VAS") html += '<div class="field"><span class="lbl">VAS service</span>' + njSeg("vas", NJ_VAS.map(function (v) { return [v, v]; }), nj.vas, 3) + '</div>';
+    if (njPlat() === "VAS") html += '<div class="field"><span class="lbl">Technology</span>' + njSeg("vas", NJ_VAS.map(function (v) { return [v, v]; }), nj.vas, 3) + '</div>';
     $("njPick").innerHTML = html;
   }
   $("njPick").addEventListener("click", function (e) {
@@ -533,7 +533,7 @@ details.grp .btn{margin-bottom:12px}
     else if (!nj.fam) miss.push("platform");
     else if (NJ_TECH[nj.fam] && !nj.tech) miss.push("technology");
     else if (!plat) miss.push("drop");
-    else if (plat === "VAS" && !nj.vas) miss.push("VAS service (XWR, XWH or XTV)");
+    else if (plat === "VAS" && !nj.vas) miss.push("technology (XWR, XWH or XTV)");
     if (miss.length) { $("njErr").innerHTML = '<div class="err">Still needed: ' + esc(miss.join(", ")) + '.</div>'; return; }
     // the Field Cam job, ready to shoot
     var camJobs = get("fieldcam.jobs", {}) || {}, cid = Date.now().toString(36);

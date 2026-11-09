@@ -2733,7 +2733,7 @@ function renderJobPicker(el, sel, onChange) {
   el.innerHTML = `<div><label>Job type</label>${segHTML("work", JOB_TYPES, sel.work, " four")}</div>
     <div><label>Platform</label>${segHTML("fam", fams, fam, " two")}</div>
     ${fam === "Fibre" && drops.length ? `<div><label>Drop</label>${segHTML("drop", PICK_DROPS.map(d => ({ id:d, name:d, off:!plats.includes(`Fibre (${d})`) })), drop)}</div>` : ""}
-    ${sel.plat === "VAS" ? `<div><label>VAS service</label>${segHTML("vas", VAS_TYPES, sel.vas)}</div>` : ""}`;
+    ${sel.plat === "VAS" ? `<div><label>Technology</label>${segHTML("vas", VAS_TYPES, sel.vas)}</div>` : ""}`;
   el.onclick = e => {
     const b = e.target.closest("[data-k]"); if (!b) return;
     const k = b.dataset.k, v = b.dataset.v;
@@ -3185,7 +3185,7 @@ $("startBtn").addEventListener("click", () => {
   else if (!validRef(ref)) { $("startErr").textContent = `“${ref}” isn’t an SA-#. It needs 7 digits, e.g. SA-1234567.`; $("startErr").hidden = false; $("inRef").focus(); return; }
   if (!startSel.work) missing.push("job type");
   else if (!startSel.plat) missing.push(startSel.fam === "Fibre" ? "drop" : "platform");
-  else if (startSel.plat === "VAS" && !startSel.vas) missing.push("VAS service (XWR, XWH or XTV)");
+  else if (startSel.plat === "VAS" && !startSel.vas) missing.push("technology (XWR, XWH or XTV)");
   if (missing.length) { $("startErr").textContent = "Still needed: " + missing.join(", ") + "."; $("startErr").hidden = false; return; }
   settings.name = name; settings.dealer = dealer;
   const hadPrev = curPhotos().length;
