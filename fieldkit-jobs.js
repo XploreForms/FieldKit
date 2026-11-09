@@ -205,7 +205,9 @@
     var html = '<div class="fkj-slots">' + model.rows.map(function (r) {
       if (r.kind === "choice" && r.ui === "mount") {
         var M = slotSet().mount, none = r.value === M.none, base = none ? "" : String(r.value || "").replace(/ \+ 10ft Pole$/, ""), pole = / \+ 10ft Pole$/.test(r.value || "");
-        var mh = '<div class="fkj-slot"><div class="fkj-sh">' + (r.done ? tick : r.optional ? '<i class="fkj-need fkj-maybe" aria-hidden="true"></i>' : dot) + '<b>' + esc(r.name) + '</b></div>' +
+        // "New mount not required" sits on the right of the Mount heading (reused existing, or on a tower: nothing to log)
+        var mh = '<div class="fkj-slot"><div class="fkj-sh">' + (r.done ? tick : r.optional ? '<i class="fkj-need fkj-maybe" aria-hidden="true"></i>' : dot) + '<b>' + esc(r.name) + '</b>' +
+          '<label class="fkj-chk fkj-chk-r"><input type="checkbox" data-slot-set="mount" data-v="' + (none ? "" : esc(M.none)) + '"' + (none ? " checked" : "") + '><span>New mount not required</span></label></div>' +
           '<div class="fkj-seg' + (none ? ' fkj-off' : '') + '" role="group" aria-label="Mount type">' + M.types.map(function (t) {
             var v = M.poles.indexOf(t) >= 0 ? t + " + 10ft Pole" : t;   // a gable mount or tripod starts with its pole ticked
             if (t === base) v = r.value;                                   // tapping the picked one keeps the pole answer
@@ -213,7 +215,6 @@
           }).join("") + '</div>';
         if (M.poles.indexOf(base) >= 0)
           mh += '<label class="fkj-chk"><input type="checkbox" data-slot-set="mount" data-v="' + esc(pole ? base : base + " + 10ft Pole") + '"' + (pole ? " checked" : "") + '><span>Deploy 10ft pole with it</span></label>';
-        mh += '<label class="fkj-chk"><input type="checkbox" data-slot-set="mount" data-v="' + (none ? "" : esc(M.none)) + '"' + (none ? " checked" : "") + '><span>No new mount deployed <small>Reused existing, or on a tower</small></span></label>';
         return mh + '</div>';
       }
       if (r.kind === "choice") {
@@ -507,7 +508,7 @@
       ".fkj-add input::placeholder{font-family:var(--fk-body,sans-serif);text-transform:none;color:var(--fk-muted,#5A6F69)}.fkj-add input:focus{outline:none;box-shadow:inset 0 0 0 2px var(--fk-accent-text,#23864A)}.fkj-add .fkj-btn{min-height:44px}" +
       ".fkj-chk{display:flex;align-items:flex-start;gap:10px;margin-top:10px;font:600 .92rem/1.3 var(--fk-body,sans-serif);cursor:pointer}" +
       ".fkj-chk input{flex:none;width:22px;height:22px;margin:0;accent-color:var(--fk-accent-text,#23864A)}.fkj-chk small{display:block;font-weight:400;font-size:.82rem;color:var(--fk-muted,#5A6F69)}" +
-      ".fkj-seg.fkj-off button{opacity:.55}" +
+      ".fkj-seg.fkj-off button{opacity:.55}.fkj-chk-r{margin:-9px 0 -9px auto;align-items:center;gap:8px;font-size:.88rem;min-height:40px;text-align:right}" +
       ".fkj-in{position:relative;flex:1;min-width:0;display:flex}.fkj-in input{padding-right:46px}" +
       ".fkj-pastein{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:38px;height:38px;border:0;border-radius:8px;background:transparent;color:var(--fk-muted,#5A6F69);display:grid;place-items:center;cursor:pointer;padding:0}" +
       ".fkj-pastein svg{width:20px;height:20px}.fkj-pastein:active{background:var(--fk-line,rgba(0,43,43,.09))}" +
