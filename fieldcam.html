@@ -2773,7 +2773,7 @@ function renderTop() {
     if (!outcomeSet(j) || j.outcome === "OK") sh = esc(base);
     else sh = esc(`${base} · ${j.outcome === "NR" ? "NR" : "CC"}${j.reason ? " · " + j.reason : ""}`);
   }
-  $("jobRef").textContent = j && j.ref ? j.ref : ""; $("jobRef").hidden = !(j && j.ref);
+  $("jobRef").textContent = j && j.ref ? j.ref : ""; $("jobRef").hidden = !(j && j.ref) || fkJob();   // in a Field Kit job the SA-# is on the back button
   $("jobTxt").innerHTML = j ? sh : "No job";
   $("jobNeed").hidden = true;   // the outcome button lives by the shutter now
   $("jobProg").textContent = j && req.length ? `${req.filter(l => counts[l]).length}/${req.length}` : "";

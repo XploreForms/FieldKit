@@ -185,7 +185,7 @@
   }
 
   /* ---------- the way back from Field Cam and Field Notes ----------
-     The phone's Back button and "‹ Field Kit" / "‹ Job" go straight to the menu, or to the job summary in a job,
+     The phone's Back button and "‹ Field Kit" / "‹ SA-#######" go straight to the menu, or to the job summary in a job,
      never to the other tool or an older screen. The menu notes where it was when it opened a tool
      (fieldkit.cameFrom: "#job" or ""), and the tools hand over to each other with location.replace, so the
      page just behind a tool is that menu screen: going back to it is a real Back (fast, no extra history).
@@ -206,7 +206,7 @@
     location.replace(t);
   }
   if (APP === "cam" || APP === "notes") {
-    // on-screen "‹ Field Kit" / "‹ Job": same as the Back button
+    // on-screen "‹ Field Kit" / "‹ SA-#######": same as the Back button
     document.addEventListener("click", function (e) {
       var a = e.target && e.target.closest && e.target.closest("a.fk-back");
       if (!a) return;

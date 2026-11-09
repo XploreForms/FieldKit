@@ -290,10 +290,11 @@
     }
   }
 
-  /* ---------- tools in a job: the way back goes to the job summary ---------- */
+  /* ---------- tools in a job: the way back goes to the job summary, and reads as the job's SA-# ---------- */
   if (jobMode && APP !== "home") {
     document.addEventListener("DOMContentLoaded", function () {
-      [].forEach.call(document.querySelectorAll(".fk-back"), function (a) { a.setAttribute("href", "index.html#job"); a.textContent = "‹ Job"; });
+      var j = active(), label = "‹ " + ((j && j.sa) || "Job");
+      [].forEach.call(document.querySelectorAll(".fk-back"), function (a) { a.setAttribute("href", "index.html#job"); a.textContent = label; a.setAttribute("aria-label", "Back to job " + ((j && j.sa) || "")); });
     });
   }
 
