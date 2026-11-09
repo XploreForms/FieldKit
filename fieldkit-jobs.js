@@ -79,7 +79,7 @@
     var inGroup = function () { var g = [].slice.call(arguments); return C.SKUS.filter(function (x) { return g.indexOf(x.group) >= 0 && x.serial && !x.hidden; }).map(function (x) { return x.id; }); };
     var DROPS = [["Not Needed", []], ["100m", ["00D101EB49R100MP"]], ["200m", ["00D101EB49R200MP"]], ["300m", ["00D101EB49R300MP"]], ["500m", ["00D101EB49R500MP"]], ["1000m", ["FK-DROP1000"]]];
     SLOT_CACHE = {
-      /* Mount (for stock levels): the mount type, a "Deploy 10ft pole with it" tick for Gable Mount and Tripod, and an
+      /* Mount (for stock levels): the mount type, a "Deployed 10ft pole" tick for Gable Mount and Tripod, and an
          opt-out tick when no new mount went up (reused existing, or on a tower). Stored as one value:
          "J-Arm", "Gable Mount" / "Gable Mount + 10ft Pole", "Bipod", "Tripod" / "Tripod + 10ft Pole", or "No new mount".
          Bipod still logs its 5ft pole, as before. */
@@ -223,7 +223,7 @@
             return '<button type="button" style="grid-column:span 3" data-slot-set="mount" data-v="' + esc(v) + '" aria-pressed="' + (t === base) + '">' + esc(t) + '</button>';
           }).join("") + '</div>';
         if (M.poles.indexOf(base) >= 0)
-          mh += '<label class="fkj-chk"><input type="checkbox" data-slot-set="mount" data-v="' + esc(pole ? base : base + " + 10ft Pole") + '"' + (pole ? " checked" : "") + '><span>Deploy 10ft pole with it</span></label>';
+          mh += '<label class="fkj-chk"><input type="checkbox" data-slot-set="mount" data-v="' + esc(pole ? base : base + " + 10ft Pole") + '"' + (pole ? " checked" : "") + '><span>Deployed 10ft pole</span></label>';
         return mh + '</div>';
       }
       if (r.kind === "choice") {
