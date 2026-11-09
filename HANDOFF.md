@@ -96,7 +96,7 @@ No build step. Edit files, bump `version.js`, push.
 - Conversions & repairs have a **Recovered** section; Field Cam's scanner has a **Deploy / Recovery** switch (installs always deploy). Recovered items log as Receive → Recovery on the job's SA-#.
 - Everything logged is sealed like Field Stock's own entries so **History Check stays Verified**.
 
-**Device photos** (`PHOTOS` in `fieldcam.html`, installs & conversions, Complete): Fibre adds ONT, XWR, XWH (optional), XTV (optional); Fixed Wireless adds CPE, XWR, XWH (opt), XTV (opt); Satellite adds Modem, TRIA, XWR, XWH (opt). The optional "VAS" label is gone from installs and conversions (repairs keep it). VAS installs need one photo named after the service: XWR, XWH or XTV. VAS services are listed XWR, XWH, XTV everywhere. The older "ONT Placement" / "Router Placement" / "Modem Placement" / "PoE Placement" labels are still there too.
+**Serial number photos** (`PHOTOS` in `fieldcam.html`, installs & conversions, Complete): Fibre adds ONT SN, XWR SN, XWH SN (optional), XTV SN (optional); Fixed Wireless adds CPE SN, XWR SN, XWH SN (opt), XTV SN (opt); Satellite adds Modem SN, TRIA SN, XWR SN, XWH SN (opt). Each SN label is always its own photo (`SN_LABELS`), and tapping one opens the barcode scanner; the scan's photo gets that label. The optional "VAS" label is gone from installs and conversions (repairs keep it). VAS installs need one photo named after the service: XWR SN, XWH SN or XTV SN. VAS services are listed XWR, XWH, XTV everywhere. The older "ONT Placement" / "Router Placement" / "Modem Placement" / "PoE Placement" labels are still there too.
 
 **Field Cam photo rules** (`PHOTO_RULES` in `fieldcam.html`)
 - Fixed Wireless: Install Overview, Line of Sight, CPE & Mount, Indoor Cable Run are each their own photo.
@@ -104,7 +104,7 @@ No build step. Edit files, bump `version.js`, push.
 - Fibre Existing Drop: Indoor Cable Run alone; ONT Placement + Router Placement only with each other.
 - Fibre Drop Required: MPT, Install Overview, Drop Route, Indoor Cable Run alone; ONT + Router only with each other.
 
-**Scanned serials label their own photo**: the photo Field Cam takes of a scanned serial is labelled as the device photo the SA needs (radio → CPE, router → XWR, ONT → ONT, modem → Modem, TRIA → TRIA, XWH → XWH, XTV → XTV; `devicePhoto` in `fieldkit-jobs.js`), so it ticks that photo off. If the SA's photo list doesn't have that label, or it's a Recovery scan, it stays "<item> SN".
+**Scanned serials label their own photo**: the photo Field Cam takes of a scanned serial is labelled as the device photo the SA needs (radio → CPE SN, router → XWR SN, ONT → ONT SN, modem → Modem SN, TRIA → TRIA SN, XWH → XWH SN, XTV → XTV SN; `devicePhoto` in `fieldkit-jobs.js`), so it ticks that photo off. If the SA's photo list doesn't have that label, or it's a Recovery scan, it stays "<item> SN".
 
 **Field Cam "Other…" label**: the typing box (`#otherBar`) is moved to the top level of the page when opened, so it shows above the photo sorter ("To label") and sheets. It used to sit behind them, so techs typed blind.
 

@@ -275,7 +275,7 @@
     "Ground Connection": ["Grounding overview"], "Grounding": ["Grounding overview"], "Indoor Cable Run": ["Indoor cable run"],
     "Modem Placement": ["Indoor equipment"], "XWR Placement": ["Indoor equipment"], "XWH Placement": ["Indoor equipment"], "PoE Placement": ["Indoor equipment"], "XTV Box Placement": ["Indoor equipment"],
     // device photos (1.17.0)
-    "ONT": ["ONT placement"], "XWR": ["Indoor equipment"], "XWH": ["Indoor equipment"], "XTV": ["Indoor equipment"], "Modem": ["Indoor equipment"],
+    "ONT SN": ["ONT placement"], "XWR SN": ["Indoor equipment"], "XWH SN": ["Indoor equipment"], "XTV SN": ["Indoor equipment"], "Modem SN": ["Indoor equipment"],
     "Issue(s) Found": ["Issue(s) found", "Issue found"], "Issue(s) Repaired": ["Issue resolved after repair", "Issue after repair"]
   };
   function notesFill(job, st) {
@@ -388,7 +388,7 @@
   }
   /* The Field Cam photo a scanned serial counts as: radio -> CPE, router -> XWR, ONT -> ONT, modem -> Modem,
      TRIA -> TRIA, XWH -> XWH, XTV -> XTV. Found from the item the serial belongs to. */
-  var DEVICE_PHOTO = { radio: "CPE", router: "XWR", ont: "ONT", modem: "Modem", tria: "TRIA", xwh: "XWH", xtv: "XTV" };
+  var DEVICE_PHOTO = { radio: "CPE SN", router: "XWR SN", ont: "ONT SN", modem: "Modem SN", tria: "TRIA SN", xwh: "XWH SN", xtv: "XTV SN" };
   function devicePhoto(serial) {
     var ids = modelsFor(serial), D = slotSet();
     for (var k in DEVICE_PHOTO) { var d = D[k]; if (d && d.skus && ids.some(function (id) { return d.skus.indexOf(id) >= 0; })) return DEVICE_PHOTO[k]; }
