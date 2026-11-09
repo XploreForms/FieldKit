@@ -518,6 +518,7 @@ details.grp .btn{margin-bottom:12px}
     job.base = tname + " · " + (plat === "VAS" ? "VAS · " + nj.vas : plat);
     job.title = job.base + " · Complete";
     J.save(job);
+    history.replaceState(null, "", "#job");   // Back from Field Cam comes to the job summary, not the New Job form
     location.href = "fieldcam.html#job";
   });
   function newJob() { openNewJob(); }
@@ -1143,6 +1144,8 @@ details.grp .btn{margin-bottom:12px}
   }
   start();
   addEventListener("pageshow", function () { if (!$("menu").hidden) paintMenu(); if (!$("lobby").hidden) paintLobby(); });
+  // leaving for a tool: note which screen this was, so the tool's Back can return here (FieldKit.goHome)
+  addEventListener("pagehide", function () { try { sessionStorage.setItem("fieldkit.cameFrom", /^#job/.test(location.hash) ? "#job" : ""); } catch (e) {} });
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible" && !$("menu").hidden) paintMenu(); if (document.visibilityState === "visible" && !$("lobby").hidden) paintLobby(); if (document.visibilityState === "visible" && !$("settings").hidden) paintSettingsGoogle(); });
 })();
 </script>

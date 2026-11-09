@@ -3182,11 +3182,11 @@ $("startBtn").addEventListener("click", () => {
 
 applyRot();
 window.addEventListener("resize", applyRot);
-/* Back button (Android): close whatever is open, one layer at a time, instead of leaving the app.
-   With nothing open, the first back says "press back again"; a second back within 2.5 s leaves.
+/* Back button (Android): close whatever is open, one layer at a time. With nothing open, Back goes
+   straight to the menu, or to the job summary in a job (FieldKit.goHome in fieldkit.js).
    Works by keeping one extra history entry above the app (re-added on the next tap, which is
    also what Chrome requires before it lets a page handle back). iPhone has no back button. */
-let backGuard = false, lastBack = 0;
+let backGuard = false;
 function armBack() { if (backGuard) return; try { history.pushState({ fieldcam:1 }, ""); backGuard = true; } catch {} }
 document.addEventListener("pointerdown", armBack, true);
 function closeTopLayer() {
@@ -3201,10 +3201,7 @@ function closeTopLayer() {
 window.addEventListener("popstate", () => {
   backGuard = false;
   if (closeTopLayer()) { armBack(); return; }
-  if (Date.now() - lastBack < 2500) { history.back(); return; }   // second back: leave
-  lastBack = Date.now();
-  toast("Press back again to close Field Cam", 2500);
-  armBack();
+  FieldKit.goHome();   // nothing open: straight back to the menu, or the job summary in a job
 });
 /* Updates: the service worker fetches new files in the background. When a new version has taken over,
    offer a one-tap reload instead of running the old copy until the app is fully closed.
@@ -3285,7 +3282,7 @@ function fkJob() { return !!(window.FieldKit && FieldKit.job && FieldKit.job.inM
       fkSession(); closeSheets();
       FieldKit.job.setStep("notes");
       toast("Photos saved. Opening Field Notes…", 1600);
-      setTimeout(() => { location.href = "fieldnotes.html#job"; }, 1300);
+      setTimeout(() => { location.replace("fieldnotes.html#job"); }, 1300);   // replace: Back from Field Notes goes to the job, not here
     }
     return ok;
   };

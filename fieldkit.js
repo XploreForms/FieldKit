@@ -199,6 +199,7 @@
       catch (e) { names(h, false); root.classList.remove("fk-anim"); apply(on); return; }
       var done = function () { if (me !== anim) return; names(h, false); root.classList.remove("fk-anim"); };
       t.finished.then(done, done);
+      if (t.ready) t.ready.catch(function () {});   // a skipped animation is fine; don't report it as an error
     };
     var onScroll = function () {
       var y = window.scrollY || 0;
@@ -246,8 +247,46 @@
     }).catch(function () {});
   }
 
+  /* ---------- the way back from Field Cam and Field Notes ----------
+     The phone's Back button and "‹ Field Kit" / "‹ Job" go straight to the menu, or to the job summary in a job,
+     never to the other tool or an older screen. The menu notes where it was when it opened a tool
+     (fieldkit.cameFrom: "#job" or ""), and the tools hand over to each other with location.replace, so the
+     page just behind a tool is that menu screen: going back to it is a real Back (fast, no extra history).
+     If it isn't (opened some other way), the menu or job summary replaces the tool instead. */
+  function homeTarget() {
+    var inJob = window.FieldKit && window.FieldKit.job && window.FieldKit.job.inMode && window.FieldKit.job.inMode();
+    return inJob ? "index.html#job" : "index.html";
+  }
+  function goHome() {
+    var t = homeTarget(), want = /#job$/.test(t) ? "#job" : "", from = null;
+    if (typeof window.__fkNav === "function") { window.__fkNav(t); return; }   // the in-Claude preview
+    try { from = sessionStorage.getItem("fieldkit.cameFrom"); } catch (e) {}
+    if (from === want && history.length > 1) {
+      history.back();
+      setTimeout(function () { location.replace(t); }, 700);   // only runs if Back didn't leave the page
+      return;
+    }
+    location.replace(t);
+  }
+  if (APP === "cam" || APP === "notes") {
+    // on-screen "‹ Field Kit" / "‹ Job": same as the Back button
+    document.addEventListener("click", function (e) {
+      var a = e.target && e.target.closest && e.target.closest("a.fk-back");
+      if (!a) return;
+      e.preventDefault(); goHome();
+    }, true);
+  }
+  if (APP === "notes") {
+    // Back button: keep one extra history entry above the page (added on the first tap, which Chrome requires),
+    // so Back lands here and can go to the right place. Field Cam has its own version that closes open panels first.
+    var guard = false;
+    var arm = function () { if (guard) return; try { history.pushState({ fieldkit: 1 }, ""); guard = true; } catch (e) {} };
+    document.addEventListener("pointerdown", arm, true);
+    addEventListener("popstate", function () { guard = false; goHome(); });
+  }
+
   window.FieldKit = {
-    version: VERSION, app: APP, fields: FIELDS,
+    version: VERSION, app: APP, fields: FIELDS, goHome: goHome,
     profile: profile, setProfile: setProfile,
     prefs: prefs, setPrefs: setPrefs,
     sessions: sessions, setSession: setSession, clearTool: clearTool, staleAfter: STALE,
