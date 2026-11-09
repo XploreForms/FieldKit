@@ -541,7 +541,7 @@ details.grp .btn{margin-bottom:12px}
     set("fieldcam.jobs", camJobs);
     var job = J.start(), tname = NJ_TYPES.filter(function (t) { return t[0] === nj.work; })[0][1];
     job.sa = ref; job.work = nj.work; job.plat = plat; job.outcome = "OK"; job.camJobId = cid; job.camJobIds = [cid];
-    job.tech = NJ_TECH[nj.fam] ? nj.tech : "";
+    job.tech = NJ_TECH[nj.fam] ? nj.tech : plat === "VAS" ? nj.vas : ""; job.vas = plat === "VAS" ? nj.vas : "";
     job.base = J.withTech(tname + " · " + (plat === "VAS" ? "VAS · " + nj.vas : plat), job.tech);
     job.title = job.base + " · Complete";
     J.save(job);

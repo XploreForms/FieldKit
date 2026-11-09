@@ -1719,7 +1719,7 @@ function convPlatform(o) {
   STATE.fw_plat = p;
   if (STATE.cpe && cpeOff(STATE.cpe)) delete STATE.cpe;
 }
-function fwPlatC() { return choiceC({ id: 'fw_plat', label: 'Platform', options: ['FWN', 'LTE'], cols: 2, afterChange: function () { if (STATE.cpe && (jobKey() === 'Repair|Fixed Wireless' ? cpeRepairOff : cpeOff)(STATE.cpe)) delete STATE.cpe; } }); }
+function fwPlatC() { return choiceC({ id: 'fw_plat', label: 'Platform', options: ['FWN', 'LTE'], cols: 2, afterChange: function () { if (STATE.job_plat === 'Fixed Wireless' && STATE.fw_plat) STATE.job_tech = STATE.fw_plat; if (STATE.cpe && (jobKey() === 'Repair|Fixed Wireless' ? cpeRepairOff : cpeOff)(STATE.cpe)) delete STATE.cpe; } }); }
 /* two short questions side by side */
 function pairC(a, b, tight, c) {
   var list = [a, b, c].filter(Boolean);
@@ -2237,6 +2237,9 @@ var PICK_TYPES = ['Install', 'Conversion', 'Repair'];
 var PICK_PLATS = ['Fibre', 'Fixed Wireless', 'Satellite', 'Value Added Services'];
 var PICK_OUTCOMES = ['Complete', 'Cannot Complete', 'Not Required'];
 var PICK_DROPS = ['Existing Drop', 'Drop Required', 'Drop Only'];
+/* Technology for each platform, same as Field Kit's New SA (filled in from the SA when there is one) */
+var PICK_TECH = { 'Fibre': ['FTX', 'ATX', 'CTX'], 'Fixed Wireless': ['FWN', 'LTE'], 'Satellite': ['HJ3', 'HJ2', 'HTJ', 'HV2', 'HTV'], 'Value Added Services': ['XWR', 'XWH', 'XTV'] };
+function techOff(st) { st = st || STATE; return !!st.job_tech && (PICK_TECH[st.job_plat] || []).indexOf(st.job_tech) < 0; }
 var SOON = {};   // forms still to come are listed here and shown greyed out   // forms still to come: shown greyed out
 function needsDrop(st) { st = st || STATE; return st.job_plat === 'Fibre' && (st.job_type === 'Install' || st.job_type === 'Conversion') && st.job_outcome === 'Complete'; }
 function dropOff(o, st) { st = st || STATE; return o === 'Drop Only' && st.job_type !== 'Install'; }   // drop only is an install job
@@ -2252,7 +2255,7 @@ function jobKey() {
   return FORMS[k] ? k : null;
 }
 function platLabel(st) { st = st || STATE; return st.job_plat === 'Fibre' && needsDrop(st) && st.job_drop ? 'Fibre (' + st.job_drop + ')' : st.job_plat; }
-function jobTitle() { return jobKey() ? STATE.job_type + ' — ' + platLabel() + (STATE.job_outcome === 'Complete' ? '' : ' — ' + STATE.job_outcome) : ''; }
+function jobTitle() { return jobKey() ? STATE.job_type + ' — ' + platLabel() + (STATE.job_tech && !techOff() ? ' — ' + STATE.job_tech : '') + (STATE.job_outcome === 'Complete' ? '' : ' — ' + STATE.job_outcome) : ''; }
 function currentSections() { var k = jobKey(); return k ? FORMS[k]() : []; }
 function visible(c) { return !c.show || c.show(); }
 /* jobs saved by older versions used one Job Type and a Service */
@@ -2267,7 +2270,7 @@ function migrateJob(st) {
   return st;
 }
 
-var JOB_KEYS = ['job_type', 'job_plat', 'job_outcome', 'job_drop', 'job_svc'];
+var JOB_KEYS = ['job_type', 'job_plat', 'job_outcome', 'job_drop', 'job_svc', 'job_tech'];
 function answersBesidesJob(st) { var c = {}; Object.keys(st || {}).forEach(function (k) { if (JOB_KEYS.indexOf(k) < 0) c[k] = st[k]; }); return hasAnswers(c); }
 /* changing the job clears the answers (Undo brings them back), so a value from another form can never slip into this one */
 function setJob(key, value) {
@@ -2277,11 +2280,14 @@ function setJob(key, value) {
   if (!STATE.job_outcome) STATE.job_outcome = 'Complete';   // Field Kit: the outcome starts as Complete; tap another to change it
   if (platOff(STATE.job_plat)) delete STATE.job_plat;   // Conversion picked with Value Added Services: pick the platform again
   if (!needsDrop() || dropOff(STATE.job_drop)) delete STATE.job_drop;
+  if (techOff()) delete STATE.job_tech;   // another platform: pick its technology
+  if (key === 'job_tech' && STATE.job_plat === 'Fixed Wireless') STATE.fw_plat = value;   // same answer as the form's FWN / LTE
   var job = {}; JOB_KEYS.forEach(function (k) { if (STATE[k] !== undefined) job[k] = STATE[k]; });
   if (had && wasKey && jobKey() !== wasKey) {
     STATE = job; ERRORS = []; PROMPT = {}; LIGHT_PROMPT = false; PEAK = 0;
     showToast('Answers cleared for the new job.', 'Undo', function () { STATE = JSON.parse(before); ERRORS = []; PEAK = 0; render(); updatePreview(); wipSaveNow(); }, 10000);
   } else if (jobKey() !== wasKey) PEAK = 0;
+  if (STATE.job_plat === 'Fixed Wireless' && STATE.job_tech && !STATE.fw_plat) STATE.fw_plat = STATE.job_tech;
   ERRORS = ERRORS.filter(function (e) { return e.id !== 'job'; });
   changed('job', true);
 }
@@ -2311,6 +2317,10 @@ function jobSection() {
   wrap.appendChild(group('job_type', PICK_TYPES, 3));
   wrap.appendChild(el('p', { class: 'sub-q', text: 'Platform' }));
   wrap.appendChild(group('job_plat', PICK_PLATS, 2, platOff));
+  if (PICK_TECH[STATE.job_plat]) {
+    wrap.appendChild(el('p', { class: 'sub-q', text: 'Technology' }));
+    wrap.appendChild(group('job_tech', PICK_TECH[STATE.job_plat], PICK_TECH[STATE.job_plat].length));
+  }
   wrap.appendChild(el('p', { class: 'sub-q', text: 'Outcome' }));
   wrap.appendChild(group('job_outcome', PICK_OUTCOMES, 3));
   if (needsDrop() && STATE.job_outcome === 'Complete')

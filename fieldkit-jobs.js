@@ -286,7 +286,11 @@
     if (!st.job_type && NOTE_TYPE[job.work]) st.job_type = NOTE_TYPE[job.work];
     if (!st.job_plat && plat) st.job_plat = plat;
     if (!st.job_outcome) st.job_outcome = NOTE_OUT[job.outcome] || "Complete";
-    if (!st.fw_plat && plat === "Fixed Wireless" && (job.tech === "FWN" || job.tech === "LTE")) st.fw_plat = job.tech;
+    // the SA's Technology: Field Notes' Technology, Fixed Wireless Platform (FWN / LTE), and the VAS repair's equipment
+    var tech = job.tech || job.vas || ((/· VAS · (XWR|XWH|XTV)\b/.exec(job.base || "") || [])[1]) || "";
+    if (!st.job_tech && tech) st.job_tech = tech;
+    if (!st.fw_plat && plat === "Fixed Wireless" && (tech === "FWN" || tech === "LTE")) st.fw_plat = tech;
+    if (!st.vas_gear && plat === "Value Added Services" && job.work === "REP" && /^(XWR|XWH|XTV)$/.test(tech)) { st.vas_gear = {}; st.vas_gear[tech] = true; }
     if (!st.job_drop && drop && (st.job_type === "Install" || st.job_type === "Conversion") && st.job_outcome === "Complete") st.job_drop = drop;
     // drop length picked in the Drop slot; XWH / XTV counts from what was scanned
     var dsl = job.slots && job.slots.drop;
