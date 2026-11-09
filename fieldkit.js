@@ -198,7 +198,11 @@
     var t = homeTarget(), want = /#job$/.test(t) ? "#job" : "", from = null;
     if (typeof window.__fkNav === "function") { window.__fkNav(t); return; }   // the in-Claude preview
     try { from = sessionStorage.getItem("fieldkit.cameFrom"); } catch (e) {}
-    if (from === want && history.length > 1) {
+    // a real Back only when this page was opened straight from the menu / SA page. Some phones (iPhone) don't always
+    // replace history when one tool hands over to the other, so Back could land in Field Cam: then go there directly.
+    var fromMenu = false;
+    try { var r = new URL(document.referrer); fromMenu = r.origin === location.origin && /(\/|\/index\.html)$/.test(r.pathname); } catch (e) {}
+    if (from === want && fromMenu && history.length > 1) {
       history.back();
       setTimeout(function () { location.replace(t); }, 700);   // only runs if Back didn't leave the page
       return;
