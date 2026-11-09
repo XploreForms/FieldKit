@@ -199,7 +199,8 @@ html.fk-slim .lhead .fk-title{font:650 15px/1.2 var(--fk-body);flex:none}
 /* the SA card is the main way in: taller than everything else on the menu */
 #jobArea .job{min-height:96px}
 /* Without an SA: Field Cam, Field Stock and Field Notes on their own, small, under the Tools links */
-.minitools{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.minitools{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.links .live{display:inline-block;margin:0 0 0 6px;padding:3px 6px;border-radius:99px;background:var(--btn);color:var(--btn-ink);font:600 .58rem/1 var(--f-body);font-style:normal;letter-spacing:.04em;text-transform:uppercase;vertical-align:2px}
 .mini{position:relative;min-width:0}
 .mini a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:72px;padding:10px 4px;border-radius:var(--r);
   border:1px solid var(--line);background:transparent;color:var(--fg);text-decoration:none;text-align:center}
@@ -401,15 +402,16 @@ details.grp .btn{margin-bottom:12px}
   // Main tools. Add a tool here and it shows in the list.
   var TOOLS = [
     { id: "cam", name: "Field Cam", desc: "Labelled, compressed job photos", href: "fieldcam.html", icon: '<path d="M3 8h4l2-3h6l2 3h4v12H3z"/><circle cx="12" cy="13" r="4"/>' },
-    { id: "stock", name: "Field Stock", desc: "Receive, deploy, transfer and RMA", href: "fieldstock.html", icon: '<path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/>' },
     { id: "notes", name: "Field Notes", desc: "Completion comments for FSL", href: "fieldnotes.html", icon: '<path d="M4 4h16v12H8l-4 4z"/><path d="M8 9h8M8 12h5"/>' }
   ];
   // Secondary links, shown smaller under the tools. "out" opens in a new tab.
+  // Field Stock is used on its own (receiving, transfers, RMAs, counts), so it's a Tool, first in the list
   var LINKS = [
-    { name: "Compass", desc: "eCoverage Intelligence", href: "https://ecoverage-intelligence-29408448304181.1.azure.databricksapps.com/", out: true, icon: '<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>' },
+    { id: "stock", name: "Field Stock", desc: "Receive, deploy, transfer and RMA", href: "fieldstock.html", icon: '<path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/>' },
     { name: "Inventory", desc: "Xplore Dealer Portal", href: "https://dealerportal.xplore.ca/", out: true, icon: '<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.3a1 1 0 0 0 1 .7h9.6a1 1 0 0 0 1-.8L21 8H6"/>' },
     { name: "Manual Order Request", desc: "When you can't order through Salesforce", href: "fieldstock.html#order", icon: '<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/>' },
-    { name: "RMA Request", desc: "Request an RMA number", href: "https://form.jotform.com/72404477841257", out: true, icon: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>' }
+    { name: "RMA Request", desc: "Request an RMA number", href: "https://form.jotform.com/72404477841257", out: true, icon: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>' },
+    { name: "Compass", desc: "eCoverage Intelligence", href: "https://ecoverage-intelligence-29408448304181.1.azure.databricksapps.com/", out: true, icon: '<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>' }
   ];
   /* What's unfinished in each tool. Field Cam and Field Stock note it when the tech leaves them;
      Field Notes keeps its form as it goes (dropped after 12 hours or once the comment is copied). */
@@ -430,6 +432,7 @@ details.grp .btn{margin-bottom:12px}
   var RESTART = svg('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>', 2.2);
   function paintTools() {
     var prog = inProgress();
+    paintLinks(prog);
     $("tools").innerHTML = TOOLS.map(function (t) {
       var s = prog[t.id];
       var line = s ? (s.short || [s.title, s.detail].filter(Boolean).join(" · ")) : t.desc;
@@ -438,10 +441,13 @@ details.grp .btn{margin-bottom:12px}
         (s ? '<button class="newbtn" type="button" data-new="' + t.id + '" aria-label="Start new in ' + esc(t.name) + '" title="Start new">' + RESTART + '</button>' : '') + '</li>';
     }).join("");
   }
+  function paintLinks(prog) {
   $("links").innerHTML = LINKS.map(function (l) {
-    return '<li><a href="' + esc(l.href) + '"' + (l.out ? ' target="_blank" rel="noopener"' : '') + '>' + svg(l.icon) + '<span><b>' + esc(l.name) + '</b><small>' + esc(l.desc) + (l.out ? '<span class="sr-only"> (opens in a new tab)</span>' : '') + '</small></span>' +
+    var busy = l.id && prog && prog[l.id];   // Field Stock with unsaved items
+    return '<li' + (busy ? ' class="busy"' : '') + '><a href="' + esc(l.href) + '"' + (l.out ? ' target="_blank" rel="noopener"' : '') + '>' + svg(l.icon) + '<span><b>' + esc(l.name) + (busy ? ' <em class="live">In progress</em>' : '') + '</b><small>' + esc(l.desc) + (l.out ? '<span class="sr-only"> (opens in a new tab)</span>' : '') + '</small></span>' +
       (l.out ? svg('<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>').replace('<svg ', '<svg class="out" ') : '<em class="chev" aria-hidden="true">›</em>') + '</a></li>';
   }).join("");
+  }
 
   /* ================= jobs: Start New Job, job history, job summary ================= */
   var J = FK.job;

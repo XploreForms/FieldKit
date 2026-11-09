@@ -21,8 +21,8 @@ Paste the "First message" section into a new Claude chat to pick up where this l
 One installable web app (PWA) with three tools and a guided job flow:
 
 - **Start New Job** (main way in): New Job screen on the menu (SA-#, job type, platform, drop, VAS service) → **Field Cam** (photos + scanned equipment) → **Field Notes** (FSL completion comments, prefilled) → **Job summary** (photos, comments, equipment, outcome, Complete Job). Jobs stay in **Job history** (bottom of menu, collapsed) for 7 days.
-- **Without an SA** (small tiles at the bottom of the menu): Field Cam, Field Stock, Field Notes on their own. A job never mixes with one-time-use work.
-- **Tools** (was "More"): Compass, Inventory (Dealer Portal), Manual Order Request (`fieldstock.html#order`), RMA Request.
+- **Without an SA** (small tiles at the bottom of the menu): Field Cam and Field Notes on their own. Field Stock is a regular Tool. A job never mixes with one-time-use work.
+- **Tools** (was "More"): Field Stock, Inventory (Dealer Portal), Manual Order Request (`fieldstock.html#order`), RMA Request, Compass.
 - **Settings** (gear): profile, shipping options, theme, Google Sheets backup.
 
 ## Files
@@ -56,7 +56,7 @@ No build step. Edit files, bump `version.js`, push.
 **Look & layout**
 - One theme for all tools (light default; dark; black). Changed only in Field Kit settings.
 - Headers: page-colour, no green bar or Xplore logo, 560px column on desktop. Headers are pinned and **always full size** (app tile, title, line under it); they don't go slim on scroll (tried shrink-on-scroll and always-slim in 1.12.7–1.12.9, Curtis chose full size). The fk-slim styles remain in the CSS, unused. Field Cam's bar is slim by design.
-- **Menu is SA-first:** Start New SA card on top (96px tall, the biggest thing on the menu), then **Tools** (Compass, Inventory, Manual Order Request, RMA Request; this section used to be "More"), then **Without an SA**: Field Cam, Field Stock and Field Notes as three small outlined tiles (in progress shows a badge and a small restart button on the tile corner), then SA history. Kept small on purpose so techs start an SA for each job.
+- **Menu is SA-first:** Start New SA card on top (96px tall, the biggest thing on the menu), then **Tools** (Field Stock, Inventory, Manual Order Request, RMA Request, Compass; this section used to be "More"; Field Stock is meant to be used on its own and shows "In progress" when it has unsaved items), then **Without an SA**: Field Cam and Field Notes as two small outlined tiles (in progress shows a badge and a small restart button on the tile corner), then SA history. Kept small on purpose so techs start an SA for each job.
 - Menu cards: two lines, nothing cut off; the SA card is 96px, tool tiles 72px. Home header shows **name only** (no dealer). Field Stock header also name only.
 - In-progress job card uses the **truck with work-order lines** icon; restart button is the circular arrow with a two-tap "Tap to start new".
 - No version numbers inside the tools; version only shows on the menu footer.
