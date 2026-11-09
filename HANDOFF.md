@@ -58,7 +58,7 @@ No build step. Edit files, bump `version.js`, push.
 - Headers: page-colour, no green bar or Xplore logo, 560px column on desktop. Headers are pinned and **always full size** (app tile, title, line under it); they don't go slim on scroll (tried shrink-on-scroll and always-slim in 1.12.7–1.12.9, Curtis chose full size). The fk-slim styles remain in the CSS, unused. Field Cam's bar is slim by design.
 - **Menu is SA-first:** Start New SA card on top (96px tall, the biggest thing on the menu), then **Tools** (Field Stock, Inventory, Manual Order Request, RMA Request, Compass; this section used to be "More"; Field Stock is meant to be used on its own and shows "In progress" when it has unsaved items), then **Without an SA**: Field Cam and Field Notes as two small outlined tiles (in progress shows a badge and a small restart button on the tile corner), then SA history. Kept small on purpose so techs start an SA for each job.
 - Menu cards: two lines, nothing cut off; the SA card is 96px, tool tiles 72px. Home header shows **name only** (no dealer). Field Stock header also name only.
-- In-progress job card uses the **truck with work-order lines** icon; restart button is the circular arrow with a two-tap "Tap to start new".
+- In-progress job card uses the **truck with work-order lines** icon; restart is a full-width button inside the SA card, under the SA (circular arrow + "Start a new SA", two taps: "Tap again to start new"); the card never overlaps or cuts off its text.
 - No version numbers inside the tools; version only shows on the menu footer.
 
 **Profile / setup**
