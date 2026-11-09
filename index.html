@@ -1171,7 +1171,52 @@ details.grp .btn{margin-bottom:12px}
     if (/^#job/.test(location.hash)) history.replaceState(null, "", location.pathname + location.search);
     openMenu();
   }
+  /* ---------- the phone's Back button on this page (Android) ----------
+     On the SA page, New SA, Settings or setup: Back goes to the home screen (menu), every time.
+     On the home screen: the first Back says "Press back again to close Field Kit", the next one closes the app.
+     How: a spare history entry sits on top of the page (added on the first tap, as Chrome requires), so Back lands
+     here first. Where the phone supports it (Navigation API: Chrome, Samsung Internet), going home jumps back to the
+     very first page of this visit, so nothing is left behind it and the next Back really closes the app. */
+  var NAV = window.navigation && typeof window.navigation.entries === "function" ? window.navigation : null;
+  var guard = false, jumping = false;
+  function armBack() { if (guard) return; try { history.pushState({ fkGuard: 1 }, "", location.href); guard = true; } catch (e) {} }
+  document.addEventListener("pointerdown", armBack, true);
+  function rootEntry() {
+    if (!NAV) return null;
+    try { var e0 = NAV.entries()[0], u = new URL(e0.url); return u.origin === location.origin && /(\/|\/index\.html)$/.test(u.pathname) ? e0 : null; } catch (e) { return null; }
+  }
+  // jump to the first page of this visit; then show the menu there (and the warning if asked)
+  function goRoot(then) {
+    var r = rootEntry(), cur = NAV && NAV.currentEntry;
+    if (!r || !cur || cur.key === r.key) return false;
+    try { sessionStorage.setItem("fieldkit.backTo", JSON.stringify({ then: then, at: Date.now() })); } catch (e) {}
+    jumping = true;
+    try { NAV.traverseTo(r.key); } catch (e) { jumping = false; return false; }
+    return true;
+  }
+  function landed() {   // arrived on the first page by goRoot
+    var b = null; try { b = JSON.parse(sessionStorage.getItem("fieldkit.backTo") || "null"); sessionStorage.removeItem("fieldkit.backTo"); } catch (e) {}
+    if (!b || Date.now() - (b.at || 0) > 5000) return;
+    if (!$("setup").hidden) return;
+    if (location.hash) history.replaceState(history.state && history.state.fkGuard ? null : history.state, "", location.pathname + location.search);
+    openMenu();
+    if (b.then === "warn") toast("Press back again to close Field Kit");
+  }
+  var lastWarn = 0;
+  addEventListener("popstate", function (e) {
+    if (jumping) { jumping = false; landed(); return; }
+    if (e.state && e.state.fkGuard) return;   // stepped onto a spare entry: nothing to do
+    guard = false;
+    if ($("menu").hidden) {                   // SA page, New SA, Settings: home
+      if (!goRoot("menu")) { history.replaceState(null, "", location.pathname + location.search); openMenu(); }
+      return;
+    }
+    if (Date.now() - lastWarn < 2500) return;   // second Back: nothing stops it now
+    lastWarn = Date.now();
+    if (!goRoot("warn")) toast("Press back again to close Field Kit");
+  });
   start();
+  landed();
   addEventListener("pageshow", function () { if (!$("menu").hidden) paintMenu(); if (!$("lobby").hidden) paintLobby(); });
   // Scan buttons here: Field Cam opens straight into the scanner and comes back here afterwards
   // ("one": after one serial; "many", Scan More: when the tech taps Done)
