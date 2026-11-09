@@ -112,6 +112,7 @@ No build step. Edit files, bump `version.js`, push.
 
 **Field Notes**
 - Opened in an SA, Field Notes scrolls past the questions already answered from the SA to the first one still to answer (`skipAnswered`, once on arrival, not if the tech already scrolled or tapped).
+- In an SA, answering the last required question glides down to the finished comment (`finishedCheck`; after a typed answer it waits for the keyboard to close).
 - Focus ring stays inside boxes. Keyboard closes after 3 RSRP digits / 2 SINR digits.
 
 ## Open items / to do

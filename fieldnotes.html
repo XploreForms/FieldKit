@@ -901,6 +901,20 @@ function changed(fieldId, rerender) {
   if (rerender) render();
   updatePreview();
   wipDropOffer(); wipSave();
+  finishedCheck();
+}
+/* In a Field Kit SA: the moment the last question is answered, glide down to the finished comment.
+   If that last answer was typed, wait until the keyboard is put away (the box loses focus). */
+var WAS_DONE = null;
+function notesDone() { return !!jobKey() && !validate().filter(function (i) { return i.id !== 'tech'; }).length; }
+function finishedCheck() {
+  if (!(window.FieldKit && FieldKit.job && FieldKit.job.inMode && FieldKit.job.inMode())) return;
+  var done = notesDone(), was = WAS_DONE; WAS_DONE = done;
+  if (!done || was !== false) return;   // only when it goes from not-done to done
+  var a = document.activeElement;
+  var go = function () { setTimeout(function () { if (notesDone()) showPreviewIfAbove(); }, 350); };
+  if (a && /^(INPUT|TEXTAREA)$/.test(a.tagName) && a.type !== 'checkbox' && a.type !== 'radio') a.addEventListener('blur', go, { once: true });
+  else go();
 }
 
 /* ===================== field wrappers ===================== */
@@ -3274,6 +3288,7 @@ function initRetro() {
   setTimeout(wipOffer, 900);
   window.addEventListener('resize', function () { updatePreview(); });
   setTimeout(skipAnswered, 1150);
+  setTimeout(function () { WAS_DONE = notesDone(); }, 1200);   // where things stand on arrival (prefilled from the SA)
 })();
 
 /* Opened as part of a Field Kit SA (from Field Cam or the SA page): the questions at the top are already answered from
