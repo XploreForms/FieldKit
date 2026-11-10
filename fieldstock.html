@@ -14,6 +14,7 @@
 <script src="version.js"></script>
 <script src="fieldkit-catalog.js"></script>
 <script src="fieldkit.js" data-app="stock"></script>
+<script>if(/^#order/.test(location.hash))document.documentElement.classList.add("order-only");   /* Manual Order Request opens as its own page */</script>
 <script>try{var t=localStorage.getItem("techstock.theme");if(t==="light"||t==="dark"||t==="black")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -223,6 +224,9 @@ details.sku summary::-webkit-details-marker{display:none}
 .empty p{margin:0;color:var(--muted);max-width:34ch}
 
 /* tab bar */
+/* Manual Order Request opened from the Field Kit menu: its own page, no Field Stock tabs, banners or status */
+html.order-only .tabs,html.order-only #mode,html.order-only #gsBanner,html.order-only #netBar,html.order-only #p-order>div:first-child>h2{display:none!important}
+html.order-only main{padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
 .tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);box-shadow:0 -1px 0 var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
 .tabs-in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(var(--n,4),1fr)}
 body.readonly [data-act],body.readonly [data-quick],body.readonly #quick{display:none!important}
@@ -2993,6 +2997,11 @@ $("updLater").addEventListener("click",()=>{ $("updBar").hidden=true; });
 function renderAll(){ STOCK=computeStock(); renderStock(); renderHistory(); syncForm(); paintBackup(); renderCount(); paintCheck(); paintNet(); }
 paintHeader(); showSetup(); paintLoc(); setType("receive"); renderAll();   // deploying is mostly done from Field Cam, so Receive is the default
 if(GS.connected && gsAvailable()){ if(gsTokenOk() && gsPending()) gsSync(); else if(!gsTokenOk()){ gsErr="auth"; paintGoogle(); } }
+if(document.documentElement.classList.contains("order-only")){
+  const h1=document.querySelector(".top h1"); if(h1) h1.textContent="Manual Order Request";
+  document.title="Manual Order Request";
+  const who=$("who"); if(who && ME && ME.name) who.textContent=ME.name;
+}
 setTab(/^#order/.test(location.hash) ? "order" : "log");
 /* Field Kit settings' Sync Now opens fieldstock.html#sync: sync with Google Sheets, then straight back to settings */
 async function fkSyncAndReturn(){
