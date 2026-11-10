@@ -268,6 +268,7 @@
   var NOTE_OUT = { OK: "Complete", CC: "Cannot Complete", NR: "Not Required" };
   // Field Cam photo label -> Field Notes picture checklist item(s)
   var PHOTO_MAP = {
+    "Temp Drop Form": ["Temp drop form"],
     "Install Overview": ["Total install overview"], "NID w/ Door Open": ["NID location with door open"], "Fibre Patch Run": ["Fibre patch cable run"],
     "Cable Entry Point": ["Cable entrypoint"], "Cable Entry Hole Sealed": ["Cable entrypoint"], "ONT Placement": ["ONT placement"], "Router Placement": ["Router placement"], "MPT": ["MPT"],
     "Drop Route": ["Drop route"], "Buried Drop Route": ["Drop route"], "Line of Sight": ["CPE line of sight", "Line of sight"],
@@ -310,6 +311,13 @@
     return st;
   }
   function wipState() { var w = get(WIP, null); return w && w.state ? w.state : null; }
+  // Field Notes' Drop Route: a buried span ticked "Temp Drop Deployed". Reads the SA's own comment form (the live one while it's open).
+  function tempDrop() {
+    var j = active(); if (!j) return false;
+    var st = (raw(K.notesOwner) === j.id ? wipState() : null) || (j.notes && j.notes.state); if (!st) return false;
+    for (var i = 1; i <= 20; i++) if (st["span" + i + "_type"] === "Buried" && st["span" + i + "_temp"] === true) return true;
+    return false;
+  }
   var notesOwner = raw(K.notesOwner);
   if (notesOwner && (!notesInJob || notesOwner !== active().id)) {
     var oj = byId(notesOwner), ows = wipState();
@@ -606,6 +614,6 @@
   FK.job = {
     inMode: function () { return jobMode; }, active: active, get: byId, list: list, start: start, complete: complete, open: open, save: save, setActive: setActive,
     fromCam: fromCam, modelsFor: modelsFor, modelName: function (id) { return SKU[id] ? SKU[id].name : ""; }, pickModel: pickModel, stockNote: stockNote,
-    deployed: deployed, recoveredEvents: recoveredEvents, canRecover: canRecover, removeSerial: removeSerial, slotModel: slotModel, slotsHTML: slotsHTML, openSlot: openSlot, devicePhoto: devicePhoto, withTech: withTech, setSlot: setSlot, setOutcome: setOutcome, slotEntry: slotEntry, addSerial: addSerial, pasteInto: pasteInto, hasSlots: function (src) { return slotIds(src).length > 0; }, syncDeploys: syncDeploys, notesCopied: notesCopied, setStep: setStep, keepDays: 7
+    deployed: deployed, recoveredEvents: recoveredEvents, canRecover: canRecover, removeSerial: removeSerial, slotModel: slotModel, slotsHTML: slotsHTML, tempDrop: tempDrop, openSlot: openSlot, devicePhoto: devicePhoto, withTech: withTech, setSlot: setSlot, setOutcome: setOutcome, slotEntry: slotEntry, addSerial: addSerial, pasteInto: pasteInto, hasSlots: function (src) { return slotIds(src).length > 0; }, syncDeploys: syncDeploys, notesCopied: notesCopied, setStep: setStep, keepDays: 7
   };
 })();

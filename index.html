@@ -418,7 +418,7 @@ details.grp .btn{margin-bottom:12px}
     { name: "Inventory", desc: "Xplore Dealer Portal", href: "https://dealerportal.xplore.ca/", out: true, icon: '<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.3a1 1 0 0 0 1 .7h9.6a1 1 0 0 0 1-.8L21 8H6"/>' },
     { name: "Manual Order Request", desc: "When you can't order through Salesforce", href: "fieldstock.html#order", icon: '<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/>' },
     { name: "RMA Request", desc: "Request an RMA number", href: "https://form.jotform.com/72404477841257", out: true, icon: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>' },
-    { name: "Compass", desc: "eCoverage Intelligence", href: "https://ecoverage-intelligence-29408448304181.1.azure.databricksapps.com/", out: true, icon: '<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>' }
+    { name: "Compass", desc: "eCoverage Intelligence", href: "https://ecoverage-intelligence-29408448304181.1.azure.databricksapps.com/", out: true, app: true, icon: '<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>' }
   ];
   /* What's unfinished in each tool. Field Cam and Field Stock note it when the tech leaves them;
      Field Notes keeps its form as it goes (dropped after 12 hours or once the comment is copied). */
@@ -448,10 +448,19 @@ details.grp .btn{margin-bottom:12px}
         (s ? '<button class="newbtn" type="button" data-new="' + t.id + '" aria-label="Start new in ' + esc(t.name) + '" title="Start new">' + RESTART + '</button>' : '') + '</li>';
     }).join("");
   }
+  /* Compass is installed on the phone as its own web app. On Android the link goes out as a "view this address" request to the
+     phone itself (not an in-app browser tab): the installed Compass app takes it if it's there, otherwise the phone's normal
+     browser opens it. (iPhone can't hand a link to a home-screen web app, so it opens as before.) */
+  var ANDROID = /Android/i.test(navigator.userAgent || "");
+  function appHref(url) {
+    try { var u = new URL(url); return "intent://" + u.host + u.pathname + u.search + "#Intent;scheme=" + u.protocol.replace(":", "") + ";action=android.intent.action.VIEW;S.browser_fallback_url=" + encodeURIComponent(url) + ";end"; }
+    catch (e) { return url; }
+  }
   function paintLinks(prog) {
   $("links").innerHTML = LINKS.map(function (l) {
     var busy = l.id && prog && prog[l.id];   // Field Stock with unsaved items
-    return '<li' + (busy ? ' class="busy"' : '') + '><a href="' + esc(l.href) + '"' + (l.out ? ' target="_blank" rel="noopener"' : '') + '>' + svg(l.icon) + '<span><b>' + esc(l.name) + (busy ? ' <em class="live">In progress</em>' : '') + '</b><small>' + esc(l.desc) + (l.out ? '<span class="sr-only"> (opens in a new tab)</span>' : '') + '</small></span>' +
+    var viaApp = l.app && ANDROID;
+    return '<li' + (busy ? ' class="busy"' : '') + '><a href="' + esc(viaApp ? appHref(l.href) : l.href) + '"' + (l.out && !viaApp ? ' target="_blank" rel="noopener"' : '') + '>' + svg(l.icon) + '<span><b>' + esc(l.name) + (busy ? ' <em class="live">In progress</em>' : '') + '</b><small>' + esc(l.desc) + (l.out ? '<span class="sr-only"> (opens in a new tab)</span>' : '') + '</small></span>' +
       (l.out ? svg('<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>').replace('<svg ', '<svg class="out" ') : '<em class="chev" aria-hidden="true">›</em>') + '</a></li>';
   }).join("");
   }

@@ -1473,7 +1473,7 @@ function partialRun() { var e = routeEnd(); return !!e && e !== 'Structure'; }  
 /* a tick on each drawn span: aerial spans can need flaggers, buried spans can be a temp drop */
 function spanFlag(i) {
   var t = STATE['span' + i + '_type'];
-  return t === 'Aerial' ? { key: 'span' + i + '_flag', label: 'Flaggers Needed' } : t === 'Buried' ? { key: 'span' + i + '_temp', label: 'Temp Drop' } : null;
+  return t === 'Aerial' ? { key: 'span' + i + '_flag', label: 'Flaggers Needed' } : t === 'Buried' ? { key: 'span' + i + '_temp', label: 'Temp Drop Deployed' } : null;
 }
 function spanFlagOn(i) { var f = spanFlag(i); return !!f && STATE[f.key] === true; }
 function tempDropNeeded() { for (var i = 1; i <= spanCount(); i++) if (STATE['span' + i + '_type'] === 'Buried' && STATE['span' + i + '_temp'] === true) return true; return false; }
@@ -1614,7 +1614,7 @@ function routeC(dropOnly) {
         } else {   // the picked type sits on the line like a drawn one; tap it to pick again
           seg.appendChild(el('button', { type: 'button', class: 'rt-type-chosen rt-' + t.toLowerCase(), 'aria-label': t + ', tap to change',
             onclick: function () { delete STATE.route_next; delete STATE.route_next_flag; ROUTE_FX = { prev: null, typeOnly: true, reopen: true }; changed(null, true); routeFx(); } }, [t]));
-          var pl = t === 'Aerial' ? 'Flaggers Needed' : t === 'Buried' ? 'Temp Drop' : null;   // the tick shows as soon as the type is picked
+          var pl = t === 'Aerial' ? 'Flaggers Needed' : t === 'Buried' ? 'Temp Drop Deployed' : null;   // the tick shows as soon as the type is picked
           if (pl) { var pb = flagBox('route_next_flag', pl); if (fx && fx.pills) pb.classList.add('rt-fresh'); seg.appendChild(pb); }
         }
         box.appendChild(seg);
@@ -1848,7 +1848,7 @@ var PICS = {
 };
 /* the aerial attachment picture only applies when the drop is hung aerial */
 function dropPhotos() {
-  return PICS.fibreDrop.filter(function (p) { return p !== 'Drop attachment point (aerial)' || anyAerial(); });
+  return PICS.fibreDrop.filter(function (p) { return p !== 'Drop attachment point (aerial)' || anyAerial(); }).concat(tempDropNeeded() ? ['Temp drop form'] : []);
 }
 function dropPhotosC() {
   return {
