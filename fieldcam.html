@@ -243,7 +243,7 @@ html[data-text="large"] .lhead .outbtn{line-height:44px}
 
 /* bottom deck */
 .deck{padding:6px 0 calc(env(safe-area-inset-bottom,0px) + 10px);display:flex;flex-direction:column;gap:8px;background:var(--ink);min-height:0}
-.deck>.row{margin-top:auto}   /* shutter row at the bottom; spare room sits between the labels and the shutter */
+.deck{justify-content:flex-end}   /* labels sit right above the shutter at the bottom (easy to reach); spare room is above them */
 .deck>*{min-width:0}
 /* zoom sits on the picture, bottom centre, like the iPhone camera */
 .zoombar{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);display:flex;align-items:center;gap:4px;padding:3px;border-radius:999px;background:rgba(10,18,17,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);z-index:2}
@@ -550,6 +550,27 @@ html.fc-quick .top .qtile{display:grid;width:28px;height:28px;border-radius:8px;
 html.fc-quick .top .qtile svg{width:17px;height:17px}
 html.fc-quick #jobTxt{font:700 1.2rem/1.05 var(--fk-display);color:var(--fk-ink,var(--fg));letter-spacing:.01em}
 html.fc-quick #jobBtn{pointer-events:none}
+/* 1.20.35: full screen. Landscape where the phone allows it (Android); the bar and labels hide, the picture fills the screen,
+   one picture is taken and it goes back to normal. iPhone can't lock landscape: the tech turns the phone sideways instead. */
+.fsctl,.fshint{display:none}
+html.fc-fs .top,html.fc-fs .deck,html.fc-fs #outBtn,html.fc-fs #fsBtn{display:none!important}
+html.fc-fs #app{grid-template-rows:0 minmax(0,1fr) 0;max-width:none}
+html.fc-fs .vf{background:#000}
+html.fc-fs .vf .frame,html.fc-fs .vf .zclip{top:50%;transform:translate(-50%,-50%)}
+html.fc-fs .vfctl{right:auto;left:max(18px,env(safe-area-inset-left,0px));top:16px!important}
+html.fc-fs .fsctl{display:flex;position:absolute;z-index:8;align-items:center;justify-content:space-between;right:max(18px,env(safe-area-inset-right,0px));top:16px;bottom:16px;flex-direction:column}
+.fsctl button{border:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.fsctl .fsx{width:44px;height:44px;border-radius:50%;background:rgba(10,18,17,.6);color:#fff;display:grid;place-items:center}
+.fsctl .fsx svg{width:20px;height:20px}
+.fsctl .fsshut{width:76px;height:76px;border-radius:50%;background:transparent;border:4px solid #fff;display:grid;place-items:center;margin:auto 0}
+.fsctl .fsshut i{width:60px;height:60px;border-radius:50%;background:#fff}
+.fsctl .fsshut:active i{transform:scale(.92)}
+html.fc-fs .fsctl::after{content:"";width:44px;height:44px}
+@media (orientation:portrait){
+  html.fc-fs .fsctl{top:auto;left:0;right:0;bottom:max(18px,env(safe-area-inset-bottom,0px));flex-direction:row;justify-content:center;gap:40px}
+  html.fc-fs .fsctl .fsshut{margin:0}
+  html.fc-fs .fshint{display:block;position:absolute;z-index:8;left:50%;top:16px;transform:translateX(-50%);padding:8px 14px;border-radius:12px;background:rgba(10,18,17,.7);color:#fff;font:600 14px var(--fk-body,system-ui);white-space:nowrap}
+}
 /* one-row header (1.20.22), like the other tools: back arrow, small tile, title; pinned while the job screen scrolls */
 .start .camhead{position:sticky;top:calc(-4px - env(safe-area-inset-top,0px));z-index:5;display:flex;align-items:center;gap:2px;background:var(--fk-bg);
   margin:calc(-4px - env(safe-area-inset-top,0px)) -20px 0;padding:calc(4px + env(safe-area-inset-top,0px)) 20px 4px 10px;box-shadow:0 1px 0 var(--fk-line)}
@@ -576,6 +597,8 @@ html.fc-quick #jobBtn{pointer-events:none}
     <div class="vfmsg" id="vfMsg" hidden></div>
     <div class="vfhint" id="vfHint" role="status" aria-live="polite"><span></span></div>
     <button class="outbtn" id="outBtn" type="button" hidden></button>
+    <div class="fsctl" id="fsCtl"><button type="button" class="fsx" id="fsExit" aria-label="Leave full screen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><button type="button" class="fsshut" id="fsShut" aria-label="Take picture"><i></i></button></div>
+    <div class="fshint" id="fsHint">Turn your phone sideways</div>
     <div class="hud" id="hud">
       <div class="zclip" id="zclip"><div class="grid3" id="grid3" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="zeroline" id="zeroLine"><i></i><span>0°</span></div>
       <div class="reticle"></div><div class="aim" id="aim" hidden><i></i></div></div>
@@ -588,6 +611,7 @@ html.fc-quick #jobBtn{pointer-events:none}
     <div class="vfctl">
       <button class="hq" id="hqBtn" aria-pressed="false" aria-label="Full quality">HQ</button>
       <button id="snBtn" aria-label="Scan a serial number barcode" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2M8 8v8M11 8v8M14 8v8M17 8v8"/></svg></button>
+      <button id="fsBtn" type="button" aria-label="Full screen, landscape"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
       <button id="torchBtn" aria-label="Flashlight" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></button>
     </div>
     <div class="zoombar" id="zoomBar" role="group" aria-label="Zoom"></div>
@@ -776,9 +800,10 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 /* Keep the app upright. ROT = how far the screen has turned that the app turns back (0, 90 or 270). */
 let ROT = 0;
 function applyRot() {
+  const de0 = document.documentElement;
   const a = window.__forceAngle != null ? window.__forceAngle : rawAngle();
   const touch = window.__forceAngle != null || (window.matchMedia && matchMedia("(pointer:coarse)").matches);
-  const r = touch && innerWidth > innerHeight && (a === 90 || a === 270) ? a : 0;
+  const r = !de0.classList.contains("fc-fs") && touch && innerWidth > innerHeight && (a === 90 || a === 270) ? a : 0;
   const de = document.documentElement;
   de.style.setProperty("--rw", innerWidth + "px"); de.style.setProperty("--rh", innerHeight + "px");
   if (r === ROT) return;
@@ -1497,7 +1522,8 @@ const measureVf = () => {
   frameTurn = extraTurn() % 180;
   // 1.20.34: no black band. The viewfinder is exactly the picture's height (shrinking only if the labels and shutter need
   // the room); the deck under it takes the rest, with the shutter at the bottom.
-  if (!document.documentElement.classList.contains("rot90") && !document.documentElement.classList.contains("rot270")) {
+  if (document.documentElement.classList.contains("fc-fs")) vfEl.style.height = $("app").clientHeight + "px";
+  else if (!document.documentElement.classList.contains("rot90") && !document.documentElement.classList.contains("rot270")) {
     const app = $("app"), top = app.querySelector(".top"), deck = app.querySelector(".deck");
     const kids = [...deck.children].filter(c => c.offsetParent !== null);
     const ds = getComputedStyle(deck), gap = parseFloat(ds.rowGap) || 0;
@@ -2028,6 +2054,26 @@ $("shutter").addEventListener("pointerdown", () => {
 });
 ["pointerup", "pointerleave", "pointercancel"].forEach(ev => $("shutter").addEventListener(ev, () => { clearTimeout(pressT); $("shutter").classList.remove("hold"); }));
 $("shutter").addEventListener("click", () => { if (pressFired) { pressFired = false; return; } if (SC.on) { scanOnce(); return; } capture(false); });
+/* full screen: one picture, then back to normal */
+let FS = false;
+async function enterFs() {
+  if (FS) return; FS = true; hideSnack();
+  document.documentElement.classList.add("fc-fs");
+  try { if (document.documentElement.requestFullscreen && !document.fullscreenElement) await document.documentElement.requestFullscreen({ navigationUI:"hide" }); } catch {}
+  try { if (screen.orientation && screen.orientation.lock) await screen.orientation.lock("landscape"); } catch {}
+  ROT = -1; applyRot(); setTimeout(() => { try { measureVf(); } catch {} }, 60); setTimeout(() => { try { measureVf(); } catch {} }, 500);
+}
+async function exitFs() {
+  if (!FS) return; FS = false;
+  document.documentElement.classList.remove("fc-fs");
+  try { screen.orientation && screen.orientation.unlock && screen.orientation.unlock(); } catch {}
+  try { if (document.fullscreenElement && document.exitFullscreen) await document.exitFullscreen(); } catch {}
+  ROT = -1; applyRot(); setTimeout(() => { try { measureVf(); } catch {} }, 60); setTimeout(() => { try { measureVf(); } catch {} }, 500);
+}
+$("fsBtn").addEventListener("click", enterFs);
+$("fsExit").addEventListener("click", exitFs);
+$("fsShut").addEventListener("click", async () => { if (S.busy) return; try { await capture(false); } finally { exitFs(); } });
+document.addEventListener("fullscreenchange", () => { if (FS && !document.fullscreenElement) exitFs(); });
 $("shutter").addEventListener("contextmenu", e => e.preventDefault());
 
 /* After each shot: a small note that fades by itself. Never blocks the next shot.
@@ -2077,6 +2123,8 @@ $("fileIn").addEventListener("change", async e => {
         when:ex.date || new Date(file.lastModified || Date.now()),
         pos:ex.lat != null ? { latitude:ex.lat, longitude:ex.lon, accuracy:ex.acc ?? 10, altitude:ex.alt ?? null } : null });
       if (meta.pos && S.addr && S.addrPos && distM(S.addrPos, meta.pos) < 150) meta.addr = S.addr;
+      // a screenshot (PNG, or "Screenshot…" in the file name) is labelled Screenshot, unless a label was picked first
+      if (!selLabels().length && (/screen.?shot/i.test(file.name || "") || /png/i.test(file.type || ""))) Object.assign(meta, { labels:["Screenshot"], label:"Screenshot", unlabelled:false });
       const w = img.naturalWidth, h = img.naturalHeight;
       const out = await processFrame(img, { sx:0, sy:0, cw:w, ch:h }, 0, meta);
       URL.revokeObjectURL(url);
@@ -3310,6 +3358,7 @@ let backGuard = false;
 function armBack() { if (backGuard) return; try { history.pushState({ fieldcam:1 }, ""); backGuard = true; } catch {} }
 document.addEventListener("pointerdown", armBack, true);
 function closeTopLayer() {
+  if (FS) { exitFs(); return true; }
   if (SC.on) { stopScan(); return true; }
   if (!$("otherBar").hidden) { $("otherBar").hidden = true; $("inOther").blur(); otherCb = null; return true; }
   if ($("sorter").classList.contains("open")) { $("sClose").click(); return true; }
@@ -3416,7 +3465,7 @@ async function fixSnPhotos() {
 function fkJob() { return !!(window.FieldKit && FieldKit.job && FieldKit.job.inMode()); }
 // in a Field Kit SA, the job sheet is "This SA" (one-time-use Field Cam keeps "This job")
 if (fkJob()) { const h = document.querySelector("#jobSheet header h2"); if (h) h.textContent = "This SA"; $("jobSheet").setAttribute("aria-label", "SA"); }
-if (fkJob()) document.title = "Photos";   // inside an SA, Field Cam is just "Photos"
+if (fkJob()) document.title = "Pictures";   // inside an SA, Field Cam is just "Pictures"
 {
   const origDownload = downloadPhotos;
   downloadPhotos = async function (items) {
@@ -3424,7 +3473,7 @@ if (fkJob()) document.title = "Photos";   // inside an SA, Field Cam is just "Ph
     if (ok && fkJob() && curPhotos().length && curPhotos().every(p => p.downloaded)) {
       fkSession(); closeSheets();
       FieldKit.job.setStep("notes");
-      toast("Photos saved. Opening Comments…", 1600);
+      toast("Pictures saved. Opening Comments…", 1600);
       setTimeout(() => { location.replace("fieldnotes.html#job"); }, 1300);   // replace: Back from Field Notes goes to the job, not here
     }
     return ok;

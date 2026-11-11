@@ -95,7 +95,7 @@ h3{margin:0;font:700 1.1rem/1.2 var(--f-display)}
 .jobwrap.busy .job span{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.3}
 /* the SA card's progress: photos, comments, equipment */
 .jprog{grid-column:1/-1;display:flex;gap:6px;margin-top:2px}
-.jprog small{flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:center;gap:4px;height:32px;padding:0 6px;border-radius:10px;background:var(--surface-2);color:var(--muted);font:600 .8rem/1 var(--f-body);white-space:nowrap}
+.jprog small{flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;justify-content:center;gap:4px;height:32px;padding:0 6px;border-radius:10px;background:var(--surface-2);color:var(--muted);font:600 .8rem/1 var(--f-body);white-space:nowrap}
 .jprog small.ok{background:color-mix(in srgb,var(--btn) 18%,transparent);color:var(--accent)}
 .jprog small.warn{background:var(--warn-bg);color:var(--warn)}
 .jobwrap .newbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 28px);margin:0 14px 14px;height:46px;border:0;border-radius:12px;padding:0 12px;
@@ -362,7 +362,7 @@ details.grp .btn{margin-bottom:12px}
     </header>
   </div>
   <section class="card lcard" id="lbOut" aria-label="Outcome"></section>
-  <section class="card lcard" id="lbPhotos" aria-label="Photos"></section>
+  <section class="card lcard" id="lbPhotos" aria-label="Pictures"></section>
   <section class="card lcard" id="lbNotes" aria-label="Comments"></section>
   <section class="card lcard" id="lbGear" aria-label="Equipment Deployed"></section>
   <div class="lfoot">
@@ -497,7 +497,7 @@ details.grp .btn{margin-bottom:12px}
   var J = FK.job;
   var PLUS = svg('<path d="M12 5v14M5 12h14"/>', 2.2);
   var STEP_URL = { cam: "fieldcam.html#job", notes: "fieldnotes.html#job" };
-  var STEP_TXT = { cam: "Photos", notes: "Comments", lobby: "Summary" };
+  var STEP_TXT = { cam: "Pictures", notes: "Comments", lobby: "Summary" };
   function when(t) {
     var d = new Date(t), today = new Date(); today.setHours(0, 0, 0, 0);
     var time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
@@ -602,8 +602,8 @@ details.grp .btn{margin-bottom:12px}
     var out = [], tick = '<b aria-hidden="true" style="font:inherit">✓</b>';
     function chip(name, val, cls, label) { out.push('<small class="' + cls + '" aria-label="' + esc(label) + '">' + (cls === "ok" ? tick : "") + esc(name) + (val ? " " + esc(val) : "") + '</small>'); }
     var need = j.need || 0, have = need ? need - Math.min(need, j.missing || 0) : 0, n = j.photos || 0;
-    if (need) chip("Photos", have + "/" + need, have === need ? (j.unsaved ? "warn" : "ok") : "", "Required photos: " + have + " of " + need + (j.unsaved ? ", " + j.unsaved + " not saved" : ""));
-    else chip("Photos", String(n), n ? (j.unsaved ? "warn" : "ok") : "", n + " photos");
+    if (need) chip("Pictures", have + "/" + need, have === need ? (j.unsaved ? "warn" : "ok") : "", "Required photos: " + have + " of " + need + (j.unsaved ? ", " + j.unsaved + " not saved" : ""));
+    else chip("Pictures", String(n), n ? (j.unsaved ? "warn" : "ok") : "", n + " photos");
     var c = j.notes && j.notes.comment, stale = !!(c && j.notes.stale);
     chip("Comments", "", c && !stale ? "ok" : stale ? "warn" : "", c && !stale ? "Comments copied" : stale ? "Comments need updating" : "Comments not copied yet");
     try {
@@ -675,13 +675,13 @@ details.grp .btn{margin-bottom:12px}
   var lobbyState = { photosOk: false, notesOk: false };
   function paintLobbyPhotos(j) {
     var box = $("lbPhotos");
-    box.innerHTML = stepHead(1, "Photos", false) + '<p class="help">Loading photos…</p>';
+    box.innerHTML = stepHead(1, "Pictures", false) + '<p class="help">Loading photos…</p>';
     camPhotos(j.camJobIds || []).then(function (ps) {
       thumbUrls.forEach(function (u) { try { URL.revokeObjectURL(u); } catch (e) {} }); thumbUrls = [];
       var list = ps || [], n = ps ? list.length : (j.photos || 0), uns = ps ? list.filter(function (p) { return !p.downloaded; }).length : (j.unsaved || 0);
       lobbyState.photosOk = n > 0 && !uns;
       var pill = !n ? "None yet" : uns ? uns + " not saved" : "Saved to phone";
-      var html = stepHead(1, "Photos", lobbyState.photosOk, pill, !n ? "" : uns ? "warn" : "good");
+      var html = stepHead(1, "Pictures", lobbyState.photosOk, pill, !n ? "" : uns ? "warn" : "good");
       if (list.length) {
         var max = 11, show = list.length > 12 ? list.slice(0, max) : list;
         html += '<div class="thumbs">' + show.map(function (p) {
@@ -689,8 +689,8 @@ details.grp .btn{margin-bottom:12px}
           return '<span>' + (u ? '<img alt="' + esc(labelOf(p)) + '" src="' + u + '">' : "") + '<em>' + esc(labelOf(p)) + '</em></span>';
         }).join("") + (list.length > show.length ? '<span class="more">+' + (list.length - show.length) + '</span>' : "") + '</div>';
       } else if (n) html += '<p class="help">' + n + ' photo' + (n === 1 ? "" : "s") + ' taken. They\'ve been cleared from this phone since.</p>';
-      else html += '<p class="help">No photos yet. Photos lists each photo FSL needs for this job.</p>';
-      html += '<a class="btn' + (lobbyState.photosOk ? "" : " primary") + '" href="fieldcam.html#job">' + (n ? (uns ? "Save Photos" : "Open Photos") : "Take Photos") + '</a>';
+      else html += '<p class="help">No pictures yet. Pictures lists each picture FSL needs for this job.</p>';
+      html += '<a class="btn' + (lobbyState.photosOk ? "" : " primary") + '" href="fieldcam.html#job">' + (n ? (uns ? "Save Pictures" : "Open Pictures") : "Take Pictures") + '</a>';
       box.innerHTML = html;
       paintLobbyWarn(j);
     });
@@ -725,7 +725,7 @@ details.grp .btn{margin-bottom:12px}
     var html = stepHead(2, "Comments", !!c && !stale, stale ? "Needs update" : c ? "Copied " + when(j.notes.copiedAt).replace(/^Today /, "") : "Not written", c && !stale ? "good" : "warn");
     if (stale) html += '<p class="help" style="color:var(--warn)">The outcome changed after this was copied. Edit the comments and copy them again.</p>';
     if (c) html += '<pre class="cmt" id="lbCmt">' + esc(c) + '</pre><div class="row"><button class="btn" type="button" id="lbCopy">Copy Again</button><a class="btn' + (stale ? " primary" : "") + '" href="fieldnotes.html#job">Edit Comments</a></div>';
-    else html += '<p class="help">Comments opens with the job type, platform and the photos you took already filled in.</p><a class="btn' + (lobbyState.photosOk ? " primary" : "") + '" href="fieldnotes.html#job">Write Comments</a>';
+    else html += '<p class="help">Comments opens with the job type, platform and the pictures you took already filled in.</p><a class="btn' + (lobbyState.photosOk ? " primary" : "") + '" href="fieldnotes.html#job">Write Comments</a>';
     $("lbNotes").innerHTML = html;
   }
   function gearWhy(j) {
@@ -766,7 +766,7 @@ details.grp .btn{margin-bottom:12px}
   }
   function paintLobbyWarn(j) {
     var miss = [];
-    if (!lobbyState.photosOk) miss.push("the photos aren't all saved to your phone");
+    if (!lobbyState.photosOk) miss.push("the pictures aren't all saved to your phone");
     if (!lobbyState.notesOk) miss.push(j.notes && j.notes.stale ? "the comments need updating for the new outcome" : "the comments aren't copied");
     if (lobbyState.gearLeft) miss.push(lobbyState.gearLeft + " equipment slot" + (lobbyState.gearLeft === 1 ? " is" : "s are") + " empty");
     $("lbWarn").innerHTML = lobbySure && miss.length ? '<div class="err">' + esc(miss.join(", ").replace(/, ([^,]*)$/, " and $1").replace(/^./, function (m) { return m.toUpperCase(); })) + '. Tap Complete SA again to finish anyway.</div>' : "";
