@@ -444,7 +444,7 @@ button.mode:active{filter:brightness(.94)}
 /* updates are handled by Field Kit for every tool */
 #updBar{display:none!important}
 /* one-row header (1.20.20): back arrow, small tile, title; nothing under the title */
-header.top.fk-row{display:flex;align-items:center;padding-left:max(10px,env(safe-area-inset-left,0px))}
+header.top.fk-row{display:flex;align-items:center;padding-left:max(10px,env(safe-area-inset-left,0px),calc((100% - var(--fk-max)) / 2));padding-right:max(0px,calc((100% - var(--fk-max)) / 2))}   /* same column as the page on wide screens */
 header.top.fk-row .fk-bar{flex:none;margin:0 2px 0 0;padding:0}
 header.top.fk-row .top-in{flex:1;min-width:0;margin:0;padding:6px max(16px,env(safe-area-inset-right,0px)) 6px 0!important;gap:10px}
 header.top.fk-row .mark{width:28px;height:28px;border-radius:8px}
