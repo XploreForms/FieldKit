@@ -518,7 +518,6 @@ details.grp .btn{margin-bottom:12px}
     if (NJ_TECH[nj.fam]) html += '<div class="field"><span class="lbl">Technology</span>' + njSeg("tech", NJ_TECH[nj.fam].map(function (t) { return [t, t]; }), nj.tech, NJ_TECH[nj.fam].length) + '</div>';
     else if (!nj.fam) html += njHold("Technology", "Pick a platform first");
     if (nj.fam === "Fibre" && njDrops().length) html += '<div class="field"><span class="lbl">Drop</span>' + njSeg("drop", NJ_DROPS.map(function (d) { return [d, d, ps.indexOf("Fibre (" + d + ")") < 0]; }), nj.drop, 3) + '</div>';
-    else if (!nj.fam && (nj.work === "INS" || nj.work === "CON")) html += njHold("Drop", "Only for Fibre");
     if (njPlat() === "VAS") html += '<div class="field"><span class="lbl">Technology</span>' + njSeg("vas", NJ_VAS.map(function (v) { return [v, v]; }), nj.vas, 3) + '</div>';
     $("njPick").innerHTML = html;
   }
