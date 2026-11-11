@@ -29,7 +29,10 @@ One installable web app (PWA), no build step, hosted on GitHub Pages. The main w
 
 **New SA** (SA-#, job type, platform, drop for Fibre, Technology) → **Field Cam** (stamped photos, scanned equipment) → **Field Notes** (FSL completion comment, prefilled from the SA) → **SA summary / home** (photos, comment, equipment, outcome, Complete SA). SAs stay in **SA history** (bottom of the menu, collapsed) for 7 days.
 
-The menu, top to bottom: Start New SA card, **Tools** (Field Stock, Inventory, Manual Order Request, RMA Request, Compass), **Without an SA** (small tiles: Field Cam and Field Notes on their own, one-time use), SA history. Settings (gear): profile, shipping options, theme, Google Sheets backup. The point of the layout: techs should start an SA for each job and rarely use Field Cam or Field Notes alone.
+The home screen (1.20.27) **fills the screen with no scrolling** on any phone: header (bigger: 58px logo, Field Kit, name, dealer, **clock = SA History** on its own page `#history`, gear = Settings), the one-line "Google backup is off · Connect" banner when needed, then **Tools as 2-across tiles that share the leftover height** (Field Stock, Inventory, Manual Order, RMA Request, Compass, and a quieter **Field Cam** tile = photos without an SA; descriptions hide when tiles get short, CSS container queries), and at the bottom (thumb) **Start New SA** or the SA in progress (progress chips, **Open SA**, **New**). Field Notes without an SA is gone.
+- **Start SA opens the SA summary**, not the camera (1.20.27).
+- **Names inside an SA**: Field Cam is **Photos**, Field Notes is **Comments** (headers, page titles, SA summary buttons, toasts). Field Stock keeps its name. On its own, Field Cam stays "Field Cam".
+
 
 ## Files
 

@@ -3397,6 +3397,7 @@ async function fixSnPhotos() {
 function fkJob() { return !!(window.FieldKit && FieldKit.job && FieldKit.job.inMode()); }
 // in a Field Kit SA, the job sheet is "This SA" (one-time-use Field Cam keeps "This job")
 if (fkJob()) { const h = document.querySelector("#jobSheet header h2"); if (h) h.textContent = "This SA"; $("jobSheet").setAttribute("aria-label", "SA"); }
+if (fkJob()) document.title = "Photos";   // inside an SA, Field Cam is just "Photos"
 {
   const origDownload = downloadPhotos;
   downloadPhotos = async function (items) {
@@ -3404,7 +3405,7 @@ if (fkJob()) { const h = document.querySelector("#jobSheet header h2"); if (h) h
     if (ok && fkJob() && curPhotos().length && curPhotos().every(p => p.downloaded)) {
       fkSession(); closeSheets();
       FieldKit.job.setStep("notes");
-      toast("Photos saved. Opening Field Notes…", 1600);
+      toast("Photos saved. Opening Comments…", 1600);
       setTimeout(() => { location.replace("fieldnotes.html#job"); }, 1300);   // replace: Back from Field Notes goes to the job, not here
     }
     return ok;
@@ -3423,7 +3424,7 @@ function fkRenderSlots(j) {
   box.innerHTML = `<label>Equipment${m.canRecover ? "" : " Deployed"}${m.total ? ` · ${m.done} of ${m.total}` : ""}</label>` +
     FieldKit.job.slotsHTML(m, { scan: scanAllowed() ? '<button type="button" class="fkj-btn" data-slot-scan>Scan</button>' : "",
       scanRec: scanAllowed() ? '<button type="button" class="fkj-btn" data-slot-scan data-rec>Scan</button>' : "" }) +
-    (allSaved ? '<a class="btn primary" href="fieldnotes.html#job" style="margin-top:6px;text-decoration:none;display:flex;justify-content:center">Go to Field Notes ›</a>' : "");
+    (allSaved ? '<a class="btn primary" href="fieldnotes.html#job" style="margin-top:6px;text-decoration:none;display:flex;justify-content:center">Go to Comments ›</a>' : "");
   return true;
 }
 $("jobBtn").addEventListener("click", () => { if (fkJob()) renderSerials(); });

@@ -785,10 +785,11 @@ html:root[data-fn-theme] header.app-header .fk-row h1.fk-title{font-size:1.2rem}
     <nav class="fk-bar"><a class="fk-back" href="index.html" aria-label="Back to Field Kit"><span class="fk-chev" aria-hidden="true">‹</span></a></nav>
     <div class="fk-head">
       <div class="fk-tile" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H8l-4 4z"/><path d="M8 9h8M8 12h5"/></svg></div>
-      <div class="fk-head-txt"><h1 class="fk-title">Field Notes</h1></div>
+      <div class="fk-head-txt"><h1 class="fk-title" id="fnTitle">Field Notes</h1></div>
     </div>
   </div>
 </header>
+<script>try { if (window.FieldKit && FieldKit.job && FieldKit.job.inMode()) { document.getElementById("fnTitle").textContent = "Comments"; document.title = "Comments"; } } catch (e) {}</script>
 <div id="retro-hero" class="retro-hero">
   <div class="retro-hero-inner">
     <h2>Reliable <span>|</span> Rural <span>|</span> High Speed</h2>

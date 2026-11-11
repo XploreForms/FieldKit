@@ -303,25 +303,34 @@ details.grp .btn{margin-bottom:12px}
 </style>
 
 <!-- ============ MENU ============ -->
-<div class="view" id="menu" hidden>
+<div class="view home" id="menu" hidden>
   <header class="head">
     <div class="logo" aria-hidden="true"><svg viewBox="8 13.875 48 48"><path d="M24 23v-5h16v5" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><rect x="10" y="23" width="44" height="30" rx="5" fill="currentColor"/><path d="M15 52l-2 8 11-8z" fill="currentColor"/><circle cx="22" cy="38" r="7.5" fill="var(--tile)"/><circle cx="22" cy="38" r="2.8" fill="currentColor"/><circle cx="35" cy="38" r="3.3" fill="var(--tile)"/><circle cx="42.5" cy="38" r="3.3" fill="var(--tile)"/><circle cx="50" cy="38" r="3.3" fill="var(--tile)"/></svg></div>
-    <div class="head-txt"><h1>Field Kit</h1><p class="who" id="who"></p></div>
+    <div class="head-txt"><h1>Field Kit</h1><p class="who" id="who"></p><p class="who dealer" id="whoDealer"></p></div>
+    <button class="iconbtn" id="openHist" type="button" aria-label="SA history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></button>
     <button class="iconbtn" id="openSettings" type="button" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
   </header>
 
-  <div class="banner" id="gsWarn" hidden><div><b>Google backup is off</b>Your stock isn't being backed up. Connect your @xplore.ca Google account.</div><button class="btn primary" type="button" data-open-backup>Connect</button></div>
+  <div class="banner" id="gsWarn" hidden><div><b>Google backup is off</b></div><button class="btn primary" type="button" data-open-backup>Connect</button></div>
+
+  <h2 class="eyebrow" id="moreH">Tools</h2>
+  <ul class="tiles" id="links" aria-labelledby="moreH"></ul>
 
   <section id="jobArea"></section>
-
-  <section aria-labelledby="moreH"><h2 class="eyebrow" id="moreH">Tools</h2><ul class="links" id="links"></ul></section>
-  <!-- Field Cam, Field Stock and Field Notes on their own: kept small, so Start New SA is the obvious way in -->
-  <section aria-labelledby="toolsH"><h2 class="eyebrow" id="toolsH">Without an SA</h2><ul class="minitools" id="tools"></ul></section>
-  <section id="histArea" hidden>
-    <button class="histbtn" type="button" id="histBtn" aria-expanded="false" aria-controls="hist"><span><b>SA history</b><small id="histCount"></small></span><em class="chev" aria-hidden="true">›</em></button>
-    <ul class="hist" id="hist" hidden></ul>
-  </section>
   <p class="foot" id="foot"></p>
+</div>
+
+<!-- ============ SA HISTORY ============ -->
+<div class="view" id="histView" hidden>
+  <div class="lhead fk-row">
+    <a class="fk-back" href="index.html" id="histBack" aria-label="Back to Field Kit"><span class="fk-chev" aria-hidden="true">‹</span></a>
+    <header class="fk-head">
+      <div class="fk-tile" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></div>
+      <div class="fk-head-txt"><h1 class="fk-title">SA History</h1></div>
+    </header>
+  </div>
+  <p class="help" id="histCount"></p>
+  <ul class="hist" id="hist"></ul>
 </div>
 
 <!-- ============ NEW JOB ============ -->
@@ -454,15 +463,17 @@ details.grp .btn{margin-bottom:12px}
   // the Field Kit app icon's shape, for the job in progress (a job runs through every tool)
   var FK_GLYPH = '<svg class="fkglyph" viewBox="8 13.875 48 48"><path d="M24 23v-5h16v5" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><rect x="10" y="23" width="44" height="30" rx="5" fill="currentColor"/><path d="M15 52l-2 8 11-8z" fill="currentColor"/><circle cx="22" cy="38" r="7.5" fill="var(--tile)"/><circle cx="22" cy="38" r="2.8" fill="currentColor"/><circle cx="35" cy="38" r="3.3" fill="var(--tile)"/><circle cx="42.5" cy="38" r="3.3" fill="var(--tile)"/><circle cx="50" cy="38" r="3.3" fill="var(--tile)"/></svg>';
   var RESTART = svg('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>', 2.2);
+  // Home screen tiles: the tools, then Field Cam for photos without an SA (2 across; they share the screen's height)
+  var TILE = { stock: ["Field Stock", "Receive, deploy, transfer and RMA"], "Manual Order Request": ["Manual Order", "When you can't order in Salesforce"],
+    "Inventory": ["Inventory", "Xplore Dealer Portal"], "RMA Request": ["RMA Request", "Request an RMA number"], "Compass": ["Compass", "eCoverage Intelligence"] };
   function paintTools() {
-    var prog = inProgress();
-    paintLinks(prog);
-    $("tools").innerHTML = TOOLS.map(function (t) {
-      var s = prog[t.id];
-      var line = s ? (s.short || [s.title, s.detail].filter(Boolean).join(" · ")) : t.desc;
-      return '<li class="mini' + (s ? " busy" : "") + '"><a href="' + esc(t.href) + '" title="' + esc(line) + '">' + svg(t.icon) + '<b>' + esc(t.name) + '</b>' +
-        (s ? '<em class="live">In progress</em>' : '') + '</a>' +
-        (s ? '<button class="newbtn" type="button" data-new="' + t.id + '" aria-label="Start new in ' + esc(t.name) + '" title="Start new">' + RESTART + '</button>' : '') + '</li>';
+    var prog = inProgress(), OUT = svg('<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>');
+    var items = LINKS.concat([{ id: "cam", name: "Field Cam", desc: "Only for photos that aren't for an SA", href: TOOLS[0].href, icon: TOOLS[0].icon, quiet: true }]);
+    $("links").innerHTML = items.map(function (l) {
+      var t = TILE[l.id] || TILE[l.name] || [l.name, l.desc], busy = l.id && prog[l.id], viaApp = l.app && ANDROID;
+      return '<li class="tile' + (l.quiet ? " quiet" : "") + (busy ? " busy" : "") + '"><a href="' + esc(viaApp ? appHref(l.href) : l.href) + '"' + (l.out && !viaApp ? ' target="_blank" rel="noopener"' : '') + '>' +
+        '<i aria-hidden="true">' + svg(l.icon) + '</i><b>' + esc(t[0]) + (l.out ? '<span class="out" aria-hidden="true">' + OUT + '</span><span class="sr-only"> (opens in a new tab)</span>' : '') + '</b>' +
+        '<small>' + esc(t[1]) + '</small>' + (busy ? '<em class="live">In progress</em>' : '') + '</a></li>';
     }).join("");
   }
   /* Compass is installed on the phone as its own web app. On Android the link goes out as a "view this address" request to the
@@ -473,7 +484,7 @@ details.grp .btn{margin-bottom:12px}
     try { var u = new URL(url); return "intent://" + u.host + u.pathname + u.search + "#Intent;scheme=" + u.protocol.replace(":", "") + ";action=android.intent.action.VIEW;S.browser_fallback_url=" + encodeURIComponent(url) + ";end"; }
     catch (e) { return url; }
   }
-  function paintLinks(prog) {
+  function paintLinks(prog) { return;
   $("links").innerHTML = LINKS.map(function (l) {
     var busy = l.id && prog && prog[l.id];   // Field Stock with unsaved items
     var viaApp = l.app && ANDROID;
@@ -581,8 +592,8 @@ details.grp .btn{margin-bottom:12px}
     job.base = J.withTech(tname + " · " + (plat === "VAS" ? "VAS · " + nj.vas : plat), job.tech);
     job.title = job.base + " · Complete";
     J.save(job);
-    history.replaceState(null, "", "#job");   // Back from Field Cam comes to the job summary, not the New Job form
-    location.href = "fieldcam.html#job";
+    history.replaceState(null, "", "#job");   // 1.20.27: a new SA opens its summary (photos, comments, equipment), not straight into the camera
+    paintLobby(); showView("lobby");
   });
   function newJob() { openNewJob(); }
   var histAll = false;
@@ -605,33 +616,34 @@ details.grp .btn{margin-bottom:12px}
   function paintJobs() {
     var a = J.active();
     if (!a) {
-      $("jobArea").innerHTML = '<div class="jobwrap"><button class="job" type="button" id="jobStart"><i aria-hidden="true">' + PLUS + '</i><div><b>Start New SA</b><span>Photos, comments, SA summary</span></div><em class="chev" aria-hidden="true">›</em></button></div>';
+      $("jobArea").innerHTML = '<button class="gobig" type="button" id="jobStart">' + PLUS + '<span>Start New SA</span></button>';
     } else {
       $("jobArea").innerHTML = '<div class="jobwrap busy"><button class="job" type="button" id="jobGo"><i aria-hidden="true">' +
         svg('<path d="M4 17H2V5h12v12"/><path d="M8 17h7"/><path d="M19 17h3v-4.5L18.5 8H14"/><circle cx="6" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 9h6M5 12.5h4"/>', 2.2) +   // truck roll with its work order
         '</i><div><b>' + esc(a.sa || "New SA") + ' <em class="live">' + (a.status === "complete" ? "Reopened" : "In progress") + '</em></b><span>' + esc(a.base || (a.title ? a.title.split(" · ").slice(0, 2).join(" · ") : "SA details not set yet")) + '</span></div><em class="chev" aria-hidden="true">›</em>' + jobProgress(a) + '</button>' +
-        '<button class="newbtn" type="button" id="jobNew" aria-label="Replace with a new SA. This one stays in SA history." title="Start over with a new SA">' + RESTART + '<span>Start a new SA</span></button></div>';
+        '<div class="jacts"><button class="btn primary" type="button" data-open-sa>Open SA</button><button class="newbtn" type="button" id="jobNew" aria-label="Replace with a new SA. This one stays in SA history." title="Start over with a new SA">' + RESTART + '<span>New</span></button></div></div>';
     }
     var act = a ? a.id : "", hist = J.list().filter(function (j) { return j.id !== act; });
-    $("histArea").hidden = !hist.length;
     var shown = hist;
-    $("histCount").textContent = hist.length + " SA" + (hist.length === 1 ? "" : "s") + " in the last 7 days";
-    $("hist").hidden = !histAll; $("histBtn").setAttribute("aria-expanded", String(histAll));
+    $("histCount").textContent = hist.length ? hist.length + " SA" + (hist.length === 1 ? "" : "s") + " in the last 7 days. Tap one to open it." : "No other SAs in the last 7 days.";
+    $("hist").hidden = !hist.length;
     $("hist").innerHTML = shown.map(function (j) {
       var done = j.status === "complete";
       return '<li><button type="button" data-job="' + esc(j.id) + '"><span style="min-width:0"><b>' + esc(j.sa || "No SA-#") + '</b><small><span class="st' + (done ? "" : " open") + '">' + (done ? "Completed" : "Not completed") + '</span> · ' +
         esc(when(done ? j.completedAt : j.created)) + '</small><small class="wrap">' + esc(jobName(j)) + '</small></span><em class="chev" aria-hidden="true">›</em></button></li>';
     }).join("");
   }
-  // Job history stays closed until tapped
-  $("histBtn").addEventListener("click", function () { histAll = !histAll; paintJobs(); if (histAll) $("histArea").scrollIntoView({ block: "nearest", behavior: "smooth" }); });
+  // SA history: its own page (the clock at the top of the home screen)
+  function openHist() { if (!/^#history/.test(location.hash)) history.pushState(null, "", "#history"); paintJobs(); showView("histView"); }
+  $("openHist").addEventListener("click", openHist);
+  $("histBack").addEventListener("click", function (e) { e.preventDefault(); history.replaceState(null, "", location.pathname + location.search); openMenu(); });
   var jobSureT = null;
   document.addEventListener("click", function (e) {
     if (e.target.closest("#jobStart")) { newJob(); return; }
-    if (e.target.closest("#jobGo")) { if (J.active()) openLobby(); return; }   // always the SA home, not the tool it was last in
+    if (e.target.closest("#jobGo") || e.target.closest("[data-open-sa]")) { if (J.active()) openLobby(); return; }   // always the SA home, not the tool it was last in
     var nb = e.target.closest("#jobNew");
     if (nb) {
-      if (!nb.classList.contains("sure")) { nb.classList.add("sure"); nb.innerHTML = RESTART + "<span>Tap again to start new</span>"; nb.setAttribute("aria-label", "Tap again to replace it with a new SA. This one stays in SA history."); clearTimeout(jobSureT); jobSureT = setTimeout(paintJobs, 4000); return; }
+      if (!nb.classList.contains("sure")) { nb.classList.add("sure"); nb.innerHTML = RESTART + "<span>Tap again</span>"; nb.setAttribute("aria-label", "Tap again to replace it with a new SA. This one stays in SA history."); clearTimeout(jobSureT); jobSureT = setTimeout(paintJobs, 4000); return; }
       newJob(); return;
     }
     var h = e.target.closest("[data-job]");
@@ -676,9 +688,9 @@ details.grp .btn{margin-bottom:12px}
           var u = ""; try { if (p.thumb) { u = URL.createObjectURL(p.thumb); thumbUrls.push(u); } } catch (e) {}
           return '<span>' + (u ? '<img alt="' + esc(labelOf(p)) + '" src="' + u + '">' : "") + '<em>' + esc(labelOf(p)) + '</em></span>';
         }).join("") + (list.length > show.length ? '<span class="more">+' + (list.length - show.length) + '</span>' : "") + '</div>';
-      } else if (n) html += '<p class="help">' + n + ' photo' + (n === 1 ? "" : "s") + ' taken. They\'ve been cleared from Field Cam on this phone since.</p>';
-      else html += '<p class="help">No photos yet. Field Cam asks for the SA-#, job type and platform, then each photo FSL needs.</p>';
-      html += '<a class="btn' + (lobbyState.photosOk ? "" : " primary") + '" href="fieldcam.html#job">' + (n ? (uns ? "Save Photos in Field Cam" : "Open Field Cam") : "Take Photos") + '</a>';
+      } else if (n) html += '<p class="help">' + n + ' photo' + (n === 1 ? "" : "s") + ' taken. They\'ve been cleared from this phone since.</p>';
+      else html += '<p class="help">No photos yet. Photos lists each photo FSL needs for this job.</p>';
+      html += '<a class="btn' + (lobbyState.photosOk ? "" : " primary") + '" href="fieldcam.html#job">' + (n ? (uns ? "Save Photos" : "Open Photos") : "Take Photos") + '</a>';
       box.innerHTML = html;
       paintLobbyWarn(j);
     });
@@ -695,7 +707,7 @@ details.grp .btn{margin-bottom:12px}
         var row = function (r, label) { var on = j.outcome === o.id && (j.reason || "") === (r || ""); return '<button type="button" data-out="' + esc(o.id) + '" data-r="' + esc(r || "") + '" aria-pressed="' + on + '"><i class="odot o-' + esc(o.id) + '" aria-hidden="true"></i>' + esc(label) + '</button>'; };
         // each outcome is its own group, so an outcome without reasons never looks like part of the one above
         return '<div class="ogrp2' + (o.reasons && o.reasons.length ? " has" : "") + '">' + (o.reasons && o.reasons.length ? '<h4>' + esc(o.name) + '</h4>' + o.reasons.map(function (r) { return row(r, r); }).join("") : row("", o.name)) + '</div>';
-      }).join("") + '</div><p class="help">Changes the photo list in Field Cam, the comments in Field Notes and what\'s logged in Field Stock.</p>';
+      }).join("") + '</div><p class="help">Changes the photo list, the comments and what\'s logged in Field Stock.</p>';
     }
     $("lbOut").innerHTML = html;
   }
@@ -711,9 +723,9 @@ details.grp .btn{margin-bottom:12px}
     var c = j.notes && j.notes.comment, stale = !!(c && j.notes.stale);
     lobbyState.notesOk = !!c && !stale;
     var html = stepHead(2, "Comments", !!c && !stale, stale ? "Needs update" : c ? "Copied " + when(j.notes.copiedAt).replace(/^Today /, "") : "Not written", c && !stale ? "good" : "warn");
-    if (stale) html += '<p class="help" style="color:var(--warn)">The outcome changed after this was copied. Edit it in Field Notes and copy it again.</p>';
-    if (c) html += '<pre class="cmt" id="lbCmt">' + esc(c) + '</pre><div class="row"><button class="btn" type="button" id="lbCopy">Copy Again</button><a class="btn' + (stale ? " primary" : "") + '" href="fieldnotes.html#job">Edit in Field Notes</a></div>';
-    else html += '<p class="help">Field Notes opens with the job type, platform and the photos you took already filled in.</p><a class="btn' + (lobbyState.photosOk ? " primary" : "") + '" href="fieldnotes.html#job">Write Comments</a>';
+    if (stale) html += '<p class="help" style="color:var(--warn)">The outcome changed after this was copied. Edit the comments and copy them again.</p>';
+    if (c) html += '<pre class="cmt" id="lbCmt">' + esc(c) + '</pre><div class="row"><button class="btn" type="button" id="lbCopy">Copy Again</button><a class="btn' + (stale ? " primary" : "") + '" href="fieldnotes.html#job">Edit Comments</a></div>';
+    else html += '<p class="help">Comments opens with the job type, platform and the photos you took already filled in.</p><a class="btn' + (lobbyState.photosOk ? " primary" : "") + '" href="fieldnotes.html#job">Write Comments</a>';
     $("lbNotes").innerHTML = html;
   }
   function gearWhy(j) {
@@ -748,8 +760,8 @@ details.grp .btn{margin-bottom:12px}
       });
       var g = get("techstock.gs", null);
       if (dep.length && g && g.connected && g.rev > (g.synced || 0)) html += '<p class="help">Goes to your Google Sheet next time Field Stock is open.</p>';
-    } else html += '<p class="help">Scan each serial number in Field Cam. They\'re logged in Field Stock as deployed on this SA-#.</p>';
-    html += '<a class="btn" href="fieldcam.html#job" data-scanret="many">' + (m.has || m.extras.length || m.recovered.length ? "Scan More in Field Cam" : "Scan in Field Cam") + '</a>';
+    } else html += '<p class="help">Scan each serial number. They\'re logged in Field Stock as deployed on this SA-#.</p>';
+    html += '<a class="btn" href="fieldcam.html#job" data-scanret="many">' + (m.has || m.extras.length || m.recovered.length ? "Scan More" : "Scan Serials") + '</a>';
     $("lbGear").innerHTML = html;
   }
   function paintLobbyWarn(j) {
@@ -779,7 +791,8 @@ details.grp .btn{margin-bottom:12px}
   addEventListener("popstate", function () {
     if (/^#job/.test(location.hash) && J.active()) { paintLobby(); showView("lobby"); }
     else if (/^#new-job/.test(location.hash)) { paintNewJob(); showView("newjob"); }
-    else if (!$("lobby").hidden || !$("newjob").hidden) openMenu();
+    else if (/^#history/.test(location.hash)) { paintJobs(); showView("histView"); }
+    else if (!$("lobby").hidden || !$("newjob").hidden || !$("histView").hidden) openMenu();
   });
   $("lbDone").addEventListener("click", function () {
     var j = J.active(); if (!j) return openMenu();
@@ -861,7 +874,7 @@ details.grp .btn{margin-bottom:12px}
   function paintMenu() {
     paintTools(); paintJobs();
     var p = FK.profile();
-    $("who").textContent = p.name || "";
+    $("who").textContent = p.name || ""; $("whoDealer").textContent = p.dealer || "";
     $("gsWarn").hidden = !gsAvailable() || gs().connected;
   }
   function verLine() {
@@ -1108,7 +1121,7 @@ details.grp .btn{margin-bottom:12px}
     { h: "Back up with Google Sheets", sub: "So your stock history is never lost. You can skip this for now and connect later in Settings." }
   ];
   var step = 0;
-  function showView(id) { ["menu", "setup", "settings", "lobby", "newjob"].forEach(function (v) { $(v).hidden = v !== id; }); scrollTo(0, 0); }
+  function showView(id) { ["menu", "setup", "settings", "lobby", "newjob", "histView"].forEach(function (v) { $(v).hidden = v !== id; }); scrollTo(0, 0); }
   function renderStep() {
     var info = STEP_INFO[step], form = $("stepForm");
     $("stepBar").querySelectorAll("i").forEach(function (b, i) { b.classList.toggle("on", i <= step); });
@@ -1234,6 +1247,7 @@ details.grp .btn{margin-bottom:12px}
     }
     if (/^#job/.test(location.hash) && J.active()) { paintLobby(); showView("lobby"); return; }
     if (/^#new-job/.test(location.hash)) { openNewJob(); return; }
+    if (/^#history/.test(location.hash)) { openHist(); return; }
     if (/^#job/.test(location.hash)) history.replaceState(null, "", location.pathname + location.search);
     openMenu();
   }
@@ -1295,7 +1309,44 @@ details.grp .btn{margin-bottom:12px}
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible" && !$("menu").hidden) paintMenu(); if (document.visibilityState === "visible" && !$("lobby").hidden) paintLobby(); if (document.visibilityState === "visible" && !$("settings").hidden) paintSettingsGoogle(); });
 })();
 </script>
-<style>.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}</style>
+<style>
+/* ===== home screen (1.20.27): fills the screen, no scrolling; tiles share the height; the SA is at the bottom ===== */
+#menu.home{height:100vh;height:100dvh;padding-block:calc(14px + env(safe-area-inset-top,0px)) calc(10px + env(safe-area-inset-bottom,0px));gap:12px;overflow:hidden}
+#menu.home .head{gap:14px;padding:4px 0 2px}
+#menu.home .logo{width:58px;height:58px;border-radius:15px}
+#menu.home .logo svg{width:44px;height:44px}
+#menu.home .head h1{font-size:2rem;line-height:1}
+#menu.home .who{margin:4px 0 0;font-size:.95rem;font-weight:600;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#menu.home .who.dealer{margin-top:1px;font-weight:400;color:var(--muted);font-size:.85rem}
+#menu.home .who.dealer:empty{display:none}
+#menu.home .iconbtn{flex:none}
+#menu.home .banner{padding:8px 8px 8px 14px}#menu.home .banner b{margin:0}
+#menu.home .eyebrow{margin:4px 2px -4px}
+.tiles{flex:1;min-height:0;list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:minmax(0,1fr);gap:10px}
+.tiles .tile{min-height:0;container-type:size}
+.tiles a{position:relative;height:100%;display:flex;flex-direction:column;justify-content:center;gap:6px;padding:12px 14px;border-radius:16px;background:var(--surface);box-shadow:var(--shadow);text-decoration:none;color:var(--fg);overflow:hidden}
+.tiles a:active{background:var(--surface-2)}
+.tiles i{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;flex:none;background:color-mix(in srgb,var(--btn) 16%,transparent);color:var(--accent)}
+.tiles i svg{width:22px;height:22px}
+.tiles b{font-weight:650;font-size:1rem;line-height:1.15}
+.tiles .out svg{width:13px;height:13px;margin-left:5px;vertical-align:0;color:var(--muted)}
+.tiles small{color:var(--muted);font-size:.8rem;line-height:1.25}
+.tiles .quiet a{background:transparent;box-shadow:inset 0 0 0 1.5px var(--line)}
+.tiles .quiet i{background:var(--surface-2);color:var(--muted)}
+.tiles .live{position:absolute;top:10px;right:10px;margin:0;padding:3px 6px;border-radius:99px;background:var(--btn);color:var(--btn-ink);font:600 .58rem/1 var(--f-body);font-style:normal;letter-spacing:.04em;text-transform:uppercase}
+@container (max-height:118px){.tiles small{display:none}.tiles a{gap:6px}}
+@container (max-height:84px){.tiles a{flex-direction:row;align-items:center;gap:10px}.tiles i{width:34px;height:34px}}
+#menu.home #jobArea{flex:none}
+.gobig{width:100%;height:68px;border:0;border-radius:18px;background:var(--btn);color:var(--btn-ink);display:flex;align-items:center;justify-content:center;gap:10px;font:700 1.3rem var(--f-display);cursor:pointer;box-shadow:0 6px 18px rgba(35,134,74,.28)}
+.gobig svg{width:28px;height:28px;stroke-width:2.6}
+.gobig:active{filter:brightness(.95)}
+#menu.home .jobwrap.busy .job{min-height:0;padding:12px 14px 4px}
+#menu.home .jacts{display:flex;gap:8px;padding:8px 14px 14px}
+#menu.home .jacts .btn{flex:1;min-height:50px;font-size:1.05rem}
+#menu.home .jacts .newbtn{width:auto;margin:0;height:50px;padding:0 14px;flex:none}
+#menu.home .foot{margin:-4px 0 0;font-size:.7rem}
+#histView .hist{margin:0}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}</style>
 
 </body>
 </html>
