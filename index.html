@@ -161,6 +161,12 @@ html.fk-slim .lhead .fk-head{position:absolute;left:96px;right:96px;top:calc(50%
 html.fk-slim .lhead .fk-head-txt{flex:0 1 auto;justify-content:center}
 html.fk-slim .lhead .fk-head-txt{display:flex;align-items:baseline;gap:8px;min-width:0}
 html.fk-slim .lhead .fk-title{font:650 15px/1.2 var(--fk-body);flex:none}
+/* one-row header (1.20.20): back arrow, small tile, title (the SA summary keeps its job line under the SA-#) */
+.lhead.fk-row{flex-direction:row;align-items:center;gap:2px;padding-top:calc(4px + env(safe-area-inset-top,0px));padding-bottom:4px;padding-left:max(10px,env(safe-area-inset-left,0px))}
+.lhead.fk-row .fk-head{flex:1;min-width:0;gap:10px}
+.lhead.fk-row .fk-title{font-size:1.2rem}
+.lhead.fk-row .fk-sub{font-size:.8rem;margin-top:1px}
+html:not(.fk-slim) .lhead.fk-row .njtitle{font-size:1.2rem!important}
 .lcard{gap:12px}
 .lcard .gs-line h3{flex:1}
 .lstep{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--surface-2);color:var(--muted);font:700 .8rem/1 var(--f-body);margin-right:8px;vertical-align:1px}
@@ -320,8 +326,8 @@ details.grp .btn{margin-bottom:12px}
 
 <!-- ============ NEW JOB ============ -->
 <div class="view nj" id="newjob" hidden>
-  <div class="lhead">
-    <a class="fk-back" href="index.html" id="njBack">‹ Field Kit</a>
+  <div class="lhead fk-row">
+    <a class="fk-back" href="index.html" id="njBack" aria-label="Back to Field Kit"><span class="fk-chev" aria-hidden="true">‹</span></a>
     <header class="fk-head">
       <div class="fk-tile" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></div>
       <div class="fk-head-txt"><h1 class="fk-title njtitle">New SA</h1></div>
@@ -339,8 +345,8 @@ details.grp .btn{margin-bottom:12px}
 
 <!-- ============ JOB SUMMARY ============ -->
 <div class="view" id="lobby" hidden>
-  <div class="lhead">
-    <a class="fk-back" href="index.html" id="lbBack">‹ Field Kit</a>
+  <div class="lhead fk-row">
+    <a class="fk-back" href="index.html" id="lbBack" aria-label="Back to Field Kit"><span class="fk-chev" aria-hidden="true">‹</span></a>
     <header class="fk-head">
       <div class="fk-tile" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg></div>
       <div class="fk-head-txt"><h1 class="fk-title" id="lbRef"></h1><p class="fk-sub" id="lbSub"></p></div>

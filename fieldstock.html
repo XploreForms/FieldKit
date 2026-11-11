@@ -443,9 +443,17 @@ button.mode:active{filter:brightness(.94)}
 .top-in,.fk-bar,.netbar>div,main,.tabs-in,.sheet-card{max-width:var(--fk-max)}
 /* updates are handled by Field Kit for every tool */
 #updBar{display:none!important}
+/* one-row header (1.20.20): back arrow, small tile, title; nothing under the title */
+header.top.fk-row{display:flex;align-items:center;padding-left:max(10px,env(safe-area-inset-left,0px))}
+header.top.fk-row .fk-bar{flex:none;margin:0 2px 0 0;padding:0}
+header.top.fk-row .top-in{flex:1;min-width:0;margin:0;padding:6px max(16px,env(safe-area-inset-right,0px)) 6px 0!important;gap:10px}
+header.top.fk-row .mark{width:28px;height:28px;border-radius:8px}
+header.top.fk-row .mark svg{width:17px;height:17px}
+header.top.fk-row h1{font-size:1.2rem}
+header.top.fk-row .who{display:none}
 </style>
-<header class="top">
-  <nav class="fk-bar"><a class="fk-back" href="index.html">‹ Field Kit</a></nav>
+<header class="top fk-row">
+  <nav class="fk-bar"><a class="fk-back" href="index.html" aria-label="Back to Field Kit"><span class="fk-chev" aria-hidden="true">‹</span></a></nav>
   <div class="top-in">
     <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg></div>
     <div class="top-txt">

@@ -53,6 +53,14 @@ html{background:var(--fk-bg)}
 .fk-back{display:inline-flex;align-items:center;min-height:44px;padding:0 10px 0 0;color:var(--fk-accent-text);font:600 15px/1 var(--fk-body);text-decoration:none;white-space:nowrap;flex:none}
 .fk-back:active{opacity:.6}
 
+/* the way back in a one-row header: a big arrow (plus the SA-# inside an SA), at least 44px to tap */
+.fk-chev{font-size:30px;font-weight:400;line-height:1;margin-top:-3px}
+.fk-row .fk-back{gap:6px;min-width:36px;min-height:48px;padding:0 6px 0 4px}
+.fk-back:has(.fk-chev){gap:5px}
+.fk-row .fk-tile{width:28px;height:28px;border-radius:8px}
+.fk-row .fk-tile svg{width:17px;height:17px}
+.fk-row .fk-title{font-size:1.2rem}
+
 /* ---------- page header: app tile, title, one line under it ---------- */
 .fk-head{display:flex;align-items:center;gap:12px;min-width:0}
 .fk-tile{width:42px;height:42px;border-radius:11px;background:var(--fk-accent);color:var(--fk-accent-ink);display:grid;place-items:center;flex:none}
