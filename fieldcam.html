@@ -1485,15 +1485,19 @@ const measureVf = () => {
   const W0 = Math.round(vfEl.clientWidth), H0 = Math.round(vfH);
   // Fill the width, but never crop the sides past a square: a tall viewfinder gets black bars above and below
   // Sideways the photo area is tall on screen: allow up to its full 3:4 height and show all of it
-  const W = W0, H = frameTurn === 90 ? Math.min(H0, Math.round(W0 * 4 / 3)) : Math.min(H0, W0), side = Math.min(W, H);
+  // 1.20.24: never crop. Upright, the frame is exactly the 4:3 photo area (black bars above/below, or at the sides on a short screen)
+  let W = W0, H = frameTurn === 90 ? Math.min(H0, Math.round(W0 * 4 / 3)) : Math.min(H0, Math.round(W0 * 3 / 4));
+  if (frameTurn !== 90 && H < Math.round(W0 * 3 / 4)) W = Math.round(H * 4 / 3);
+  const side = Math.min(W, H);
   const f = $("frame"); f.style.width = W + "px"; f.style.height = H + "px";
   const zc = $("zclip"); zc.style.width = W + "px"; zc.style.height = H + "px";
   const bar = Math.round((H0 - H) / 2), ctl = document.querySelector(".vfctl");
   if (ctl) ctl.style.top = (bar + 12) + "px";
   const st0 = $("scanTop"); if (st0) st0.style.top = (bar + 12) + "px";   // HQ + flashlight stay in the picture's top-right corner
+  const ob0 = $("outBtn"); if (ob0) { ob0.style.top = (bar + 12) + "px"; ob0.style.left = (Math.round((W0 - W) / 2) + 12) + "px"; }   // outcome chip: the picture's top-left corner
   const v = $("video"), vw = v.videoWidth || 3, vh = v.videoHeight || 4, { w0, h0 } = capArea(vw, vh);
-  // Upright: fill the viewfinder edge to edge (cover). Sideways: fit the whole photo area (contain) so the tech sees every edge.
-  const k = frameTurn === 90 ? Math.min(W / w0, H / h0) : Math.max(W / w0, H / h0);
+  // Fit the whole photo area (contain) so the tech sees every edge of the photo, upright or sideways.
+  const k = Math.min(W / w0, H / h0);   // the whole photo area shows, edge to edge, nothing cropped
   v.style.width = (vw * k).toFixed(1) + "px"; v.style.height = (vh * k).toFixed(1) + "px";
   FRAME.w = Math.round(w0 * k); FRAME.h = Math.round(h0 * k); FRAME.k = k; FRAME.side = side;
 };
