@@ -524,6 +524,22 @@ html:root[data-theme] .start{background:var(--ink)}
 .start .fk-head .hello{text-align:left;margin:3px 0 0;font-size:.88rem;line-height:1.3;flex:none}
 .start .fk-head .hello span,.start .fk-head .hello span+span{display:inline;white-space:nowrap;font-size:inherit;opacity:1;-webkit-line-clamp:unset}
 .start .fk-head .hello span+span::before{content:" · "}
+/* 1.20.23: the outcome sits on the picture, top-left (no row of its own); the GPS dot is gone (problems still show as a message);
+   the row under the picture only shows when it has something in it (To label, New Job) */
+.top #gpsChip{display:none!important}
+.vf>.outbtn{position:absolute;left:12px;top:12px;z-index:6;display:flex;align-items:center;gap:7px;height:36px;padding:0 12px;border:0;border-radius:18px;
+  background:rgba(10,18,17,.6);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:#fff;font:600 13.5px/1 var(--fk-body,system-ui);
+  max-width:calc(100% - 90px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.vf>.outbtn[hidden]{display:none}
+.vf>.outbtn .oc{flex:none;width:8px;height:8px;border-radius:50%;background:var(--oc)}
+.vf>.outbtn .ochev{opacity:.6;font-size:.8em}
+.vf>.outbtn.need{background:var(--warn);color:var(--ink)}
+.vf:has(.hud:not(.free):not(.scan):not(.r90):not(.r270))>.outbtn{max-width:max(132px,calc(50% - 48px))}   /* the tilt box is top-centre */
+.vf:has(.hud.scan)>.outbtn{display:none}
+.deck .lhead:not(:has(>:not([hidden]))){display:none}
+.vfhint{top:56px}
+/* messages (HQ on/off, scans...) show just under the top bar instead of the middle of the picture */
+.toast{top:calc(env(safe-area-inset-top,0px) + 58px)}
 /* one-row header (1.20.22), like the other tools: back arrow, small tile, title; pinned while the job screen scrolls */
 .start .camhead{position:sticky;top:calc(-4px - env(safe-area-inset-top,0px));z-index:5;display:flex;align-items:center;gap:2px;background:var(--fk-bg);
   margin:calc(-4px - env(safe-area-inset-top,0px)) -20px 0;padding:calc(4px + env(safe-area-inset-top,0px)) 20px 4px 10px;box-shadow:0 1px 0 var(--fk-line)}
@@ -548,6 +564,7 @@ html:root[data-theme] .start{background:var(--ink)}
     <div class="frame" id="frame"><video id="video" playsinline muted autoplay></video></div>
     <div class="vfmsg" id="vfMsg" hidden></div>
     <div class="vfhint" id="vfHint" role="status" aria-live="polite"><span></span></div>
+    <button class="outbtn" id="outBtn" type="button" hidden></button>
     <div class="hud" id="hud">
       <div class="zclip" id="zclip"><div class="grid3" id="grid3" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="zeroline" id="zeroLine"><i></i><span>0°</span></div>
       <div class="reticle"></div><div class="aim" id="aim" hidden><i></i></div></div>
@@ -571,7 +588,7 @@ html:root[data-theme] .start{background:var(--ink)}
   </div>
 
   <div class="deck">
-    <div class="lhead"><button class="btn sm outbtn" id="outBtn" hidden></button><button class="btn sm warn" id="toLabelBtn" hidden></button><button class="btn sm newbtn" id="newBtn" aria-label="New job or start over">New Job</button></div>
+    <div class="lhead"><button class="btn sm warn" id="toLabelBtn" hidden></button><button class="btn sm newbtn" id="newBtn" aria-label="New job or start over">New Job</button></div>
     <div class="lgrid" id="lGrid" role="group" aria-label="Photo label"></div>
     <div class="row">
       <button class="thumbbtn" id="galBtn" aria-label="Open this job's photos"><span class="badge" id="galCount"></span></button>
