@@ -54,17 +54,12 @@ html{background:var(--fk-bg)}
 .fk-back:active{opacity:.6}
 
 /* the way back in a one-row header: a big arrow (plus the SA-# inside an SA), at least 44px to tap */
-.fk-chev{font-size:30px;font-weight:400;line-height:1;margin-top:-3px}
-.fk-row .fk-back{gap:6px;min-width:36px;min-height:48px;padding:0 6px 0 4px}
+.fk-chev{font-size:36px;font-weight:400;line-height:1;margin-top:-4px}
+.fk-back:has(.fk-chev){justify-content:center;width:44px;min-width:44px;min-height:48px;padding:0!important;gap:0}   /* 1.20.31: the way back is just a big arrow, same size in every tool */
 .fk-back:has(.fk-chev){gap:5px}
 .fk-row .fk-tile{width:28px;height:28px;border-radius:8px}
 .fk-row .fk-tile svg{width:17px;height:17px}
 .fk-row .fk-title{font-size:1.2rem}
-/* 1.20.30: the tile + title sit in the middle of the bar (the back arrow stays on the left) */
-.fk-row{position:relative}
-html .fk-row>.fk-head,html .fk-row .fk-bar~.fk-head{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);flex:none!important;width:auto;max-width:calc(100% - 128px);justify-content:center;pointer-events:none}
-.fk-row .fk-head-txt{flex:0 1 auto;text-align:center;min-width:0}
-@media (max-width:420px){.fk-row:has(.fk-back.sa) .fk-tile{display:none}}   /* "‹ SA-1234567" on the left: drop the tile so the title clears it */
 .fk-row .fk-head-txt .fk-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* ---------- page header: app tile, title, one line under it ---------- */

@@ -1311,7 +1311,7 @@ details.grp .btn{margin-bottom:12px}
 </script>
 <style>
 /* ===== home screen (1.20.27): fills the screen, no scrolling; tiles share the height; the SA is at the bottom ===== */
-#menu.home{height:100vh;height:100dvh;padding-block:calc(14px + env(safe-area-inset-top,0px)) calc(10px + env(safe-area-inset-bottom,0px));gap:12px;overflow:hidden}
+#menu.home{height:calc(100vh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));padding-block:14px 10px;gap:12px;overflow:hidden}
 #menu.home .head{gap:14px;padding:4px 0 2px}
 #menu.home .logo{width:58px;height:58px;border-radius:15px}
 #menu.home .logo svg{width:44px;height:44px}

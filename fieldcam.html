@@ -367,7 +367,7 @@ html[data-text="large"] .orow{min-height:60px} html[data-text="large"] .orow b{f
 .start{position:fixed;inset:0;z-index:40;background:radial-gradient(120% 60% at 50% 0%,#0F3A35 0%,var(--brand) 30%,#000 70%);overflow-y:auto;padding:calc(env(safe-area-inset-top,0px) + 14px) max(20px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 22px) max(20px,env(safe-area-inset-left,0px))}
 .start .inner{width:100%;max-width:440px;margin:0 auto;display:grid;gap:16px}
 .brandrow{display:flex;align-items:center;gap:14px}
-.fk-back{justify-self:start;align-self:flex-start}
+.fk-back{justify-self:start;align-self:center}
 a.iconbtn{text-decoration:none}
 .mark{width:50px;height:50px;flex:none}
 .start h1{margin:0;font-size:26px;letter-spacing:-.02em}
@@ -559,7 +559,7 @@ html.fc-quick #jobBtn{pointer-events:none}
 </style>
 <div id="app">
   <div class="top">
-    <a class="fk-back" id="fkHome" href="index.html">‹ Field Kit</a>
+    <a class="fk-back" id="fkHome" href="index.html" aria-label="Back to Field Kit"><span class="fk-chev" aria-hidden="true">‹</span></a>
     <button class="pill jobpill" id="jobBtn" aria-label="Job details"><b class="jref" id="jobRef" hidden></b><b id="jobTxt">No job</b><i class="needout" id="jobNeed" hidden>Outcome?</i><span id="jobProg"></span><i class="chev" aria-hidden="true">▾</i></button>
     <div class="pill gps" id="gpsChip" title="GPS" aria-label="GPS"><i class="dot"></i><span id="gpsTxt">GPS…</span></div>
     <button class="iconbtn" id="setBtn" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
@@ -1501,7 +1501,7 @@ const measureVf = () => {
   const zc = $("zclip"); zc.style.width = W + "px"; zc.style.height = H + "px";
   // 1.20.25: the picture sits at the top, right under the SA bar; the spare black space is one band underneath (zoom buttons sit in it)
   const bar = 0, band = H0 - H, ctl = document.querySelector(".vfctl");
-  const zb = $("zoomBar"); if (zb) zb.style.bottom = Math.max(10, Math.round((band - 36) / 2)) + "px";
+  const zb = $("zoomBar"); if (zb) zb.style.bottom = (band + 10) + "px";   // on the bottom edge of the picture
   if (ctl) ctl.style.top = (bar + 12) + "px";
   const st0 = $("scanTop"); if (st0) st0.style.top = (bar + 12) + "px";   // HQ + flashlight stay in the picture's top-right corner
   const ob0 = $("outBtn"); if (ob0) { ob0.style.top = (bar + 12) + "px"; ob0.style.left = (Math.round((W0 - W) / 2) + 12) + "px"; }   // outcome chip: the picture's top-left corner
@@ -2856,7 +2856,7 @@ function renderTop() {
     if (isQuick(j) || !outcomeSet(j) || j.outcome === "OK") sh = esc(base);
     else sh = esc(`${base} · ${j.outcome === "NR" ? "NR" : "CC"}${j.reason ? " · " + j.reason : ""}`);
   }
-  $("jobRef").textContent = j && j.ref ? j.ref : ""; $("jobRef").hidden = !(j && j.ref) || fkJob();   // in a Field Kit job the SA-# is on the back button
+  $("jobRef").textContent = j && j.ref ? j.ref : ""; $("jobRef").hidden = !(j && j.ref);   // 1.20.31: the back arrow no longer shows the SA-#, so the bar does   // in a Field Kit job the SA-# is on the back button
   $("jobTxt").innerHTML = j ? sh : "No job";
   $("jobNeed").hidden = true;   // the outcome button lives by the shutter now
   $("jobProg").textContent = j && req.length ? `${req.filter(l => counts[l]).length}/${req.length}` : "";
