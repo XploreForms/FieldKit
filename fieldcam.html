@@ -542,7 +542,7 @@ html:root[data-theme] .start{background:var(--ink)}
 .toast{top:calc(env(safe-area-inset-top,0px) + 58px)}
 .vf .frame,.vf .zclip{top:0;transform:translateX(-50%)}   /* 1.20.25: picture anchored to the top */
 /* 1.20.26: Field Cam without an SA ("quick" photos): no job type, platform or outcome; the job pill isn't a button */
-.start.quick #startPicker,.start.quick #startOutRow{display:none}
+.start.quick #startPicker,.start.quick #startOutRow,.start.quick #refRow{display:none}
 html.fc-quick #jobBtn .chev{display:none}
 html.fc-quick #jobBtn{pointer-events:none}
 /* one-row header (1.20.22), like the other tools: back arrow, small tile, title; pinned while the job screen scrolls */
@@ -749,7 +749,7 @@ html.fc-quick #jobBtn{pointer-events:none}
       <button class="btn primary" id="resumeBtn">Continue</button>
     </div>
     <h2 id="newJobH">New job</h2>
-    <div><label for="inRef" id="refLbl">SA-#######</label><div class="refrow"><span class="fk-inwrap"><input id="inRef" class="refin" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="numeric" placeholder="SA-1234567"><button type="button" class="fk-pastein" data-paste="inRef" aria-label="Paste SA number" title="Paste"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg></button></span></div><p class="hint" style="margin-top:6px">Type the 7 digits or paste the full SA number.</p></div>
+    <div id="refRow"><label for="inRef" id="refLbl">SA-#######</label><div class="refrow"><span class="fk-inwrap"><input id="inRef" class="refin" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="numeric" placeholder="SA-1234567"><button type="button" class="fk-pastein" data-paste="inRef" aria-label="Paste SA number" title="Paste"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg></button></span></div><p class="hint" style="margin-top:6px">Type the 7 digits or paste the full SA number.</p></div>
     <div class="picker" id="startPicker"></div>
     <div id="startOutRow"><label>Outcome <span style="text-transform:none;letter-spacing:0">(can be changed later)</span></label><button type="button" class="btn startout" id="startOutBtn" disabled>Select later</button></div>
     <div class="install" id="installTip" hidden></div>
@@ -2391,7 +2391,7 @@ function requestSave(items) {
 }
 // Whole job saved, nothing missing, nothing to label: offer the next job
 function afterSave() {
-  if (fkJob()) return;   // in a Field Kit job, saving moves on to Field Notes instead
+  if (fkJob() || isQuick(curJob())) return;   // in a Field Kit job, saving moves on to Field Notes instead; without an SA there is no "next job"
   const ps = curPhotos();
   if (!current || !ps.length || ps.some(p => !p.downloaded || isUnl(p)) || missingShots().length) return;
   const j = curJob();
@@ -2852,7 +2852,7 @@ function renderTop() {
   document.documentElement.classList.toggle("fc-quick", isQuick(j));
   let sh = "";
   if (j) {
-    const base = isQuick(j) ? "Photos" : `${byId(JOB_TYPES, j.work).name} · ${platShort(j.plat, j)}`;
+    const base = isQuick(j) ? "Field Cam" : `${byId(JOB_TYPES, j.work).name} · ${platShort(j.plat, j)}`;
     if (isQuick(j) || !outcomeSet(j) || j.outcome === "OK") sh = esc(base);
     else sh = esc(`${base} · ${j.outcome === "NR" ? "NR" : "CC"}${j.reason ? " · " + j.reason : ""}`);
   }
@@ -2886,7 +2886,7 @@ function renderLabels() {
   $("hqBtn").setAttribute("aria-pressed", full);
   const unl = curPhotos().filter(isUnl).length;
   $("toLabelBtn").hidden = !unl; $("toLabelBtn").textContent = `To label (${unl})`;
-  $("newBtn").hidden = fkJob();   // a Field Kit job has one Field Cam job; a new job starts from the Field Kit menu
+  $("newBtn").hidden = fkJob() || isQuick(j);   // without an SA: one running set of photos, no "New Job"   // a Field Kit job has one Field Cam job; a new job starts from the Field Kit menu
   const ob = $("outBtn"); ob.hidden = !j || isQuick(j);
   if (j && !isQuick(j)) {
     const set = outcomeSet(j);
@@ -3371,6 +3371,8 @@ $("updGo").addEventListener("click", async () => {
   // Field Kit: coming back from the menu (or another tool) goes straight back into the job in progress.
   // Opening fieldcam.html#new always shows the job screen instead (for a future "Start New Job").
   if (curJob() && !/^#new/.test(location.hash)) $("resumeBtn").click();
+  // without an SA: straight into the camera (an iPhone needs one tap first, for motion access, so it keeps the Open Camera button)
+  else if (!fkJob() && !(/iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1)) && settings.name.trim() && (settings.dealer || "").trim()) $("startBtn").click();
   // outcome changed on the job summary: redraw the info band on photos not saved yet
   if (curJob() && curJob().fkRestamp) { delete curJob().fkRestamp; jobChanged(); }
   document.documentElement.classList.remove("fk-resuming");

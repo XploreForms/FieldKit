@@ -14,7 +14,8 @@ async def main():
             if await pg.get_by_text('Start New SA').count(): break
         await pg.get_by_text('Start New SA').first.click(); await pg.wait_for_timeout(300); N=pg.locator('#newjob')
         await pg.locator('#njRef').fill('1234567'); await N.locator('button').filter(has_text=X('Install')).click(); await N.locator('button').filter(has_text=X('Fibre')).click(); await N.locator('button').filter(has_text=X('Existing Drop')).click(); await N.locator('[data-nj=tech]').first.click()
-        await pg.get_by_role('button', name='Start SA').click(); await pg.wait_for_timeout(2200)
+        await pg.get_by_role('button', name='Start SA').click(); await pg.wait_for_timeout(800)
+        await pg.goto(B+'fieldcam.html#job'); await pg.wait_for_timeout(2200)   # 1.20.27: Start SA opens the SA summary
         print('tiles:', await pg.locator('#lGrid button').all_inner_texts())
         tile = lambda t: pg.locator('#lGrid button').filter(has_text=X(t))
         st = lambda: pg.evaluate("[S.sel.join(' + '), SC.on]")
