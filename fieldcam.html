@@ -540,6 +540,7 @@ html:root[data-theme] .start{background:var(--ink)}
 .vfhint{top:56px}
 /* messages (HQ on/off, scans...) show just under the top bar instead of the middle of the picture */
 .toast{top:calc(env(safe-area-inset-top,0px) + 58px)}
+.vf .frame,.vf .zclip{top:0;transform:translateX(-50%)}   /* 1.20.25: picture anchored to the top */
 /* one-row header (1.20.22), like the other tools: back arrow, small tile, title; pinned while the job screen scrolls */
 .start .camhead{position:sticky;top:calc(-4px - env(safe-area-inset-top,0px));z-index:5;display:flex;align-items:center;gap:2px;background:var(--fk-bg);
   margin:calc(-4px - env(safe-area-inset-top,0px)) -20px 0;padding:calc(4px + env(safe-area-inset-top,0px)) 20px 4px 10px;box-shadow:0 1px 0 var(--fk-line)}
@@ -1491,7 +1492,9 @@ const measureVf = () => {
   const side = Math.min(W, H);
   const f = $("frame"); f.style.width = W + "px"; f.style.height = H + "px";
   const zc = $("zclip"); zc.style.width = W + "px"; zc.style.height = H + "px";
-  const bar = Math.round((H0 - H) / 2), ctl = document.querySelector(".vfctl");
+  // 1.20.25: the picture sits at the top, right under the SA bar; the spare black space is one band underneath (zoom buttons sit in it)
+  const bar = 0, band = H0 - H, ctl = document.querySelector(".vfctl");
+  const zb = $("zoomBar"); if (zb) zb.style.bottom = Math.max(10, Math.round((band - 36) / 2)) + "px";
   if (ctl) ctl.style.top = (bar + 12) + "px";
   const st0 = $("scanTop"); if (st0) st0.style.top = (bar + 12) + "px";   // HQ + flashlight stay in the picture's top-right corner
   const ob0 = $("outBtn"); if (ob0) { ob0.style.top = (bar + 12) + "px"; ob0.style.left = (Math.round((W0 - W) / 2) + 12) + "px"; }   // outcome chip: the picture's top-left corner
