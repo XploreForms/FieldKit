@@ -6,7 +6,7 @@ Current as of **Field Kit 1.20.13** (Nov 10, 2026). Paste the "First message" in
 
 ## First message (paste this)
 
-> I'm Curtis Gibbons, Manager, Installation Technicians at Xplore. Continue work on **Field Kit**, a mobile web app for my field techs. Code is in the GitHub repo **XploreForms/FieldKit** (branch `main`), live at **https://xploreforms.github.io/FieldKit/** (GitHub Pages). Read `README.md` and `HANDOFF.md` in the repo first.
+> I'm Curtis Gibbons, Manager, Installation Technicians at Xplore. Continue work on **Field Kit**, a mobile web app for my field techs. Code is in the GitHub repo **XploreForms/FieldKit** (branch `main`), live at **https://xploreforms.github.io/FieldKit/** (GitHub Pages). Read `CLAUDE.md` in the repo first (then `HANDOFF.md` only as needed).
 >
 > How I work:
 > - When I ask for **options**, only show options (images/mockups) until I pick one. Don't implement early.
@@ -18,7 +18,7 @@ Current as of **Field Kit 1.20.13** (Nov 10, 2026). Paste the "First message" in
 ### Before the first change (new account checklist)
 
 1. **Push access.** Reading the repo is not enough. Either install the **Claude GitHub App** on the XploreForms org (repo FieldKit), or use a fine-grained personal access token (Contents: read and write, FieldKit only, short expiry). Push with `git push https://x-access-token:<token>@github.com/XploreForms/FieldKit.git main:main` and never write the token into a file. The previous account used a token pasted into chat; Curtis should delete it at github.com/settings/personal-access-tokens.
-2. **The old account's Claude artifacts do not carry over** (the Field Kit preview, the test-serials page, the old stock-names tool). Rebuild the preview with `dev-tools/build_preview.py` (see `dev-tools/README.md`).
+2. **The old account's Claude artifacts do not carry over** (the Field Kit preview, the test-serials page, the old stock-names tool). Rebuild the preview with `dev/build_preview.py` (see `dev/README.md`).
 3. **Check what's waiting on Curtis** in "Open items" below, especially the refined inventory list.
 
 ---
@@ -47,12 +47,12 @@ The menu, top to bottom: Start New SA card, **Tools** (Field Stock, Inventory, M
 | `sw.js` | Service worker (offline + updates). **Add any new file to `FILES`** |
 | `manifest.webmanifest`, `icon-*.png`, `icon.svg`, `favicon-32.png`, `apple-touch-icon.png` | Install + icons |
 
-**The catalogue** (`fieldkit-catalog.js`) was generated from Curtis's two workbooks (FieldKit_Equipment_Catalogue.xlsx, FieldKit_Serial_Lookup.xlsx, inventory exports 2026-11-09): each SKU has `id` (the part number, **never change one**: logged entries use it), `name` (his plain-language name, shown everywhere), `desc` (system description), `fam` / `famName` (system Product Family and its plain name), `group` (category), `serial`, `platforms` (technology codes). Also serial rules R01–R22, 494 known serials (`KNOWN`, checked first), `ORDER_EXTRA` (order-only lines). Helpers: `match(serial)`, `firstOfName()`. Items Field Kit added itself (not in his workbooks) are flagged `extra`: mounts, poles, side stays, the 1000 m drop, XTV guides, the HC210 2 W radio. The one-off generator is `dev-tools/catalogue/gen.py`; editing the JS directly is fine.
+**The catalogue** (`fieldkit-catalog.js`) was generated from Curtis's two workbooks (FieldKit_Equipment_Catalogue.xlsx, FieldKit_Serial_Lookup.xlsx, inventory exports 2026-11-09): each SKU has `id` (the part number, **never change one**: logged entries use it), `name` (his plain-language name, shown everywhere), `desc` (system description), `fam` / `famName` (system Product Family and its plain name), `group` (category), `serial`, `platforms` (technology codes). Also serial rules R01–R22, 494 known serials (`KNOWN`, checked first), `ORDER_EXTRA` (order-only lines). Helpers: `match(serial)`, `firstOfName()`. Items Field Kit added itself (not in his workbooks) are flagged `extra`: mounts, poles, side stays, the 1000 m drop, XTV guides, the HC210 2 W radio. The one-off generator is `dev/catalogue/gen.py`; editing the JS directly is fine.
 
 ## Release checklist
 
 1. Make the change.
-2. Test on a phone-sized screen (Playwright + Chromium against `python3 -m http.server`; see `dev-tools/README.md`). Seed `localStorage` with `fieldkit.profile`, `fieldkit.setupDone`, and `techstock.gs` connected so setup screens don't block. Run the earlier tests for anything you touched; they have caught real breakage (once a start-up error that would have broken Field Stock).
+2. Test on a phone-sized screen (Playwright + Chromium against `python3 -m http.server`; see `dev/README.md`). Seed `localStorage` with `fieldkit.profile`, `fieldkit.setupDone`, and `techstock.gs` connected so setup screens don't block. Run the earlier tests for anything you touched; they have caught real breakage (once a start-up error that would have broken Field Stock).
 3. Bump `version.js`: `version` and `updated`. `updated` must be the **real** time: `TZ=America/Toronto date +%Y-%m-%dT%H:%M:%S%:z`. Don't estimate. The menu footer shows it in Eastern time with EST/EDT.
 4. New file? Add it to `sw.js` `FILES`.
 5. Commit and push to `main`. GitHub Pages publishes in about a minute; phones update themselves.
@@ -163,6 +163,6 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 - `localStorage` keys are shared across tools on the same origin (`fieldkit.*`, `techstock.*`, `fieldcam.*`, `xplore_fsl_*`). Don't rename keys without migrating. Short-lived `sessionStorage` keys: `fieldkit.cameFrom`, `fieldkit.scanReturn`, `fieldkit.backTo`.
 - Don't change a catalogue `id`; don't write Field Stock entries without sealing them (History Check).
 - A script that uses a `const` before its declaration breaks the whole page silently (it happened with the order form's cleanup). Always load every page in a test after editing and print page errors.
-- Google sign-in can't run inside the Claude artifact preview; test Sheets on the real site. The preview wrapper (`dev-tools/build_preview.py`) stubs `window.claude` so setup shows "Website only", routes links between pages through the shell (`__fkNav`), and tolerates browsers that refuse history changes in a frame.
+- Google sign-in can't run inside the Claude artifact preview; test Sheets on the real site. The preview wrapper (`dev/build_preview.py`) stubs `window.claude` so setup shows "Website only", routes links between pages through the shell (`__fkNav`), and tolerates browsers that refuse history changes in a frame.
 - Field Stock's data lives on each phone (plus the tech's own Google Sheet). Nothing you do from here can read or change a tech's stock.
 - Curtis's voice-dictated messages can have transcription oddities ("gable mount and bipod and tripod").
