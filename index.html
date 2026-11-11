@@ -382,7 +382,13 @@ details.grp .btn{margin-bottom:12px}
 
 <!-- ============ SETTINGS ============ -->
 <div class="view" id="settings" hidden>
-  <div class="sethead"><h2>Settings</h2><button class="btn" type="button" id="closeSettings">Done</button></div>
+  <div class="lhead fk-row">
+    <a class="fk-back" href="index.html" id="closeSettings" aria-label="Back to Field Kit"><span class="fk-chev" aria-hidden="true">‹</span></a>
+    <header class="fk-head">
+      <div class="fk-tile" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></div>
+      <div class="fk-head-txt"><h1 class="fk-title">Settings</h1></div>
+    </header>
+  </div>
   <section class="card" aria-labelledby="sDetailsH">
     <h3 id="sDetailsH">About you</h3>
     <div id="sAbout"></div>
@@ -1208,7 +1214,7 @@ details.grp .btn{margin-bottom:12px}
   wire($("sAbout"), "a"); wire($("sAcct"), "a"); wireLook($("sLook"), "a");
   $("openSettings").addEventListener("click", function () { openSettings(false); });
   document.addEventListener("click", function (e) { if (e.target.closest("[data-open-backup]")) openSettings(true); });
-  $("closeSettings").addEventListener("click", openMenu);
+  $("closeSettings").addEventListener("click", function (e) { e.preventDefault(); openMenu(); });
 
   /* ================= start ================= */
   function openMenu() { paintMenu(); showView("menu"); }
