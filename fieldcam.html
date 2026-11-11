@@ -524,6 +524,13 @@ html:root[data-theme] .start{background:var(--ink)}
 .start .fk-head .hello{text-align:left;margin:3px 0 0;font-size:.88rem;line-height:1.3;flex:none}
 .start .fk-head .hello span,.start .fk-head .hello span+span{display:inline;white-space:nowrap;font-size:inherit;opacity:1;-webkit-line-clamp:unset}
 .start .fk-head .hello span+span::before{content:" · "}
+/* one-row header (1.20.22), like the other tools: back arrow, small tile, title; pinned while the job screen scrolls */
+.start .camhead{position:sticky;top:calc(-4px - env(safe-area-inset-top,0px));z-index:5;display:flex;align-items:center;gap:2px;background:var(--fk-bg);
+  margin:calc(-4px - env(safe-area-inset-top,0px)) -20px 0;padding:calc(4px + env(safe-area-inset-top,0px)) 20px 4px 10px;box-shadow:0 1px 0 var(--fk-line)}
+.start .camhead .fk-back{align-self:center}
+.start .camhead .fk-head{flex:1;min-width:0;gap:10px}
+.start .camhead .fk-head .fk-title{font-size:1.2rem}
+.start .camhead .hello{display:none}
 /* same column width as the rest of Field Kit: the job screen, the camera and its sheets */
 .start{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .start .inner{max-width:calc(var(--fk-max) - 32px)}
@@ -707,10 +714,12 @@ html:root[data-theme] .start{background:var(--ink)}
 <!-- Start / new job -->
 <div class="start" id="start">
   <div class="inner">
-    <a class="fk-back" href="index.html">‹ Field Kit</a>
+    <div class="camhead fk-row">
+    <a class="fk-back" href="index.html" aria-label="Back to Field Kit"><span class="fk-chev" aria-hidden="true">‹</span></a>
     <div class="brandrow fk-head">
       <div class="fk-tile" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h4l2-3h6l2 3h4v12H3z"/><circle cx="12" cy="13" r="4"/></svg></div>
       <div class="fk-head-txt"><h1 class="fk-title">Field Cam</h1><p class="hello fk-sub" id="hello"></p></div>
+    </div>
     </div>
     <div id="nameBlock"><div id="nameRow"><label for="inName0">Your name</label><input id="inName0" autocomplete="name" placeholder="First Last"></div><div id="dealerRow" style="margin-top:10px"><label for="inDealer0">Dealer name</label><input id="inDealer0" autocomplete="organization" placeholder="Location XCI Tech"></div><p class="hint" style="margin-top:6px">Asked once and stamped on every photo. Change them any time in Settings.</p></div>
     <div class="resume" id="resumeBlock" hidden>
