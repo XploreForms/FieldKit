@@ -155,7 +155,7 @@ html:not(.fk-slim) .njtitle{font-family:var(--f-display)!important;font-size:1.5
 /* job summary and new job: the way back and the title stay at the top while scrolling, like Field Stock and Field Notes */
 .lhead{position:sticky;top:0;z-index:30;background:var(--bg);margin:calc(-18px - env(safe-area-inset-top,0px)) calc(-1 * max(16px,env(safe-area-inset-right,0px))) 0 calc(-1 * max(16px,env(safe-area-inset-left,0px)));
   padding:calc(10px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px));box-shadow:0 1px 0 var(--line)}
-.lhead .fk-title{font-family:var(--f-mono);font-size:1.3rem;font-weight:600}
+#lobby .lhead .fk-title{font-family:var(--f-mono);font-size:1.3rem;font-weight:600}
 html.fk-slim .lhead{flex-direction:row;align-items:center;gap:6px;padding-top:calc(4px + env(safe-area-inset-top,0px));padding-bottom:4px}
 html.fk-slim .lhead .fk-head{position:absolute;left:96px;right:96px;top:calc(50% + env(safe-area-inset-top,0px) / 2);transform:translateY(-50%);justify-content:center;min-width:0;pointer-events:none}
 html.fk-slim .lhead .fk-head-txt{flex:0 1 auto;justify-content:center}

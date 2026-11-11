@@ -60,6 +60,12 @@ html{background:var(--fk-bg)}
 .fk-row .fk-tile{width:28px;height:28px;border-radius:8px}
 .fk-row .fk-tile svg{width:17px;height:17px}
 .fk-row .fk-title{font-size:1.2rem}
+/* 1.20.30: the tile + title sit in the middle of the bar (the back arrow stays on the left) */
+.fk-row{position:relative}
+html .fk-row>.fk-head,html .fk-row .fk-bar~.fk-head{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);flex:none!important;width:auto;max-width:calc(100% - 128px);justify-content:center;pointer-events:none}
+.fk-row .fk-head-txt{flex:0 1 auto;text-align:center;min-width:0}
+@media (max-width:420px){.fk-row:has(.fk-back.sa) .fk-tile{display:none}}   /* "‹ SA-1234567" on the left: drop the tile so the title clears it */
+.fk-row .fk-head-txt .fk-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* ---------- page header: app tile, title, one line under it ---------- */
 .fk-head{display:flex;align-items:center;gap:12px;min-width:0}

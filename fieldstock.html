@@ -447,6 +447,13 @@ button.mode:active{filter:brightness(.94)}
 header.top.fk-row{display:flex;align-items:center;padding-left:max(10px,env(safe-area-inset-left,0px),calc((100% - var(--fk-max)) / 2));padding-right:max(0px,calc((100% - var(--fk-max)) / 2))}   /* same column as the page on wide screens */
 header.top.fk-row .fk-bar{flex:none;margin:0 2px 0 0;padding:0}
 header.top.fk-row .top-in{flex:1;min-width:0;margin:0;padding:6px max(16px,env(safe-area-inset-right,0px)) 6px 0!important;gap:10px}
+header.top.fk-row{position:relative;flex-wrap:wrap}
+header.top.fk-row .fk-bar{position:absolute;left:max(10px,env(safe-area-inset-left,0px),calc((100% - var(--fk-max)) / 2));top:2px;z-index:1}
+header.top.fk-row .top-in{flex:1 1 100%;justify-content:center;padding:6px 100px!important;min-height:52px}
+header.top.fk-row h1{white-space:nowrap}
+header.top.fk-row .top-txt{flex:0 1 auto;min-width:0}
+header.top.fk-row .mode{position:absolute;right:max(16px,calc((100% - var(--fk-max)) / 2 + 16px));top:10px}
+header.top.fk-row .netbar{flex:1 1 100%}
 header.top.fk-row .mark{width:28px;height:28px;border-radius:8px}
 header.top.fk-row .mark svg{width:17px;height:17px}
 header.top.fk-row h1{font-size:1.2rem}
