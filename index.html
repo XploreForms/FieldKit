@@ -129,6 +129,7 @@ h3{margin:0;font:700 1.1rem/1.2 var(--f-display)}
 .nj .seg button{white-space:nowrap;padding:11px 2px;font-size:.86rem;line-height:1.15;min-height:44px;color:var(--fg)}
 .nj .seg button[aria-pressed="true"]{background:var(--btn);color:var(--btn-ink);box-shadow:none}
 .nj .seg button:disabled{opacity:.35;cursor:default}
+.nj .seg.njhold{opacity:.55}.nj .seg.njhold button{opacity:1;color:var(--muted);font-weight:500}
 .njref{display:flex;gap:8px}.njref input{flex:1;font:500 1.05rem var(--f-mono)}.njref .btn{min-height:46px;padding:0 14px}
 html:not(.fk-slim) .njtitle{font-family:var(--f-display)!important;font-size:1.5rem!important;font-weight:700!important}
 
@@ -512,8 +513,12 @@ details.grp .btn{margin-bottom:12px}
     if (nj.fam && nj.work && !ps.some(function (p) { return famOf(p) === nj.fam; })) nj.fam = null;
     var html = '<div class="field"><span class="lbl">Job type</span>' + njSeg("work", NJ_TYPES, nj.work, 4) + '</div>' +
       '<div class="field"><span class="lbl">Platform</span>' + njSeg("fam", NJ_FAMS.map(function (f) { return [f[0], f[1], nj.work && !ps.some(function (p) { return famOf(p) === f[0]; })]; }), nj.fam, 2) + '</div>';
+    // greyed placeholders show what's still to come, so the screen doesn't jump as answers are picked
+    var njHold = function (lbl, msg) { return '<div class="field"><span class="lbl">' + lbl + '</span><div class="seg njhold" style="--n:1"><button type="button" disabled tabindex="-1">' + esc(msg) + '</button></div></div>'; };
     if (NJ_TECH[nj.fam]) html += '<div class="field"><span class="lbl">Technology</span>' + njSeg("tech", NJ_TECH[nj.fam].map(function (t) { return [t, t]; }), nj.tech, NJ_TECH[nj.fam].length) + '</div>';
+    else if (!nj.fam) html += njHold("Technology", "Pick a platform first");
     if (nj.fam === "Fibre" && njDrops().length) html += '<div class="field"><span class="lbl">Drop</span>' + njSeg("drop", NJ_DROPS.map(function (d) { return [d, d, ps.indexOf("Fibre (" + d + ")") < 0]; }), nj.drop, 3) + '</div>';
+    else if (!nj.fam && (nj.work === "INS" || nj.work === "CON")) html += njHold("Drop", "Only for Fibre");
     if (njPlat() === "VAS") html += '<div class="field"><span class="lbl">Technology</span>' + njSeg("vas", NJ_VAS.map(function (v) { return [v, v]; }), nj.vas, 3) + '</div>';
     $("njPick").innerHTML = html;
   }
