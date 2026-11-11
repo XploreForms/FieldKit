@@ -471,9 +471,11 @@ details.grp .btn{margin-bottom:12px}
     var items = LINKS.concat([{ id: "cam", name: "Field Cam", desc: "Only for photos that aren't for an SA", href: TOOLS[0].href, icon: TOOLS[0].icon, quiet: true }]);
     $("links").innerHTML = items.map(function (l) {
       var t = TILE[l.id] || TILE[l.name] || [l.name, l.desc], busy = l.id && prog[l.id], viaApp = l.app && ANDROID;
+      var desc = t[1], restart = "";
+      if (l.id === "cam" && busy) { desc = "In progress" + (busy.detail ? " · " + busy.detail : ""); restart = '<button class="tnew" type="button" data-new="cam" aria-label="Start new Field Cam pictures (the current ones stay saved)">' + RESTART + '<span>New</span></button>'; }
       return '<li class="tile' + (l.quiet ? " quiet" : "") + (busy ? " busy" : "") + '"><a href="' + esc(viaApp ? appHref(l.href) : l.href) + '"' + (l.out && !viaApp ? ' target="_blank" rel="noopener"' : '') + '>' +
         '<i aria-hidden="true">' + svg(l.icon) + '</i><b>' + esc(t[0]) + (l.out ? '<span class="out" aria-hidden="true">' + OUT + '</span><span class="sr-only"> (opens in a new tab)</span>' : '') + '</b>' +
-        '<small>' + esc(t[1]) + '</small>' + (busy ? '<em class="live">In progress</em>' : '') + '</a></li>';
+        '<small>' + esc(desc) + '</small>' + (busy && !restart ? '<em class="live">In progress</em>' : '') + '</a>' + restart + '</li>';
     }).join("");
   }
   /* Compass is installed on the phone as its own web app. On Android the link goes out as a "view this address" request to the
@@ -863,7 +865,7 @@ details.grp .btn{margin-bottom:12px}
     var app = b.getAttribute("data-new");
     if (!b.classList.contains("sure")) {
       // first tap: ask, without changing the card's size
-      b.classList.add("sure"); b.innerHTML = "Tap to clear";
+      b.classList.add("sure"); b.innerHTML = b.classList.contains("tnew") ? RESTART + "<span>Tap again</span>" : "Tap to clear";
       b.setAttribute("aria-label", { cam: "Tap again to end the Field Cam job (photos stay saved)", stock: "Tap again to clear the unsaved Field Stock items", notes: "Tap again to clear the Field Notes comments" }[app]);
       clearTimeout(sureT); sureT = setTimeout(paintTools, 4000);
       return;
@@ -1350,7 +1352,15 @@ details.grp .btn{margin-bottom:12px}
 #menu.home .eyebrow{margin:4px 2px -4px}
 .tiles{flex:1;min-height:0;list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:10px;overflow:hidden}
 /* 1.20.32: description always shown; icon beside the title so every tile fits its share of the height (never grows the page) */
-.tiles .tile{min-height:0;min-width:0;overflow:hidden;border-radius:16px}
+.tiles .tile{position:relative;min-height:0;min-width:0;overflow:hidden;border-radius:16px}
+.tiles .tnew{position:absolute;top:8px;right:8px;z-index:1;width:96px;height:30px;display:flex;align-items:center;justify-content:center;gap:5px;border:0;border-radius:99px;background:var(--surface-2);color:var(--fg);font:600 .78rem var(--f-body);cursor:pointer}
+.tiles .tnew svg{width:14px;height:14px}
+.tiles .tnew.sure{background:var(--warn-bg);color:var(--warn)}
+/* side-by-side (compact) tiles: a round icon button in the bottom-right corner, same size before and after the first tap */
+#menu:not(.fit-stack) .tiles .tnew{top:auto;bottom:6px;right:6px;width:32px;height:32px;padding:0;gap:0}
+#menu:not(.fit-stack) .tiles .tnew span{display:none}
+#menu:not(.fit-stack) .tiles .tnew svg{width:16px;height:16px}
+#menu:not(.fit-stack) .tiles .tile:has(.tnew) small{padding-right:34px}
 .tiles a{position:relative;height:100%;display:grid;grid-template-columns:36px minmax(0,1fr);grid-template-rows:auto auto;column-gap:10px;row-gap:5px;align-content:center;padding:10px 12px;border-radius:16px;background:var(--surface);box-shadow:var(--shadow);text-decoration:none;color:var(--fg);overflow:hidden}
 .tiles a:active{background:var(--surface-2)}
 .tiles i{grid-row:1;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;align-self:center;background:color-mix(in srgb,var(--btn) 16%,transparent);color:var(--accent)}
@@ -1358,8 +1368,6 @@ details.grp .btn{margin-bottom:12px}
 .tiles b{grid-row:1;align-self:center;font-weight:650;font-size:.98rem;line-height:1.15;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tiles .out svg{width:12px;height:12px;margin-left:4px;vertical-align:0;color:var(--muted)}
 .tiles small{grid-column:1 / -1;color:var(--muted);font-size:.8rem;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.5em}   /* every tile keeps 2 lines, so icons line up across a row */
-.tiles .quiet a{background:transparent;box-shadow:inset 0 0 0 1.5px var(--line)}
-.tiles .quiet i{background:var(--surface-2);color:var(--muted)}
 .tiles .live{position:absolute;top:8px;right:8px;margin:0;padding:3px 6px;border-radius:99px;background:var(--btn);color:var(--btn-ink);font:600 .55rem/1 var(--f-body);font-style:normal;letter-spacing:.04em;text-transform:uppercase}
 /* 1.20.33: home.js-free fit. fitHome() measures the real visible screen and picks the biggest layout that fits:
    fit-roomy (bigger) > normal > fit-c1 (tighter, 1-line descriptions) > fit-c2 (no descriptions). */
@@ -1392,7 +1400,7 @@ details.grp .btn{margin-bottom:12px}
 #menu.home .jobwrap.busy .job{min-height:0;padding:12px 14px 4px}
 #menu.home .jacts{display:flex;gap:8px;padding:8px 14px 14px}
 #menu.home .jacts .btn{flex:1;min-height:50px;font-size:1.05rem}
-#menu.home .jacts .newbtn{width:auto;margin:0;height:50px;padding:0 14px;flex:none}
+#menu.home .jacts .newbtn{width:128px;margin:0;height:50px;padding:0 10px;flex:none;justify-content:center}
 #menu.home .foot{margin:-4px 0 0;font-size:.7rem}
 #histView .hist{margin:0}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}</style>
