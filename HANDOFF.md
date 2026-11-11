@@ -137,7 +137,6 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 - HV2 modem and transceiver are off the order form for now.
 
 **Clean-up and reminders**
-- **Test inventory clean-up block** at the end of `fieldstock.html` ("test inventory clean-up"): once per phone it deletes leftover test entries (note "Test inventory load (remove before rollout)"). Delete the block once Curtis's phones have opened 1.20.11 or later.
 - **Google Sheets backup is skippable "for now"** (see Profile and setup). Make it required again at final rollout.
 
 **To confirm with Curtis**

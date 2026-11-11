@@ -3054,19 +3054,6 @@ document.addEventListener("visibilitychange", ()=>{ if(document.hidden) draftSav
   }
   // Field Stock always opens on Log (the tab it was last on isn't restored)
 })();
-
-/* ---------- test inventory clean-up (1.20.11) ----------
-   The test inventory Curtis loaded for testing (1.20.1–1.20.10) is gone from the app. Any phone that still has those
-   entries (note TEST_NOTE) has them removed the next time Field Stock opens: marked deleted with a sealed record, so
-   History Check stays Verified. Safe to delete this block once his phones have opened this version. */
-(function removeTestInventory(){
-  const TEST_NOTE="Test inventory load (remove before rollout)";
-  const mine=Store.events.filter(e=>e.note===TEST_NOTE && !e.deleted);
-  if(!mine.length) return;
-  mine.forEach(e=>{ Object.assign(e,{voided:true, deleted:true, voidReason:"Test inventory removed", voidedAt:Date.now()}); sealVoid(e); });
-  Store.persist(); renderAll();
-  setTimeout(()=>toast(`Removed the test inventory (${mine.length} entries)`),400);
-})();
 })();
 </script>
 
