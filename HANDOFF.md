@@ -111,6 +111,7 @@ The home screen (1.20.27) **fills the screen with no scrolling** on any phone: h
 
 ### Field Cam: photos and scanning
 - (1.20.35) **Labels sit at the bottom**, right above the shutter (deck `justify-content:flex-end`).
+- Field Cam settings no longer have a Text size option (1.20.38; always normal).
 - Viewfinder buttons, top to bottom: **HQ, Flash, Scanner, Full screen** (1.20.36).
 - (1.20.35) **Full screen** button (corners icon): hides the bar and labels, asks for fullscreen + landscape lock (Android), the picture fills the screen (480×360 vs 360×270 on a 360px phone); its own shutter and ✕ on the right; **one picture, then back to normal** (`enterFs`/`exitFs`, class `fc-fs`; `applyRot` doesn't counter-rotate while full screen). iPhone can't lock landscape: it says "Turn your phone sideways" and the sideways logic gives a tall 3:4 frame.
 - (1.20.35) **Imported screenshots** (PNG, or "Screenshot" in the file name) are labelled **Screenshot** automatically unless a label was picked first, in an SA and without one.
