@@ -1,6 +1,6 @@
 # Field Kit — handoff note
 
-Paste the "First message" section into a new Claude chat to pick up where this left off. The rest is reference.
+Current as of **Field Kit 1.20.13** (Nov 10, 2026). Paste the "First message" into a new Claude chat to pick up where this left off. The rest is reference: what exists, the decisions Curtis already made (keep them), what's still open, and the traps.
 
 ---
 
@@ -10,136 +10,160 @@ Paste the "First message" section into a new Claude chat to pick up where this l
 >
 > How I work:
 > - When I ask for **options**, only show options (images/mockups) until I pick one. Don't implement early.
-> - When I ask for a change, make it, test it, **bump both lines in `version.js`**, and **push to `main`** yourself. Then tell me briefly what changed.
-> - For anything visual, show me before/after or a screenshot.
+> - When I ask for a change, make it, test it on a phone-sized screen, **bump both lines in `version.js`** (use the real Eastern time), and **push to `main`** yourself. Then update the **Field Kit preview artifact** and tell me briefly what changed. Don't send before/after pictures or zip files; the preview artifact is how I try things.
 > - My techs use phones (mostly Android/Samsung and iPhone), so everything must work and fit on a phone first.
+> - I often dictate by voice, so read my messages for meaning. If something is ambiguous and a wrong guess would be costly, ask one short question; otherwise decide and tell me what you assumed.
+> - Anything I ask for outside the app (charts, spreadsheets, documents) uses Xplore's brand: Poppins, Primary Green `#5CBC5D`, Secondary Green `#012929`, Promo Orange `#FFB21C` as a rare accent only, white backgrounds.
+
+### Before the first change (new account checklist)
+
+1. **Push access.** Reading the repo is not enough. Either install the **Claude GitHub App** on the XploreForms org (repo FieldKit), or use a fine-grained personal access token (Contents: read and write, FieldKit only, short expiry). Push with `git push https://x-access-token:<token>@github.com/XploreForms/FieldKit.git main:main` and never write the token into a file. The previous account used a token pasted into chat; Curtis should delete it at github.com/settings/personal-access-tokens.
+2. **The old account's Claude artifacts do not carry over** (the Field Kit preview, the test-serials page, the old stock-names tool). Rebuild the preview with `dev-tools/build_preview.py` (see `dev-tools/README.md`).
+3. **Check what's waiting on Curtis** in "Open items" below, especially the refined inventory list.
 
 ---
 
 ## What Field Kit is
 
-One installable web app (PWA) with three tools and a guided job flow:
+One installable web app (PWA), no build step, hosted on GitHub Pages. The main way in is **Start New SA** (SA = service appointment, one per customer job):
 
-- **Start New Job** (main way in): New Job screen on the menu (SA-#, job type, platform, drop, VAS service) → **Field Cam** (photos + scanned equipment) → **Field Notes** (FSL completion comments, prefilled) → **Job summary** (photos, comments, equipment, outcome, Complete Job). Jobs stay in **Job history** (bottom of menu, collapsed) for 7 days.
-- **Without an SA** (small tiles at the bottom of the menu): Field Cam and Field Notes on their own. Field Stock is a regular Tool. A job never mixes with one-time-use work.
-- **Tools** (was "More"): Field Stock, Inventory (Dealer Portal), Manual Order Request (`fieldstock.html#order`), RMA Request, Compass.
-- **Settings** (gear): profile, shipping options, theme, Google Sheets backup.
+**New SA** (SA-#, job type, platform, drop for Fibre, Technology) → **Field Cam** (stamped photos, scanned equipment) → **Field Notes** (FSL completion comment, prefilled from the SA) → **SA summary / home** (photos, comment, equipment, outcome, Complete SA). SAs stay in **SA history** (bottom of the menu, collapsed) for 7 days.
+
+The menu, top to bottom: Start New SA card, **Tools** (Field Stock, Inventory, Manual Order Request, RMA Request, Compass), **Without an SA** (small tiles: Field Cam and Field Notes on their own, one-time use), SA history. Settings (gear): profile, shipping options, theme, Google Sheets backup. The point of the layout: techs should start an SA for each job and rarely use Field Cam or Field Notes alone.
 
 ## Files
 
 | File | What it is |
 |---|---|
-| `index.html` | Menu, first-launch setup (3 steps), settings, New Job screen, job summary, job history |
-| `fieldcam.html` | Field Cam (labelled, compressed, stamped photos; serial scanning; equipment slots in job mode) |
-| `fieldstock.html` | Field Stock — always opens on the **Log** tab (renamed from "Logs"; the last tab isn't restored), except `#order`. (receive, deploy, transfer, RMA, recycle, return; tamper-evident history; Google Sheets sync; manual order) |
-| `fieldnotes.html` | Field Notes (FSL completion comment generator) |
-| `fieldkit.js` | Shared: profile/prefs sync into each tool, setup redirect, theme, sessions (8 h), slim header on scroll, service worker + aggressive updates |
-| `fieldkit-jobs.js` | Job flow: job store, hand-offs between tools, Field Notes prefill, equipment slots, deploy/recovery logging into Field Stock (sealed), model picker |
-| `fieldkit-catalog.js` | Equipment catalogue, **generated from Curtis's workbooks** (FieldKit_Equipment_Catalogue.xlsx + FieldKit_Serial_Lookup.xlsx, inventory exports 2026-11-09): each SKU has `name` (Curtis's plain-language name, shown everywhere), `desc` (system description), `fam` / `famName` (system Product Family and its plain name), `group`, `serial`, `platforms`. Serial rules R01–R22 and 494 known serials (`KNOWN`, checked first). `match(serial)` and `firstOfName()` are the helpers everything uses. Items Field Kit had that aren't in the workbook are kept (`extra`: mounts, poles, side stays, 1000 m drop, XTV guides, HC210 2W). |
-| `fieldkit.css` | Shared look (Barlow fonts, colours, header, tokens per theme) |
-| `version.js` | **Change both lines every release** (`version`, `updated`) — phones update from this |
-| `sw.js` | Service worker (offline + updates). Add any new file to `FILES`. |
+| `index.html` | Menu, first-launch setup (3 steps), settings, New SA screen, SA summary, SA history, the menu page's Back-button handling |
+| `fieldcam.html` | Field Cam: labelled, compressed, stamped photos; serial scanning; equipment slots in SA mode; photo lists per job (`PHOTOS`, `SETUP`, `PHOTO_RULES`) |
+| `fieldstock.html` | Field Stock: Log (receive, deploy, transfer, RMA, recycle), stock list, tamper-evident History, Count, Google Sheets sync, **Manual Order Request** (`#order`) |
+| `fieldnotes.html` | Field Notes: FSL completion comment generator |
+| `fieldkit.js` | Shared: profile/prefs into each tool, setup redirect, theme, sessions (8 h), `goHome`, SA-# keyboard close, service worker registration and updates |
+| `fieldkit-jobs.js` | SA flow: SA store, hand-offs between tools, Field Notes prefill, equipment slots, deploy/recovery logging into Field Stock (sealed), model picker, `tempDrop`, `devicePhoto` |
+| `fieldkit-catalog.js` | Equipment catalogue (see below) |
+| `fieldkit.css` | Shared look (colours per theme, header, paste-icon boxes); the unused `fk-slim` styles are still there |
+| `version.js` | **Change both lines every release.** Phones update from this |
+| `sw.js` | Service worker (offline + updates). **Add any new file to `FILES`** |
 | `manifest.webmanifest`, `icon-*.png`, `icon.svg`, `favicon-32.png`, `apple-touch-icon.png` | Install + icons |
 
-No build step. Edit files, bump `version.js`, push.
+**The catalogue** (`fieldkit-catalog.js`) was generated from Curtis's two workbooks (FieldKit_Equipment_Catalogue.xlsx, FieldKit_Serial_Lookup.xlsx, inventory exports 2026-11-09): each SKU has `id` (the part number, **never change one**: logged entries use it), `name` (his plain-language name, shown everywhere), `desc` (system description), `fam` / `famName` (system Product Family and its plain name), `group` (category), `serial`, `platforms` (technology codes). Also serial rules R01–R22, 494 known serials (`KNOWN`, checked first), `ORDER_EXTRA` (order-only lines). Helpers: `match(serial)`, `firstOfName()`. Items Field Kit added itself (not in his workbooks) are flagged `extra`: mounts, poles, side stays, the 1000 m drop, XTV guides, the HC210 2 W radio. The one-off generator is `dev-tools/catalogue/gen.py`; editing the JS directly is fine.
 
 ## Release checklist
 
 1. Make the change.
-2. Test in a phone-sized browser (Playwright on `python3 -m http.server`; seed `localStorage` with `fieldkit.profile`, `fieldkit.setupDone`, and `techstock.gs` connected so setup screens don't block).
-3. Bump `version.js` (both lines). `updated` must be the **real** time of the release in Eastern: run `TZ=America/Toronto date +%Y-%m-%dT%H:%M:%S%:z` and paste it (don't estimate). The menu footer shows it in Eastern time with EST/EDT.
+2. Test on a phone-sized screen (Playwright + Chromium against `python3 -m http.server`; see `dev-tools/README.md`). Seed `localStorage` with `fieldkit.profile`, `fieldkit.setupDone`, and `techstock.gs` connected so setup screens don't block. Run the earlier tests for anything you touched; they have caught real breakage (once a start-up error that would have broken Field Stock).
+3. Bump `version.js`: `version` and `updated`. `updated` must be the **real** time: `TZ=America/Toronto date +%Y-%m-%dT%H:%M:%S%:z`. Don't estimate. The menu footer shows it in Eastern time with EST/EDT.
 4. New file? Add it to `sw.js` `FILES`.
-5. Push to `main`. GitHub Pages publishes in ~1 minute; phones update themselves.
+5. Commit and push to `main`. GitHub Pages publishes in about a minute; phones update themselves.
+6. Rebuild and publish the preview artifact.
+7. Update this note if you changed a decision.
 
 ## Decisions already made (keep these)
 
-**Look & layout**
-- One theme for all tools (light default; dark; black). Changed only in Field Kit settings.
-- Headers: page-colour, no green bar or Xplore logo, 560px column on desktop. Headers are pinned and **always full size** (app tile, title, line under it); they don't go slim on scroll (tried shrink-on-scroll and always-slim in 1.12.7–1.12.9, Curtis chose full size). The fk-slim styles remain in the CSS, unused. Field Cam's bar is slim by design.
-- **Menu is SA-first:** Start New SA card on top (96px tall, the biggest thing on the menu), then **Tools** (Field Stock, Inventory, Manual Order Request, RMA Request, Compass; this section used to be "More"; Field Stock is meant to be used on its own and shows "In progress" when it has unsaved items), then **Without an SA**: Field Cam and Field Notes as two small outlined tiles (in progress shows a badge and a small restart button on the tile corner), then SA history. Kept small on purpose so techs start an SA for each job.
-- Menu cards: two lines, nothing cut off; the SA card is 96px, tool tiles 72px. Home header shows **name only** (no dealer). Field Stock header also name only.
-- In-progress job card uses the **truck with work-order lines** icon; restart is a full-width button inside the SA card, under the SA (circular arrow + "Start a new SA", two taps: "Tap again to start new"); the card never overlaps or cuts off its text.
-- No version numbers inside the tools; version only shows on the menu footer.
+### Look and layout
+- One theme for all tools (light default; dark; black), changed only in Field Kit settings.
+- Headers: page-colour, no green bar or Xplore logo, 560px column on desktop, pinned, **always full size** (app tile, title, line under it). Shrink-on-scroll and always-slim were tried (1.12.7–1.12.9) and Curtis chose full size. Field Cam's bar is slim by design.
+- Menu: Start New SA card is 96px tall and the biggest thing on it; tool tiles 72px; two lines, nothing cut off. Home header shows **name only** (no dealer); Field Stock header too.
+- The in-progress SA card uses the **truck with work-order lines** icon. Its restart is a full-width button inside the card, under the SA: circular arrow + "Start a new SA", two taps ("Tap again to start new", resets after 4 s). Field Cam/Field Notes tiles show an "In progress" badge and a small restart button on the corner.
+- No version numbers inside the tools; the version shows only on the menu footer.
+- **Paste is always a clipboard icon inside the box**, no "Paste" buttons (`.fk-inwrap` + `.fk-pastein`): SA-# boxes and every serial box.
 
-**Profile / setup**
-- Step 1: Your Name, Work Email (@xplore.ca), Work Phone Number, **Xplore Approver Email**. Only the approver email has hint text: "Approves your manual order requests and is CC'd on your transfer requests." The approver is CC'd on every transfer email (with both techs).
-- Step 2: Dealer Name (format **Location XCI Tech**, e.g. Cambridge XCI Tech), **SAP Dealer Account #** (exactly 6 digits), **Salesforce Dealer Account #** (exactly 7 digits; both boxes take digits only and stop at the limit), shipping address, **Ship to Purolator depot hold for pickup** (checkbox, no hint text), **Default Shipping Instructions** (optional, ≤300 chars, no hint text). Both shipping options go into every manual order email.
-- Step 3: Google Sheets backup. **For now it can be skipped** ("Skip for Now" under Connect); the menu then shows the "Google backup is off" banner with Connect until it's set up. Settings has **Sync Now** (signs in if needed, Field Stock syncs, returns to settings).
-- **Paste is always a clipboard icon inside the box** (no "Paste" buttons): `.fk-inwrap` + `.fk-pastein` in `fieldkit.css`; used for the SA-# on New SA and in Field Cam, Field Stock's SA boxes, and every serial box in an SA.
-- In Field Stock, the status pill in the header (Sign in, Waiting, Not backed up, Synced…) is a button: it opens Field Kit settings at the Google Sheets card (`index.html#backup`), where Sync Now is.
-- Name and dealer can only be changed in Field Kit settings (not in Field Cam). **Grid lines** live in Field Cam's own settings.
+### Profile and setup
+- Step 1: Your Name, Work Email (@xplore.ca), **Work Phone Number**, **Xplore Approver Email**. Only the approver email has hint text ("Approves your manual order requests and is CC'd on your transfer requests"). The approver is CC'd on every transfer email, with both techs.
+- Step 2: Dealer Name (format **Location XCI Tech**, e.g. Cambridge XCI Tech), **SAP Dealer Account #** (exactly 6 digits), **Salesforce Dealer Account #** (exactly 7 digits); both boxes take digits only and stop at the limit. Shipping address, **Ship to Purolator depot hold for pickup** (checkbox, no hint), **Default Shipping Instructions** (optional, ≤300 chars, no hint). Both shipping options go into every manual order email.
+- Step 3: Google Sheets backup. **"For now" it can be skipped** ("Skip for Now"); the menu then shows the "Google backup is off" banner with Connect. Curtis said "for now": plan to make it required again before final rollout. Settings has **Sync Now**.
+- Name and dealer change only in Field Kit settings. Grid lines live in Field Cam's own settings.
+- Every SA-# box closes the keyboard once the 7th digit is typed (`SA_BOXES` in `fieldkit.js`).
+- Field Stock's header status pill (Sign in, Waiting, Not backed up, Synced…) is a button that opens Field Kit settings at the Google Sheets card (`index.html#backup`).
+- The footer time is always Eastern with EST/EDT, whatever the phone's zone.
 
-**Job flow**
-- The VAS platform is labelled **VAS Only** everywhere techs see it (New SA, Field Cam, Field Notes picker and comment title). Field Notes still saves it as "Value Added Services" internally (`PLAT_SHOW`).
-- Every SA-# box (New SA, Field Cam, Field Stock) closes the keyboard once the 7th digit is typed (`SA_BOXES` in `fieldkit.js`).
-- New SA screen asks **Technology** for every platform except VAS (required): Fibre FTX / ATX / CTX; Fixed Wireless FWN / LTE; Satellite HJ3 / HJ2 / HTJ / HV2 / HTV. Saved as `tech` on the SA and its Field Cam job, shown after the platform ("Install · Fixed Wireless · LTE") on the menu card, SA page and SA history (`withTech` in `fieldkit-jobs.js`), and carries into Field Notes: a **Technology** row in Field Notes' Job section (same lists, VAS XWR/XWH/XTV too; also in the comment's title line, e.g. "Install — Fixed Wireless — LTE"), the Fixed Wireless Platform (FWN/LTE, kept in step with Technology), and a VAS repair's Equipment Serviced tick.
-- New SA screen collects SA-# (auto "SA-", 7 digits only, Paste finds it in copied text), job type, platform, drop (Fibre installs/conversions), Technology (VAS: XWR, XWH or XTV; shown as "Technology" like the other platforms). Outcome starts as Complete (no note about it on the New SA screen).
-- **Wording: the guided flow calls a job an "SA" (service appointment)**: Start New SA, New SA, Start SA, SA summary, Complete SA, SA history, SA start/end cards. "Job type" stays (it matches Field Notes / FSL). One-time-use Field Cam still says "job" in its own screens.
+### The SA flow
+- Wording: the guided flow says **SA** everywhere (Start New SA, Start SA, SA summary, Complete SA, SA history, SA START/END cards). **"Job type"** stays (it matches Field Notes/FSL). One-time-use Field Cam still says "job".
+- New SA screen: SA-# (auto "SA-", 7 digits, the clipboard icon finds it in copied text), job type, platform (Fibre / Fixed Wireless / Satellite / **VAS Only**), drop (Fibre installs and conversions), **Technology** (required for every platform): Fibre FTX / ATX / CTX; Fixed Wireless FWN / LTE; Satellite HJ3 / HJ2 / HTJ / HV2 / HTV; VAS Only XWR / XWH / XTV. Outcome starts as Complete, with no note about it on this screen.
+- Technology is saved as `tech` and shown after the platform ("Install · Fixed Wireless · LTE", `withTech`). It carries into Field Notes: a Technology row in the Job section (also in the comment's title line), the Fixed Wireless Platform question (FWN/LTE, kept in step with Technology), and a VAS repair's Equipment Serviced tick. Field Notes still saves VAS Only internally as "Value Added Services" (`PLAT_SHOW`).
 - Tapping the unfinished SA on the menu always opens its **SA home (summary)**, never the tool it was last in.
-- Field Cam's **SA START card** shows the time the SA was started (`started` on the Field Cam job); the END card is just after the last photo.
-- In a job, the way back in Field Cam and Field Notes reads **‹ SA-#######** (the job's SA number), and Field Cam's job pill drops its own SA-# so it isn't shown twice.
-- In a job, Field Cam has no "New Job"/"Start Next Job"; saving all photos goes straight to Field Notes.
-- **Back on the menu page** (`index.html`, bottom of its script): on the SA page, New SA, Settings or setup, Back always goes to the home screen; on the home screen the first Back toasts "Press back again to close Field Kit" and the next closes the app. Uses a spare history entry (armed on first tap) plus the Navigation API (`navigation.traverseTo` the first entry of the visit, so nothing is left behind the home screen); without that API it just shows the menu.
-- **Back** (phone Back button, or "‹ Field Kit" / "‹ SA-#######") in Field Cam and Field Notes goes straight to the menu, or the job summary in a job (`FieldKit.goHome` in `fieldkit.js`). Field Cam closes an open panel/scanner first. Tools hand over to each other with `location.replace` (including links between them, e.g. Field Cam's "Go to Field Notes"), and the menu records `fieldkit.cameFrom` (sessionStorage) when it opens a tool, so going home is a real history Back — but only when `document.referrer` is the menu; otherwise (e.g. iPhone kept Field Cam in history) it `location.replace`s the SA page, so copying comments always lands on the SA page.
-- Copying comments in Field Notes goes to the job summary. Outcome can be changed in Field Cam (chip ▾) or the summary; Field Notes follows and copied comments get "Needs update".
-- Complete Job asks for a second tap if photos aren't saved, comments aren't copied, or required slots are empty.
+- In an SA, Field Cam has no "New job"/"Start next job"; saving all photos goes straight to Field Notes. The back link in Field Cam and Field Notes reads **‹ SA-#######**; Field Cam's job pill drops its own SA-#.
+- Copying comments in Field Notes goes to the SA summary. The outcome can be changed in Field Cam (chip ▾) or the summary; Field Notes follows and copied comments get "Needs update". Complete SA asks for a second tap if photos aren't saved, comments aren't copied, or required slots are empty.
+- **Back button** (Android):
+  - On the menu page (`index.html`, bottom of its script): from the SA page, New SA, Settings or setup, Back always goes to the home screen. On the home screen the first Back toasts "Press back again to close Field Kit" and the next closes the app. Uses a spare history entry (armed on the first tap) plus the Navigation API (`navigation.traverseTo` the first entry of the visit); without that API it just shows the menu.
+  - In Field Cam and Field Notes: Back (and the back link) goes to the menu, or the SA summary in an SA (`FieldKit.goHome`). Field Cam closes an open panel/scanner first. Tools hand over with `location.replace`, and `goHome` only does a real history Back when `document.referrer` is the menu, so copying comments always lands on the SA page even if the phone kept Field Cam in history.
+- **Scan from the SA page** opens Field Cam straight into the scanner (`fieldkit.scanReturn` in sessionStorage). A slot's Scan returns to the SA page after one serial; **Scan More** returns when the tech taps Done; cancelling returns too. If the scanner can't start, Field Cam stays open.
+- The SA START card shows the time the SA was started (`started`); the END card is just after the last photo.
+- Field Notes in an SA: scrolls past the already-answered questions to the first one still to answer (`skipAnswered`, once on arrival, not if the tech already scrolled or tapped); and answering the last required question glides down to the finished comment (`finishedCheck`; after a typed answer it waits for the keyboard to close).
 
-**Equipment slots** (`slotSet()` / `slotIds()` in `fieldkit-jobs.js`)
-- Install & Conversion: Fixed Wireless = Mount, Surge (always Deployed), Radio, Router, XWH, XTV. Fibre Existing Drop = NID, ONT, Router, XWH, XTV. Fibre Drop Required/Only = Drop, NID, ONT, Router, XWH, XTV. Satellite (SurfBeam) = Trimast, AzEl, Dish, Modem, TRIA.
+### Equipment slots (`slotSet()` / `slotIds()` in `fieldkit-jobs.js`)
+- Install and Conversion: Fixed Wireless = Mount, Surge (always Deployed), Radio, Router, XWH, XTV. Fibre Existing Drop = NID, ONT, Router, XWH, XTV. Fibre Drop Required/Only = Drop, NID, ONT, Router, XWH, XTV. Satellite = Trimast, AzEl, Dish, Modem, TRIA (the SurfBeam parts: see Open items).
 - Repair: same slots by platform, **all optional** (Fibre repair gets every fibre slot).
-- Choices read **Deployed / Not Needed** (Trimast/AzEl/Dish also "Reused existing"). **Mount** (stock tracking): J-Arm, Gable Mount, Bipod, Tripod. Gable Mount and Tripod show a **"Deployed 10ft pole"** tick (on by default). A **"New mount not required"** tick on the right of the Mount heading opts out (reused existing, or on a tower; nothing logged). Bipod still logs its 5ft pole. Once answered, Mount folds to one line like Surge ("✓ Mount … Tripod + 10ft pole ▾"); tapping it opens the choices again until the answer changes. **Field Notes' fixed wireless Mount Type matches**: J-Arm, Gable Mount, Bipod, Tripod, Tower, Other, with ticks for **Side stays** (J-Arm), **10ft pole** (Gable Mount, Tripod; ticked when picked) and Reused existing mount. Comment reads e.g. "Mount: New tripod + 10ft pole", "Mount: New j-arm with side stays". It fills the slot: type (+ pole tick), Tower or Reused existing mount → No new mount. Old combined answers are mapped. Side stays aren't tracked. Old saved answers are mapped (`MOUNT_OLD`).
-- Field Notes' Mount Type (and its Reused existing mount tick) and drop length fill the slots (a hand-picked slot sticks until the Notes answer changes). XWH/XTV get one slot per unit Field Notes says (none until then, unless scanned).
-- Serials: scan, type, or paste (clipboard icon **inside** the S/N box); **Add** puts a typed serial in (so does Done / tapping away); typed into a slot narrows the model; picker asks when ambiguous.
-- **XWH / XTV slots only appear** once Field Notes says how many were installed, or one is scanned/typed. No empty "If installed" slot.
-- SA home: no "Also logged in Field Stock: …" line under equipment, and no "You can leave any time…" line above Complete SA.
+- Choices read **Deployed / Not Needed** (Trimast/AzEl/Dish also "Reused existing").
+- **Mount**: J-Arm, Gable Mount, Bipod, Tripod. Gable Mount and Tripod show a **"Deployed 10ft pole"** tick (on by default). **"New mount not required"** (tick on the right of the Mount heading) opts out (reused existing, or on a tower; nothing logged). Bipod still logs its 5ft pole. Once answered, Mount folds to one line like Surge; tapping it reopens the choices until the answer changes. Side stays aren't tracked. Old saved answers are mapped (`MOUNT_OLD`).
+- **Field Notes' fixed wireless Mount Type matches**: J-Arm, Gable Mount, Bipod, Tripod, Tower, Other, with ticks for Side stays (J-Arm), 10ft pole (Gable Mount/Tripod, ticked when picked) and Reused existing mount. The comment reads e.g. "Mount: New tripod + 10ft pole". It fills the slot: type (+ pole tick); Tower or Reused existing mount → No new mount. A hand-picked slot sticks until the Notes answer changes. Drop length is shared the same way.
+- XWH/XTV slots appear only once Field Notes says how many were installed, or one is scanned/typed (one slot per unit).
+- Serials: scan, type, or paste; **Add** puts a typed serial in (Done or tapping away also does); a serial typed into a slot narrows the model; the picker asks only when ambiguous. Items sharing a plain name never ask.
 - Cannot Complete / Not Required: **no equipment deployed** (entries voided; serials kept in case it changes back).
-- **Scan on the SA home** opens Field Cam straight into the scanner (`fieldkit.scanReturn` in sessionStorage). A slot's Scan comes back to the SA home as soon as one serial is added; **Scan More** comes back when the tech taps Done. Cancelling also comes back.
-- Conversions & repairs have a **Recovered** section; Field Cam's scanner has a **Deploy / Recovery** switch (installs always deploy). Recovered items log as Receive → Recovery on the job's SA-#.
-- Everything logged is sealed like Field Stock's own entries so **History Check stays Verified**.
+- Conversions and repairs have a **Recovered** section; Field Cam's scanner has a Deploy / Recovery switch (installs always deploy). Recovered items log as Receive → Recovery on the SA's SA-#.
+- Everything logged is sealed like Field Stock's own entries, so **History Check stays Verified**. Don't write to Field Stock's events any other way.
+- SA home: no "Also logged in Field Stock…" line under equipment and no "You can leave any time…" line above Complete SA.
 
-**Messages about a label just picked** ("… is always its own photo", "… only go together") show at the top of the viewfinder (`vfHint`), not as the centre toast.
+### Field Cam: photos and scanning
+- Required photos per job come from `PHOTOS` (generated originally from Curtis's Outcomes and Photo Lists tools; hand-edited since).
+- **Serial number photos** (Install and Conversion, Complete): Fibre adds ONT SN, XWR SN, XWH SN (optional), XTV SN (optional); Fixed Wireless adds CPE SN, XWR SN, XWH SN (opt), XTV SN (opt); Satellite adds Modem SN, TRIA SN, XWR SN, XWH SN (opt). Each is always its own photo (`SN_LABELS`) and tapping one opens the barcode scanner. VAS installs need one photo named after the Technology (XWR SN, XWH SN or XTV SN). The optional "VAS" label is gone from installs and conversions (repairs keep it). The older "ONT Placement" / "Router Placement" / "Modem Placement" / "PoE Placement" labels still exist beside the SN ones.
+- **A scan labels its own photo** as the device photo the SA needs (`devicePhoto`, by the item's catalogue family: any CPE → CPE SN, router → XWR SN, ONT → ONT SN, modem → Modem SN, TRIA → TRIA SN, XWH → XWH SN, XTV → XTV SN), so it ticks that photo. If the SA's list doesn't have it, or it's a Recovery scan, the label stays "<item> SN". Old photos labelled ONT/XWR/XWH/XTV or "Device SN" are moved onto the SN tiles on load (`fixSnPhotos`; they're marked unsaved because the stamp changed).
+- **Temp drops:** a temp drop is used when the job is *completed* but the drop couldn't be buried, so it is **not** a Cannot Complete reason in Field Cam. In Field Notes' Drop Route, a buried span's tick is **Temp Drop Deployed** (comment: "Buried (Temp Drop Deployed)"). Ticking it adds **Temp drop form** to Field Notes' required pictures and a required **Temp Drop Form** photo to the Fibre SA's Field Cam list (`FieldKit.job.tempDrop()`; `photosOf` adds the tile; solo photo).
+- `PHOTO_RULES`: Fixed Wireless: Install Overview, Line of Sight, CPE & Mount, Indoor Cable Run each their own photo. Satellite: Install Overview, Line of Sight, Dish & Mount, Indoor Cable Run each their own. Fibre Existing Drop: Indoor Cable Run alone; ONT Placement + Router Placement only with each other. Fibre Drop Required: MPT, Install Overview, Drop Route, Indoor Cable Run alone; ONT + Router only with each other.
+- Messages about the label just picked ("… is always its own photo") show at the **top of the viewfinder** (`vfHint`). The **Other…** typing box (`#otherBar`) is moved to the top of the page when opened so it shows above the photo sorter and sheets.
+- Scanning: no instruction panel or Done button; results and problems show as a short toast; leave with the scan button or Back. The photo button and Save button never move when scan mode starts (the Deploy/Recovery switch is `div.scanmode`, scoped on purpose).
+- Saving photos says "Compressing N photos…" then "Compressing and saving 3 of N…".
 
-**Serial number photos** (`PHOTOS` in `fieldcam.html`, installs & conversions, Complete): Fibre adds ONT SN, XWR SN, XWH SN (optional), XTV SN (optional); Fixed Wireless adds CPE SN, XWR SN, XWH SN (opt), XTV SN (opt); Satellite adds Modem SN, TRIA SN, XWR SN, XWH SN (opt). Each SN label is always its own photo (`SN_LABELS`), and tapping one opens the barcode scanner; the scan's photo gets that label. The optional "VAS" label is gone from installs and conversions (repairs keep it). VAS installs need one photo named after the service: XWR SN, XWH SN or XTV SN. VAS services are listed XWR, XWH, XTV everywhere. The older "ONT Placement" / "Router Placement" / "Modem Placement" / "PoE Placement" labels are still there too.
+### Field Stock
+- Always opens on the **Log** tab (renamed from "Logs"); the last tab isn't restored. Manual Order Request opens as its **own page** (`fieldstock.html#order` adds `html.order-only`, hiding Field Stock's tab bar, status pill and sync banner).
+- Names and categories come from the catalogue. Items sharing a plain name are one item to techs: one row in the stock list (counts added), one entry in pickers (the three Nokia XS-010X ONTs; the TRIA - 1 Watt radios). Known serials identify the exact model first, then the patterns.
+- **Deploy can pick any item by hand**, serialized too: the serial is tapped from this phone's stock or typed, and must match the item. Receive/Transfer/RMA/Recycle still list only items without serials by hand.
+- **Manual orders go by product family**, not SKU. `ORDER_PICK` families (Router, 5G High Gain CPE, ONT, Drop cable, TV box, Aerial kit, AzEl, Trimast, Dish): no "any model", the tech must choose a model. `ORDER_FAMILY_ONLY` (5G CPE, LTE CPE – CAT12 2.5 / 3.5 GHz): by family, no model choice. `ORDER_HIDE`: CAT4. Items whose system description starts "NLA" (e.g. the Zyxel EMG6726 router) are left off. Other families have one item and order as it. Order-only lines (`ORDER_EXTRA`): Adtran 411 ONT, Nova remote, two aerial kits. The email shows the family, system codes, and the chosen model.
+- Max per order line is 20 (10 for J-Arm and High Gain).
+- Drop names stay long ("Drop - 300m - Evolv Dielectric Drop PushLok Tech") because more drop types are coming.
 
-**Field Cam photo rules** (`PHOTO_RULES` in `fieldcam.html`)
-- Fixed Wireless: Install Overview, Line of Sight, CPE & Mount, Indoor Cable Run are each their own photo.
-- Satellite: Install Overview, Line of Sight, Dish & Mount, Indoor Cable Run are each their own photo.
-- Fibre Existing Drop: Indoor Cable Run alone; ONT Placement + Router Placement only with each other.
-- Fibre Drop Required: MPT, Install Overview, Drop Route, Indoor Cable Run alone; ONT + Router only with each other.
+### Compass link
+On Android the menu's Compass link is an `intent://` "view this address" link (`appHref` in `index.html`) so the installed Compass web app takes it, otherwise the phone's browser opens it; never Field Kit's in-app browser tab. iPhone can't hand a link to a home-screen web app, so it opens as before. Inventory and RMA Request open as normal links.
 
-**Old device photo labels are repaired on load** (`fixSnPhotos` in `fieldcam.html`): photos taken before the "… SN" rename (labelled ONT, XWR, XWH, XTV…) or labelled "Device SN" move onto the SA's matching SN tile (by label, else by the serial in the photo's note), so they tick it instead of making an extra tile; they're marked unsaved because the stamp changed. `devicePhoto` now follows the item's catalogue family (any CPE → CPE SN, any router → XWR SN, any Hughes/SurfBeam modem → Modem SN, any TRIA → TRIA SN…).
+## Open items
 
-**Scanned serials label their own photo**: the photo Field Cam takes of a scanned serial is labelled as the device photo the SA needs (radio → CPE SN, router → XWR SN, ONT → ONT SN, modem → Modem SN, TRIA → TRIA SN, XWH → XWH SN, XTV → XTV SN; `devicePhoto` in `fieldkit-jobs.js`), so it ticks that photo off. If the SA's photo list doesn't have that label, or it's a Recovery scan, it stays "<item> SN".
+**Waiting on Curtis**
+- **The refined inventory list.** He has `FieldKit_Inventory_List.xlsx` (59 items; he edits Plain name, Category, Notes). When he returns it and says "apply the inventory list": update `name` / `group` (and `GROUPS` order) in `fieldkit-catalog.js` from the sheet, never change an `id`, add new rows as new items, test Field Stock + an SA + the order form, bump, push.
+- **Real part numbers** for the placeholders (ids starting `FK-`): Bi-pod Mount, Gable Mount, Tripod Mount, 10ft Pole, 5ft Pole, Side Stays, Satellite Pole Mount, 1000M drop. Changing an id later orphans old entries.
 
-**Field Cam "Other…" label**: the typing box (`#otherBar`) is moved to the top level of the page when opened, so it shows above the photo sorter ("To label") and sheets. It used to sit behind them, so techs typed blind.
+**Not done yet (he asked to wait)**
+- Filtering SA equipment and pickers by the SA's Technology using the workbook's platform codes. Several codes are unconfirmed (CAB, CCW, CTX, XHP, XWR); the Zyxel EMG6726 has none. Satellite SA slots still use the Viasat (SurfBeam) parts even on Hughes technologies, which this filtering would fix.
+- HV2 modem and transceiver are off the order form for now.
 
-**Field Cam scanning**: no instruction panel or Done button while scanning (removed at Curtis's request). Results and problems (Added…, No barcode read…, MAC address…) show as a short toast; leave scanning with the green scan button or Back.
+**Clean-up and reminders**
+- **Test inventory clean-up block** at the end of `fieldstock.html` ("test inventory clean-up"): once per phone it deletes leftover test entries (note "Test inventory load (remove before rollout)"). Delete the block once Curtis's phones have opened 1.20.11 or later.
+- **Google Sheets backup is skippable "for now"** (see Profile and setup). Make it required again at final rollout.
 
-**Field Notes**
-- Opened in an SA, Field Notes scrolls past the questions already answered from the SA to the first one still to answer (`skipAnswered`, once on arrival, not if the tech already scrolled or tapped).
-- In an SA, answering the last required question glides down to the finished comment (`finishedCheck`; after a typed answer it waits for the keyboard to close).
-- Focus ring stays inside boxes. Keyboard closes after 3 RSRP digits / 2 SINR digits.
+**To confirm with Curtis**
+- The Zyxel router (NLA) is off the order form; ok?
+- Field Notes' Cannot Complete reason list still has "Temp Drop Required" (from the Cannot Complete JotForm). Should it go?
+- The old "ONT Placement" / "Router Placement" / "Modem Placement" / "PoE Placement" photo labels still sit beside the new SN ones. Replace them?
+- CPE SN / Modem SN / TRIA SN naming (he only named ONT, XWR, XWH, XTV).
+- Fibre Drop Only photo rules (MPT, Drop Route); whether Install Overview should be alone on Fibre Existing Drop; whether the SA summary header should use the truck icon.
+- Should Receive/Transfer also pick serialized items by hand?
 
-## Open items / to do
+**Things only a real phone can confirm** (the test browser has no camera or GPS)
+- Compass on Android (with and without the Compass web app installed; if Android shows an "open with" chooser instead of going straight in, adjust).
+- A real scan from the SA page returning correctly, and a real photo ticking its SN tile.
+- The Back-button behaviors on a Samsung (the warning needs one tap on the screen first; iPhones have no Back button).
+- The smooth/instant behaviors on an iPhone.
 
-- **Test inventory: removed (1.20.11, at Curtis's request).** `testdata-inventory.js` and the `#testload` / `#testremove` loader are gone. Field Stock now has a small "test inventory clean-up" block at the end of `fieldstock.html` that, once per phone, marks any leftover test entries (note "Test inventory load (remove before rollout)") as deleted with a sealed record (History Check stays Verified). Delete that block once Curtis's phones have opened 1.20.11.
-
-- **Manual Order Request is its own page (1.20.12):** `fieldstock.html#order` adds `html.order-only` before first paint, which hides Field Stock's tab bar, status pill, sync banner and the panel's duplicate heading, and retitles the header "Manual Order Request". Plain `fieldstock.html` is unchanged.
-- **Temp Drop Deployed (1.20.13):** a temp drop is used when the job is completed but the drop couldn't be buried, so it is **not** a Cannot Complete reason in Field Cam (an earlier 1.20.12 version wrongly added one; removed). In Field Notes' Drop Route, a buried span's tick is now **Temp Drop Deployed** (shown in the comment as "Buried (Temp Drop Deployed)"). Ticking it adds **Temp drop form** to Field Notes' required pictures and a required **Temp Drop Form** photo to the Fibre SA's Field Cam list (`FieldKit.job.tempDrop()` reads the SA's Field Notes answers; `photosOf` in `fieldcam.html` adds the tile; it is a solo photo). Field Notes' own Cannot Complete reason list still has "Temp Drop Required" (from the Cannot Complete JotForm); not changed.
-- **Compass link (1.20.13):** on Android the menu's Compass link is an `intent://` "view this address" link (`appHref` in `index.html`) so the installed Compass web app takes it, else the phone's browser opens it, never Field Kit's in-app browser tab. iPhone can't hand a link to a home-screen web app, so it opens as before. Could not be tested on a real phone from here: verify on a Samsung with and without Compass installed.
-- **Manual order rules (1.20.9):** families with `ORDER_PICK` (Router, 5G High Gain CPE, ONT, Drop cable, TV box, Aerial kit, AzEl, Trimast, Dish) have no "any model": the tech must choose a model line. `ORDER_FAMILY_ONLY` (5G CPE, LTE CPE – CAT12 2.5 / 3.5 GHz) are ordered by family with no model choice. `ORDER_HIDE` (CAT4) can't be ordered. Items whose system description starts "NLA" (no longer available, e.g. the Zyxel EMG6726 router) are left off the order form. Deploy (Field Stock) can pick any item by hand, serialized too: the serial is tapped from this phone's stock or typed, and must match the item.
-- **Catalogue rules (1.20.0):** items sharing a plain name are one item to techs (the three Nokia XS-010X ONTs, the TRIA - 1 Watt radios): one row in Field Stock's stock list, one entry in pickers, and a serial that fits only that name needs no question. Drop names stay long (more drop types are coming). **Manual orders go by product family** (5G CPE, Router, Dish…, "Any model"); where a family has more than one item, "Choose a model" lets the tech pick one. The email shows the family and system family code, plus SKUs only for a chosen model. Extra order-only lines: Adtran 411 ONT, Nova remote, two aerial kits (HV2 modem/transceiver left off for now).
-- **Not done yet (asked to wait):** filtering SA equipment and pickers by the SA's Technology using the workbook's platform codes (several codes unconfirmed: CAB, CCW, CTX, XHP, XWR; Zyxel EMG6726 has none). Note: Satellite SA slots still use the Viasat (SurfBeam) parts even on Hughes technologies.
-
-- **Stock item names tool: superseded** by Curtis's workbook (1.20.0). Kept for reference only: tool at https://claude.ai/artifact/96n4GHyRNBzzY9YNhP6pPG gives every SKU a simple name and a category (suggestions pre-filled). Choices are saved in that artifact's database: collection `skus` (one doc per SKU: `sku`, `name`, `category`, `done`) and doc `settings/categories` (`list`, in order). When Curtis says **"apply the stock names"**: read them with the Artifact tool (`read_db`), update `name` / `group` in `fieldkit-catalog.js` (and `GROUPS` order), never change an `id`, then test Field Stock and SA equipment, bump `version.js`, push.
-
-- **Placeholder part numbers** in `fieldkit-catalog.js` (ids starting `FK-`): Bi-pod Mount, Gable Mount, Tripod Mount, 10ft Pole, 5ft Pole, Side Stays, Satellite Pole Mount, 1000M drop. Replace with real part numbers before techs rely on them (changing an id later orphans old entries).
-- Not yet decided: photo rules for **Fibre Drop Only** (MPT, Drop Route); whether Install Overview should be alone on **Fibre Existing Drop**; whether the **job summary header** should use the truck icon too.
+**Minor**
 - Field Cam still shows its own generic "Install" tip in settings (harmless).
 
 ## Gotchas
 
 - Install/manifest/icon tags must stay in `<head>` (Android refused to install when they were in `<body>`).
-- Pushing needs the **Claude GitHub App** installed on the XploreForms org; connecting GitHub alone only gives read access.
-- `localStorage` keys are shared across tools on the same origin (`fieldkit.*`, `techstock.*`, `fieldcam.*`, `xplore_fsl_*`). Don't rename keys without migrating.
-- Google sign-in can't run inside the Claude artifact preview; test Sheets on the real site.
+- Pushing needs the Claude GitHub App on the XploreForms org or a token; connecting GitHub alone only gives read access.
+- `localStorage` keys are shared across tools on the same origin (`fieldkit.*`, `techstock.*`, `fieldcam.*`, `xplore_fsl_*`). Don't rename keys without migrating. Short-lived `sessionStorage` keys: `fieldkit.cameFrom`, `fieldkit.scanReturn`, `fieldkit.backTo`.
+- Don't change a catalogue `id`; don't write Field Stock entries without sealing them (History Check).
+- A script that uses a `const` before its declaration breaks the whole page silently (it happened with the order form's cleanup). Always load every page in a test after editing and print page errors.
+- Google sign-in can't run inside the Claude artifact preview; test Sheets on the real site. The preview wrapper (`dev-tools/build_preview.py`) stubs `window.claude` so setup shows "Website only", routes links between pages through the shell (`__fkNav`), and tolerates browsers that refuse history changes in a frame.
+- Field Stock's data lives on each phone (plus the tech's own Google Sheet). Nothing you do from here can read or change a tech's stock.
+- Curtis's voice-dictated messages can have transcription oddities ("gable mount and bipod and tripod").
