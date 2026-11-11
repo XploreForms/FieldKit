@@ -122,6 +122,8 @@ The menu, top to bottom: Start New SA card, **Tools** (Field Stock, Inventory, M
 
 ### Field Stock
 - No hint box above the item list on Receive, Deploy or Recycle (Transfer and RMA still have one).
+- No version line in Field Stock (versions only on the menu footer).
+- History hides voided entries; they're only under the last filter chip, **Voided** (still kept and sealed for History Check).
 - Always opens on the **Log** tab (renamed from "Logs"); the last tab isn't restored. Manual Order Request opens as its **own page** (`fieldstock.html#order` adds `html.order-only`, hiding Field Stock's tab bar, status pill and sync banner).
 - Names and categories come from the catalogue. Items sharing a plain name are one item to techs: one row in the stock list (counts added), one entry in pickers (the three Nokia XS-010X ONTs; the TRIA - 1 Watt radios). Known serials identify the exact model first, then the patterns.
 - **Deploy can pick any item by hand**, serialized too: the serial is tapped from this phone's stock or typed, and must match the item. Receive/Transfer/RMA/Recycle still list only items without serials by hand.

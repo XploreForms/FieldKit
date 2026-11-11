@@ -598,6 +598,7 @@ button.mode:active{filter:brightness(.94)}
       <button data-f="transfer">Transferred</button>
       <button data-f="rma">RMA</button>
       <button data-f="recycle">Recycled</button>
+      <button data-f="voided">Voided</button>
     </div>
     <div class="list" id="histList"></div>
     <div class="card" id="chkCard">
@@ -610,7 +611,6 @@ button.mode:active{filter:brightness(.94)}
       <p class="help">Save a copy of your history and what's on hand for your own records.</p>
       <button class="btn block" type="button" data-backup>Export to Excel</button>
     </div>
-    <p class="help" id="appVer" style="text-align:center">Field Stock version <b>57</b><br>Updated Sat, Nov 7, 2026, 8:20 PM</p>
   </section>
 
   <!-- COUNT -->
@@ -1674,11 +1674,11 @@ function evLine(e){
 }
 function renderHistory(){
   const q=$("histQ").value.trim().toLowerCase(), qk=keyOf(q);
-  const rows=Store.events.filter(e=>(histF==="deleted" ? e.deleted : !e.deleted && (histF==="all"||e.type===histF)) && (!q ||
+  const rows=Store.events.filter(e=>(histF==="deleted" ? e.deleted : histF==="voided" ? e.voided : !e.voided && (histF==="all"||e.type===histF)) && (!q ||   // voided entries only under Voided
     (e.serialKey||"").includes(qk) || (e.accountKey||"").includes(qk) || keyOf(e.sa).includes(qk) ||
     [e.skuName,e.note,e.toTech,e.from,e.rma].some(v=>String(v||"").toLowerCase().includes(q))));
   const list=$("histList");
-  if(!Store.events.length && histF!=="deleted"){ list.innerHTML=`<div class="empty"><h3>No history yet</h3><p>Every item you receive, deploy, transfer, send on RMA or recycle is listed here with the date, time and GPS location.</p><button class="btn primary" data-quick="receive">Receive Items</button></div>`; return; }
+  if(!Store.events.length && histF!=="deleted" && histF!=="voided"){ list.innerHTML=`<div class="empty"><h3>No history yet</h3><p>Every item you receive, deploy, transfer, send on RMA or recycle is listed here with the date, time and GPS location.</p><button class="btn primary" data-quick="receive">Receive Items</button></div>`; return; }
   if(!rows.length){ list.innerHTML=`<div class="empty"><p>No entries match. Try a shorter search or another filter.</p></div>`; return; }
   let html="", last="";
   rows.slice(0,500).forEach(e=>{
@@ -2981,7 +2981,7 @@ if(SWOK){
   navigator.serviceWorker.addEventListener("controllerchange",()=>{ if(updWanted) location.reload(); });
   navigator.serviceWorker.addEventListener("message",e=>{ const d=e.data||{}; if(d.type!=="version") return;
     const when=d.updated && !isNaN(Date.parse(d.updated)) ? fmtFull(Date.parse(d.updated)) : "";
-    if(e.source===navigator.serviceWorker.controller || (SWREG && e.source===SWREG.active)) $("appVer").innerHTML=`Field Kit version <b>${esc(d.version)}</b>${when?`<br>Updated ${esc(when)}`:""}`;
+    if(e.source===navigator.serviceWorker.controller || (SWREG && e.source===SWREG.active)) { const av=$("appVer"); if(av) av.innerHTML=`Field Kit version <b>${esc(d.version)}</b>${when?`<br>Updated ${esc(when)}`:""}`; }
     else if(SWREG && e.source===SWREG.waiting) $("updVer").textContent=` · Version ${d.version}`; });
   navigator.serviceWorker.ready.then(reg=>{ const w=navigator.serviceWorker.controller||reg.active; if(w) w.postMessage("version"); });
 }
