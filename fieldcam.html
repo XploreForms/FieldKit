@@ -62,11 +62,11 @@ input{font:inherit;color:var(--fg);background:var(--ink-3);border:1px solid tran
 input:focus{border-color:var(--accent);outline:none}
 label{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
 
-#app{position:fixed;inset:0;display:grid;grid-template-rows:auto 1fr auto;grid-template-columns:minmax(0,1fr)}
+#app{position:fixed;inset:0;display:grid;grid-template-rows:auto auto minmax(0,1fr);grid-template-columns:minmax(0,1fr)}
 #app>*{min-width:0}
 
 /* top bar */
-.top{display:flex;align-items:center;gap:4px;padding:calc(env(safe-area-inset-top,0px) + 4px) max(8px,env(safe-area-inset-right,0px)) 4px max(14px,env(safe-area-inset-left,0px));z-index:5}
+.top{display:flex;align-items:center;gap:4px;min-height:calc(env(safe-area-inset-top,0px) + 56px);padding:calc(env(safe-area-inset-top,0px) + 4px) max(8px,env(safe-area-inset-right,0px)) 4px max(10px,env(safe-area-inset-left,0px));z-index:5;box-shadow:0 1px 0 var(--fk-line,rgba(0,43,43,.09))}
 /* Slim header: plain text, no pill backgrounds. Job + progress (tap for job options) · GPS dot · settings */
 .pill{display:flex;align-items:center;gap:8px;min-height:36px;white-space:nowrap;overflow:hidden;background:none}
 .jobpill{flex:1;min-width:0;justify-content:flex-start;gap:8px;padding:0}
@@ -242,7 +242,8 @@ html[data-text="large"] .lhead .outbtn{line-height:44px}
 .tile.unl .lab{color:var(--warn)}
 
 /* bottom deck */
-.deck{padding:6px 0 calc(env(safe-area-inset-bottom,0px) + 10px);display:grid;grid-template-columns:minmax(0,1fr);gap:8px;background:var(--ink)}
+.deck{padding:6px 0 calc(env(safe-area-inset-bottom,0px) + 10px);display:flex;flex-direction:column;gap:8px;background:var(--ink);min-height:0}
+.deck>.row{margin-top:auto}   /* shutter row at the bottom; spare room sits between the labels and the shutter */
 .deck>*{min-width:0}
 /* zoom sits on the picture, bottom centre, like the iPhone camera */
 .zoombar{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);display:flex;align-items:center;gap:4px;padding:3px;border-radius:999px;background:rgba(10,18,17,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);z-index:2}
@@ -544,6 +545,10 @@ html:root[data-theme] .start{background:var(--ink)}
 /* 1.20.26: Field Cam without an SA ("quick" photos): no job type, platform or outcome; the job pill isn't a button */
 .start.quick #startPicker,.start.quick #startOutRow,.start.quick #refRow{display:none}
 html.fc-quick #jobBtn .chev{display:none}
+.top .qtile{display:none}
+html.fc-quick .top .qtile{display:grid;width:28px;height:28px;border-radius:8px;margin:0 8px 0 2px}
+html.fc-quick .top .qtile svg{width:17px;height:17px}
+html.fc-quick #jobTxt{font:700 1.2rem/1.05 var(--fk-display);color:var(--fk-ink,var(--fg));letter-spacing:.01em}
 html.fc-quick #jobBtn{pointer-events:none}
 /* one-row header (1.20.22), like the other tools: back arrow, small tile, title; pinned while the job screen scrolls */
 .start .camhead{position:sticky;top:calc(-4px - env(safe-area-inset-top,0px));z-index:5;display:flex;align-items:center;gap:2px;background:var(--fk-bg);
@@ -560,6 +565,7 @@ html.fc-quick #jobBtn{pointer-events:none}
 <div id="app">
   <div class="top">
     <a class="fk-back" id="fkHome" href="index.html" aria-label="Back to Field Kit"><span class="fk-chev" aria-hidden="true">‹</span></a>
+    <span class="fk-tile qtile" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h4l2-3h6l2 3h4v12H3z"/><circle cx="12" cy="13" r="4"/></svg></span>
     <button class="pill jobpill" id="jobBtn" aria-label="Job details"><b class="jref" id="jobRef" hidden></b><b id="jobTxt">No job</b><i class="needout" id="jobNeed" hidden>Outcome?</i><span id="jobProg"></span><i class="chev" aria-hidden="true">▾</i></button>
     <div class="pill gps" id="gpsChip" title="GPS" aria-label="GPS"><i class="dot"></i><span id="gpsTxt">GPS…</span></div>
     <button class="iconbtn" id="setBtn" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
@@ -1488,8 +1494,19 @@ let frameTurn = 0;
 const capRatio = () => frameTurn === 90 ? 3 / 4 : 4 / 3;      // width ÷ height of the photo area on screen
 function capArea(vw, vh) { const r = capRatio(), w0 = vw / vh > r ? vh * r : vw; return { w0, h0:w0 / r }; }
 const measureVf = () => {
-  vfH = vfEl.clientHeight;
   frameTurn = extraTurn() % 180;
+  // 1.20.34: no black band. The viewfinder is exactly the picture's height (shrinking only if the labels and shutter need
+  // the room); the deck under it takes the rest, with the shutter at the bottom.
+  if (!document.documentElement.classList.contains("rot90") && !document.documentElement.classList.contains("rot270")) {
+    const app = $("app"), top = app.querySelector(".top"), deck = app.querySelector(".deck");
+    const kids = [...deck.children].filter(c => c.offsetParent !== null);
+    const ds = getComputedStyle(deck), gap = parseFloat(ds.rowGap) || 0;
+    const need = kids.reduce((a, c) => a + c.offsetHeight, 0) + gap * Math.max(0, kids.length - 1) + (parseFloat(ds.paddingTop) || 0) + (parseFloat(ds.paddingBottom) || 0);
+    const W = vfEl.clientWidth, want = Math.round(frameTurn === 90 ? W * 4 / 3 : W * 3 / 4);
+    const room = app.clientHeight - top.offsetHeight - need;
+    vfEl.style.height = Math.max(140, Math.min(want, Math.floor(room))) + "px";
+  } else vfEl.style.height = "";
+  vfH = vfEl.clientHeight;
   const W0 = Math.round(vfEl.clientWidth), H0 = Math.round(vfH);
   // Fill the width, but never crop the sides past a square: a tall viewfinder gets black bars above and below
   // Sideways the photo area is tall on screen: allow up to its full 3:4 height and show all of it
@@ -3049,7 +3066,7 @@ function refreshDeck() {
   $("dlCount").textContent = und || "";
   $("dlBtn").classList.toggle("has", und > 0);
 }
-function renderAll() { prepDividers(); renderTop(); renderSerials(); renderLabels(); refreshDeck(); if ($("galSheet").classList.contains("open")) renderGallery(); if ($("saveSheet").classList.contains("open")) renderSaveSheet(); }
+function renderAll() { prepDividers(); renderTop(); renderSerials(); renderLabels(); refreshDeck(); requestAnimationFrame(() => { try { measureVf(); } catch {} }); if ($("galSheet").classList.contains("open")) renderGallery(); if ($("saveSheet").classList.contains("open")) renderSaveSheet(); }
 
 /* ================= sheets ================= */
 function openSheet(id) { document.querySelectorAll(".sheet.open").forEach(s => s.classList.remove("open")); $(id).classList.add("open"); $("scrim").classList.add("open"); }
