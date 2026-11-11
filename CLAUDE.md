@@ -5,7 +5,7 @@ Read this file first. It's kept short on purpose. `HANDOFF.md` holds the full li
 ## Curtis's preferences
 - When he asks for **options**: show options only (mockups or screenshots) and build nothing until he picks one.
 - When he asks for a **change**: make it, test it, release it with `dev/release.sh`, and republish the preview artifact. Then tell him in a line or two what changed.
-- For visual changes, show him a before/after screenshot.
+- Don't send before/after screenshots unless he asks; the preview artifact is how he tries changes.
 - Design for phones first.
 - His messages are often voice-dictated, so read past transcription slips.
 
@@ -19,7 +19,7 @@ Read this file first. It's kept short on purpose. `HANDOFF.md` holds the full li
 
   After it finishes, publish that preview file to the Field Kit preview artifact.
 - **Test narrowly:** run `dev/run.sh dev/check.py` for page errors, and only the one or two `dev/tests/*.py` near the change. `dev/README.md` lists them by area. Old tests may need their selectors updated.
-- **Screenshots:** only when the change is visual. Take them at 360×780.
+- **Screenshots:** only for your own checking (360×780), and only when the change is visual. Don't send them unless he asks.
 - **Batch:** when Curtis sends several small changes, ship them as a single release.
 
 ## Map (section headers to grep for)

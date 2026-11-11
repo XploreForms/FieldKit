@@ -93,6 +93,11 @@ h3{margin:0;font:700 1.1rem/1.2 var(--f-display)}
 .jobwrap.busy .job:active{background:var(--surface-2)}
 .jobwrap.busy .job .chev{display:none}
 .jobwrap.busy .job span{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.3}
+/* the SA card's progress: photos, comments, equipment */
+.jprog{grid-column:1/-1;display:flex;gap:6px;margin-top:2px}
+.jprog small{flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:center;gap:4px;height:32px;padding:0 6px;border-radius:10px;background:var(--surface-2);color:var(--muted);font:600 .8rem/1 var(--f-body);white-space:nowrap}
+.jprog small.ok{background:color-mix(in srgb,var(--btn) 18%,transparent);color:var(--accent)}
+.jprog small.warn{background:var(--warn-bg);color:var(--warn)}
 .jobwrap .newbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 28px);margin:0 14px 14px;height:46px;border:0;border-radius:12px;padding:0 12px;
   background:var(--surface-2);color:var(--fg);font:600 .95rem/1 var(--f-body);cursor:pointer;white-space:nowrap}
 .jobwrap .newbtn svg{width:18px;height:18px;flex:none}
@@ -318,7 +323,7 @@ details.grp .btn{margin-bottom:12px}
     <a class="fk-back" href="index.html" id="njBack">‹ Field Kit</a>
     <header class="fk-head">
       <div class="fk-tile" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></div>
-      <div class="fk-head-txt"><h1 class="fk-title njtitle">New SA</h1><p class="fk-sub">Then straight into Field Cam</p></div>
+      <div class="fk-head-txt"><h1 class="fk-title njtitle">New SA</h1></div>
     </header>
   </div>
   <section class="njform">
@@ -566,6 +571,22 @@ details.grp .btn{margin-bottom:12px}
   });
   function newJob() { openNewJob(); }
   var histAll = false;
+  // the in-progress card shows how far the SA has got: required photos taken, comments copied, equipment slots filled
+  function jobProgress(j) {
+    var out = [], tick = '<b aria-hidden="true" style="font:inherit">✓</b>';
+    function chip(name, val, cls, label) { out.push('<small class="' + cls + '" aria-label="' + esc(label) + '">' + (cls === "ok" ? tick : "") + esc(name) + (val ? " " + esc(val) : "") + '</small>'); }
+    var need = j.need || 0, have = need ? need - Math.min(need, j.missing || 0) : 0, n = j.photos || 0;
+    if (need) chip("Photos", have + "/" + need, have === need ? (j.unsaved ? "warn" : "ok") : "", "Required photos: " + have + " of " + need + (j.unsaved ? ", " + j.unsaved + " not saved" : ""));
+    else chip("Photos", String(n), n ? (j.unsaved ? "warn" : "ok") : "", n + " photos");
+    var c = j.notes && j.notes.comment, stale = !!(c && j.notes.stale);
+    chip("Comments", "", c && !stale ? "ok" : stale ? "warn" : "", c && !stale ? "Comments copied" : stale ? "Comments need updating" : "Comments not copied yet");
+    try {
+      var m = J.slotModel(j, j.notes && j.notes.state);
+      if (!m.off && m.total) chip("Equip.", m.done + "/" + m.total, m.done === m.total ? "ok" : "", "Equipment: " + m.done + " of " + m.total + " slots filled");
+      else if (!m.off && m.deployedCount) chip("Equip.", String(m.deployedCount), "ok", m.deployedCount + " items deployed");
+    } catch (e) {}
+    return '<div class="jprog">' + out.join("") + '</div>';
+  }
   function paintJobs() {
     var a = J.active();
     if (!a) {
@@ -573,7 +594,7 @@ details.grp .btn{margin-bottom:12px}
     } else {
       $("jobArea").innerHTML = '<div class="jobwrap busy"><button class="job" type="button" id="jobGo"><i aria-hidden="true">' +
         svg('<path d="M4 17H2V5h12v12"/><path d="M8 17h7"/><path d="M19 17h3v-4.5L18.5 8H14"/><circle cx="6" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 9h6M5 12.5h4"/>', 2.2) +   // truck roll with its work order
-        '</i><div><b>' + esc(a.sa || "New SA") + ' <em class="live">' + (a.status === "complete" ? "Reopened" : "In progress") + '</em></b><span>' + esc(a.base || (a.title ? a.title.split(" · ").slice(0, 2).join(" · ") : "SA details not set yet")) + '</span></div><em class="chev" aria-hidden="true">›</em></button>' +
+        '</i><div><b>' + esc(a.sa || "New SA") + ' <em class="live">' + (a.status === "complete" ? "Reopened" : "In progress") + '</em></b><span>' + esc(a.base || (a.title ? a.title.split(" · ").slice(0, 2).join(" · ") : "SA details not set yet")) + '</span></div><em class="chev" aria-hidden="true">›</em>' + jobProgress(a) + '</button>' +
         '<button class="newbtn" type="button" id="jobNew" aria-label="Replace with a new SA. This one stays in SA history." title="Start over with a new SA">' + RESTART + '<span>Start a new SA</span></button></div>';
     }
     var act = a ? a.id : "", hist = J.list().filter(function (j) { return j.id !== act; });

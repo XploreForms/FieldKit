@@ -264,7 +264,7 @@
   }
 
   /* ---------- Field Notes: same idea for the comment form, prefilled from Field Cam ---------- */
-  var NOTE_TYPE = { INS: "Install", CON: "Conversion", REP: "Repair" };
+  var NOTE_TYPE = { INS: "Install", CON: "Conversion", REP: "Repair", REC: "Recovery" };
   var NOTE_OUT = { OK: "Complete", CC: "Cannot Complete", NR: "Not Required" };
   // Field Cam photo label -> Field Notes picture checklist item(s)
   var PHOTO_MAP = {
@@ -372,6 +372,7 @@
     if (j.tech) { j.base = withTech(j.base, j.tech); j.title = withTech(j.title, j.tech); }
     if (info.photos != null) j.photos = info.photos;
     if (info.unsaved != null) j.unsaved = info.unsaved;
+    if (info.need != null) { j.need = info.need; j.missing = info.missing || 0; }   // required photos, for the menu's SA card
     if (info.labels) j.labels = info.labels;
     if (info.serials) j.serials = info.serials;
     if (info.slots) j.slots = info.slots;

@@ -65,6 +65,7 @@ The menu, top to bottom: Start New SA card, **Tools** (Field Stock, Inventory, M
 - One theme for all tools (light default; dark; black), changed only in Field Kit settings.
 - Headers: page-colour, no green bar or Xplore logo, 560px column on desktop, pinned, **always full size** (app tile, title, line under it). Shrink-on-scroll and always-slim were tried (1.12.7–1.12.9) and Curtis chose full size. Field Cam's bar is slim by design.
 - Menu: Start New SA card is 96px tall and the biggest thing on it; tool tiles 72px; two lines, nothing cut off. Home header shows **name only** (no dealer); Field Stock header too.
+- The in-progress SA card shows progress chips under the SA: **Photos x/y** (required photos, from Field Cam's `need`/`missing`), **Comments** (✓ when copied), **Equip. x/y** (slots filled). Green = done, orange = photos not saved or comments need updating.
 - The in-progress SA card uses the **truck with work-order lines** icon. Its restart is a full-width button inside the card, under the SA: circular arrow + "Start a new SA", two taps ("Tap again to start new", resets after 4 s). Field Cam/Field Notes tiles show an "In progress" badge and a small restart button on the corner.
 - No version numbers inside the tools; the version shows only on the menu footer.
 - **Paste is always a clipboard icon inside the box**, no "Paste" buttons (`.fk-inwrap` + `.fk-pastein`): SA-# boxes and every serial box.
@@ -115,7 +116,12 @@ The menu, top to bottom: Start New SA card, **Tools** (Field Stock, Inventory, M
 - Scanning: no instruction panel or Done button; results and problems show as a short toast; leave with the scan button or Back. The photo button and Save button never move when scan mode starts (the Deploy/Recovery switch is `div.scanmode`, scoped on purpose).
 - Saving photos says "Compressing N photos…" then "Compressing and saving 3 of N…".
 
+### Field Notes look and Recovery
+- Field Notes matches New SA: choices sit in one joined group (white box, thin outline, picked = Superior Green), question labels small and grey, section titles uppercase like the menu's TOOLS, no subtitle under the title.
+- Job type includes **Recovery** (all platforms): Equipment Recovered (ticks per platform), Recovered Equipment (RMA / recycled / Other), Cable Entry Hole (Fixed Wireless and Satellite), comments, lawn sign. A Recovery SA prefills it (`NOTE_TYPE.REC`).
+
 ### Field Stock
+- No hint box above the item list on Receive, Deploy or Recycle (Transfer and RMA still have one).
 - Always opens on the **Log** tab (renamed from "Logs"); the last tab isn't restored. Manual Order Request opens as its **own page** (`fieldstock.html#order` adds `html.order-only`, hiding Field Stock's tab bar, status pill and sync banner).
 - Names and categories come from the catalogue. Items sharing a plain name are one item to techs: one row in the stock list (counts added), one entry in pickers (the three Nokia XS-010X ONTs; the TRIA - 1 Watt radios). Known serials identify the exact model first, then the patterns.
 - **Deploy can pick any item by hand**, serialized too: the serial is tapped from this phone's stock or typed, and must match the item. Receive/Transfer/RMA/Recycle still list only items without serials by hand.

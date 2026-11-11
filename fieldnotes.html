@@ -749,13 +749,38 @@ html.fk-slim:root[data-fn-theme] header.app-header h1.fk-title{font:650 15px/1.2
 /* the footer's version number and name link: versions live on the Field Kit menu; the name is set in Field Kit settings */
 footer.app-footer .footer-text{display:none}
 html:root input:focus, html:root textarea:focus { outline: none !important; box-shadow: inset 0 0 0 2px var(--fk-accent-text) !important; }
+
+/* Same look as Field Kit's New SA: sections and questions labelled like the menu, choices in one joined group
+   (white box, thin outline, picked = Superior Green), text boxes and ticks like the setup forms */
+html:root[data-fn-theme] .form-section-title{font:600 .78rem/1.2 var(--fk-body);letter-spacing:.09em;text-transform:uppercase;color:var(--fk-muted);border-bottom:0;padding-bottom:0;margin-bottom:.8rem}
+html:root[data-fn-theme] .form-section-title .opt{color:var(--fk-muted);text-transform:none;letter-spacing:0}
+html:root[data-fn-theme] .form-section{margin-bottom:1.8rem}
+html:root[data-fn-theme] .field{margin-bottom:1.1rem}
+html:root[data-fn-theme] .q{font-size:.92rem;font-weight:600;color:var(--fk-muted);margin-bottom:.35rem}
+html:root[data-fn-theme] .q .opt,html:root[data-fn-theme] .hint{color:var(--fk-muted)}
+html:root[data-fn-theme] .hint{font-size:.85rem}
+html:root[data-fn-theme] .sub-q{color:var(--fk-muted);font-size:.88rem}
+html:root[data-fn-theme] .choices:not(.settings-panel .choices){gap:4px;padding:4px;border-radius:12px;background:var(--fk-surface);box-shadow:inset 0 0 0 1px var(--fk-line)}
+html:root[data-fn-theme] .choices:not(.settings-panel .choices) .choice{background:transparent;box-shadow:none;color:var(--fk-ink);border-radius:9px;min-height:44px;padding:10px 6px;font-size:.88rem;line-height:1.15}
+html:root[data-fn-theme] .choices.cols-list .choice,html:root[data-fn-theme] .choices:not([class*="cols-"]) .choice{padding:10px 12px}
+html:root[data-fn-theme] .choices:not(.settings-panel .choices) .choice:active{background:var(--fk-surface-2);color:var(--fk-ink)}
+html:root[data-fn-theme] .choices:not(.settings-panel .choices) .choice[aria-checked="true"]{background:var(--fk-accent);color:var(--fk-accent-ink);box-shadow:none}
+html:root[data-fn-theme] .choices .choice[aria-checked="true"]::after{display:none}
+html:root[data-fn-theme] .choice .mark{border-color:currentColor;width:1.25rem;height:1.25rem;flex-basis:1.25rem}
+html:root[data-fn-theme] .choice[aria-checked="true"] .mark{background:var(--fk-accent-ink);border-color:var(--fk-accent-ink);color:var(--fk-accent)}
+html:root[data-fn-theme] .warn .choices .choice{background:transparent}
+html:root[data-fn-theme] input[type="text"],html:root[data-fn-theme] input[type="number"],html:root[data-fn-theme] textarea{background:var(--fk-surface-2);color:var(--fk-ink);border-radius:10px;box-shadow:inset 0 0 0 1px var(--fk-line);min-height:46px;padding:12px;font-size:1rem}
+html:root[data-fn-theme] .check{background:var(--fk-surface);color:var(--fk-ink);box-shadow:inset 0 0 0 1px var(--fk-line);border-radius:10px;min-height:44px}
+html:root[data-fn-theme] .check .box{border-color:currentColor;border-radius:6px;width:1.25rem;height:1.25rem;flex-basis:1.25rem}
+html:root[data-fn-theme] .check[aria-checked="true"]{background:var(--fk-accent);color:var(--fk-accent-ink);box-shadow:none}
+html:root[data-fn-theme] .check[aria-checked="true"] .box{background:var(--fk-accent-ink);border-color:var(--fk-accent-ink);color:var(--fk-accent)}
 </style>
 <header class="app-header">
   <div class="app-header-inner">
     <nav class="fk-bar"><a class="fk-back" href="index.html">‹ Field Kit</a></nav>
     <div class="fk-head">
       <div class="fk-tile" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H8l-4 4z"/><path d="M8 9h8M8 12h5"/></svg></div>
-      <div class="fk-head-txt"><h1 class="fk-title">Field Notes</h1><p class="fk-sub">Answer each question, generate your comments and copy and paste into FSL!</p></div>
+      <div class="fk-head-txt"><h1 class="fk-title">Field Notes</h1></div>
     </div>
   </div>
 </header>
@@ -1916,6 +1941,38 @@ function vasRepairComps() {
   }));
 }
 
+/* ---------- recovery: what came back, where it's going, and the site left tidy ---------- */
+var REC_GEAR = { 'Fibre': ['ONT', 'Router', 'NID'], 'Fixed Wireless': ['CPE', 'Mount', 'Surge', 'PoE', 'Router'], 'Satellite': ['Dish', 'TRIA', 'Mount', 'Modem', 'Router'],
+  'Value Added Services': ['XWR', 'XWH', 'XTV'] };
+function recGear() { return REC_GEAR[STATE.job_plat] || []; }
+function recOn(g) { return STATE.rec_gear && STATE.rec_gear[g] === true; }
+function recoveryComps() {
+  var pick = {
+    id: 'rec_gear',
+    render: function () {
+      var list = recGear(), g = el('div', { class: 'choices cols-' + Math.min(3, list.length), role: 'group', 'data-multi': '1' });
+      list.forEach(function (k) {
+        var on = recOn(k);
+        g.appendChild(el('button', { type: 'button', class: 'choice', role: 'checkbox', 'aria-checked': on ? 'true' : 'false',
+          onclick: function () { var t = Object.assign({}, STATE.rec_gear || {}); t[k] = !on; STATE.rec_gear = t; changed('rec_gear', true); } },
+          [el('span', { class: 'mark', text: on ? '✓' : '' }), el('span', { text: k })]));
+      });
+      return fieldWrap('rec_gear', 'Equipment Recovered', false, 'Tick everything you took back.', [g]);
+    },
+    check: function (need) { need('rec_gear', 'Equipment Recovered', recGear().some(recOn), 'Tick at least one.'); },
+    out: function (m) {
+      var on = recGear().filter(recOn);
+      return ['Equipment Recovered: ' + (on.length ? on.join(', ') : m('rec_gear', 'Equipment'))];
+    }
+  };
+  var comps = [pick,
+    choiceC({ id: 'rec_for', label: 'Recovered Equipment', cols: 0, out: 'Recovery', otherLabel: 'Recovery Details', options: [
+      ['Returned for RMA', 'Recovered equipment returned for RMA'], ['To Be Recycled', 'Recovered equipment to be recycled'], 'Other'] })];
+  if (STATE.job_plat === 'Fixed Wireless' || STATE.job_plat === 'Satellite')
+    comps.push(choiceC({ id: 'rec_hole', label: 'Cable Entry Hole', cols: 2, otherLabel: 'Cable Entry Details', options: [['Sealed', 'Sealed cable entry hole'], 'Other'] }));
+  return comps;
+}
+
 /* ---------- the jobs ---------- */
 function S(title, items, heading) { return { title: title, heading: heading === undefined ? title.toUpperCase() : heading, items: items }; }
 function vasSection() { return S('Value Added Services', vasComps()); }
@@ -2223,8 +2280,10 @@ var FORMS = {
   },
   'Repair|VAS': function () {
     return [S('Repair', repairComps()), S('Equipment Serviced', vasRepairComps()), commentsSection(), S('Confirmations', [lawnC()])];
-  }
+  },
+  'Recovery|Fibre': recoveryForm, 'Recovery|Fixed Wireless': recoveryForm, 'Recovery|Satellite': recoveryForm, 'Recovery|VAS': recoveryForm
 };
+function recoveryForm() { return [S('Recovery', recoveryComps()), commentsSection(), S('Confirmations', [lawnC()])]; }
 function satForm(install) {
   var conf = [lawnC()];
   if (install) conf.unshift(xapC(SAT_XAP));
@@ -2247,7 +2306,7 @@ function cablingWhyC() {
 }
 
 /* the job picked at the top: Job Type, Platform and Outcome, then the drop for a Fibre install or conversion */
-var PICK_TYPES = ['Install', 'Conversion', 'Repair'];
+var PICK_TYPES = ['Install', 'Conversion', 'Repair', 'Recovery'];
 var PICK_PLATS = ['Fibre', 'Fixed Wireless', 'Satellite', 'Value Added Services'];
 var PICK_OUTCOMES = ['Complete', 'Cannot Complete', 'Not Required'];
 var PICK_DROPS = ['Existing Drop', 'Drop Required', 'Drop Only'];
@@ -2329,7 +2388,7 @@ function jobSection() {
     return g;
   }
   wrap.appendChild(el('p', { class: 'sub-q first', text: 'Job Type' }));
-  wrap.appendChild(group('job_type', PICK_TYPES, 3));
+  wrap.appendChild(group('job_type', PICK_TYPES, 4));
   wrap.appendChild(el('p', { class: 'sub-q', text: 'Platform' }));
   wrap.appendChild(group('job_plat', PICK_PLATS, 2, platOff));
   if (PICK_TECH[STATE.job_plat]) {

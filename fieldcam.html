@@ -3469,7 +3469,7 @@ function fkSession() {
       FieldKit.job.fromCam({ camJobId: current.id, sa: j.ref || "", work: j.work || "", plat: j.plat || "", outcome: j.outcome || "", reason: j.reason || "", title: jobTitle(j),
         base: `${byId(JOB_TYPES, j.work).name} · ${platName(j)}`,
         outcomes: OUTCOMES.filter(o => outcomeOn(j, o.id)).map(o => ({ id: o.id, name: o.name, reasons: reasonsFor(j, o.id) })),
-        photos: ps.length, unsaved: ps.filter(p => !p.downloaded).length, labels: countLabels(), serials: (j.serials || []).map(x => ({ code: x.code, item: x.item || "", sku: x.sku || "", ...(x.rec ? { rec: true } : {}) })), slots: j.slots || {} });
+        photos: ps.length, unsaved: ps.filter(p => !p.downloaded).length, need: baseShots(j).length, missing: missingShots().length, labels: countLabels(), serials: (j.serials || []).map(x => ({ code: x.code, item: x.item || "", sku: x.sku || "", ...(x.rec ? { rec: true } : {}) })), slots: j.slots || {} });
       return;
     }
     FieldKit.setSession("cam", j ? { title: j.ref || "Job in progress", sub: jobTitle(j), detail: curPhotos().length ? plural(curPhotos().length, "photo") : "No photos yet" } : null);

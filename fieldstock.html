@@ -1070,12 +1070,12 @@ function renderLines(){
   $("dLbl").textContent = multi() ? (F.lines.length ? `${LBL} (${F.lines.length})` : LBL) : "Item";
   renderJob();
   if(!F.lines.length){
-    const EMPTY={receive:"Scan every unit in the shipment. Add drops, NIDs and mounts from the list below.",
-      deploy:"Scan the item you're deploying, or pick it from the list below.",
+    const EMPTY={receive:"",
+      deploy:"",
       transfer:"Scan each unit you're transferring. Add drops, NIDs and mounts from the list below.",
       rma:"Scan each unit going back on RMA.",
-      recycle:"Scan each unit you're recycling. Add anything without a serial from the list below."}[F.type];
-    list.innerHTML=`<div class="lines-empty">${esc(EMPTY)}</div>`; return; }
+      recycle:""}[F.type];
+    list.innerHTML=EMPTY?`<div class="lines-empty">${esc(EMPTY)}</div>`:""; return; }
   list.innerHTML=F.lines.map((l,i)=>{
     const s=SKU[l.sku];
     let body="";
