@@ -107,6 +107,7 @@ The menu, top to bottom: Start New SA card, **Tools** (Field Stock, Inventory, M
 - SA home: no "Also logged in Field Stock…" line under equipment and no "You can leave any time…" line above Complete SA.
 
 ### Field Cam: photos and scanning
+- (1.20.26) **Field Cam without an SA = "quick" photos** (`job.quick`, `isQuick`): the start screen only asks for an optional SA-# and says Open Camera; no job type, platform or outcome; no required photos; photos are never "to label" (they save as "Photo"), but a label can still be added (Other…, Label/Change). The stamp has no Job row. **Field Notes without an SA is gone** from the menu (Curtis's call).
 - (1.20.23) The **outcome** is a dark chip on the picture, top-left under the SA-# (`.vf>.outbtn`), not its own row; tapping it opens the outcome sheet. The **GPS dot is hidden** from the top bar (location problems still show as a message). The row under the picture only shows when it has To label / New Job. Toasts (HQ on/off, scans) show just under the top bar.
 - (1.20.24) The **viewfinder never crops**: it shows exactly the 4:3 photo area (contain, `measureVf`), anchored to the **top** (1.20.25) right under the SA bar, with one black band underneath where the zoom buttons sit centred. It used to fill up to a square and crop the sides.
 - Required photos per job come from `PHOTOS` (generated originally from Curtis's Outcomes and Photo Lists tools; hand-edited since).

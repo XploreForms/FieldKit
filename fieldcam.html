@@ -541,6 +541,10 @@ html:root[data-theme] .start{background:var(--ink)}
 /* messages (HQ on/off, scans...) show just under the top bar instead of the middle of the picture */
 .toast{top:calc(env(safe-area-inset-top,0px) + 58px)}
 .vf .frame,.vf .zclip{top:0;transform:translateX(-50%)}   /* 1.20.25: picture anchored to the top */
+/* 1.20.26: Field Cam without an SA ("quick" photos): no job type, platform or outcome; the job pill isn't a button */
+.start.quick #startPicker,.start.quick #startOutRow{display:none}
+html.fc-quick #jobBtn .chev{display:none}
+html.fc-quick #jobBtn{pointer-events:none}
 /* one-row header (1.20.22), like the other tools: back arrow, small tile, title; pinned while the job screen scrolls */
 .start .camhead{position:sticky;top:calc(-4px - env(safe-area-inset-top,0px));z-index:5;display:flex;align-items:center;gap:2px;background:var(--fk-bg);
   margin:calc(-4px - env(safe-area-inset-top,0px)) -20px 0;padding:calc(4px + env(safe-area-inset-top,0px)) 20px 4px 10px;box-shadow:0 1px 0 var(--fk-line)}
@@ -745,9 +749,9 @@ html:root[data-theme] .start{background:var(--ink)}
       <button class="btn primary" id="resumeBtn">Continue</button>
     </div>
     <h2 id="newJobH">New job</h2>
-    <div><label for="inRef">SA-#######</label><div class="refrow"><span class="fk-inwrap"><input id="inRef" class="refin" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="numeric" placeholder="SA-1234567"><button type="button" class="fk-pastein" data-paste="inRef" aria-label="Paste SA number" title="Paste"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg></button></span></div><p class="hint" style="margin-top:6px">Type the 7 digits or paste the full SA number.</p></div>
+    <div><label for="inRef" id="refLbl">SA-#######</label><div class="refrow"><span class="fk-inwrap"><input id="inRef" class="refin" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="numeric" placeholder="SA-1234567"><button type="button" class="fk-pastein" data-paste="inRef" aria-label="Paste SA number" title="Paste"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg></button></span></div><p class="hint" style="margin-top:6px">Type the 7 digits or paste the full SA number.</p></div>
     <div class="picker" id="startPicker"></div>
-    <div><label>Outcome <span style="text-transform:none;letter-spacing:0">(can be changed later)</span></label><button type="button" class="btn startout" id="startOutBtn" disabled>Select later</button></div>
+    <div id="startOutRow"><label>Outcome <span style="text-transform:none;letter-spacing:0">(can be changed later)</span></label><button type="button" class="btn startout" id="startOutBtn" disabled>Select later</button></div>
     <div class="install" id="installTip" hidden></div>
     <div class="startbar"><p class="err" id="startErr" hidden></p><button class="btn primary big" id="startBtn">Start Job</button></div>
     <p class="verline" id="verLine" hidden></p>
@@ -942,14 +946,17 @@ function fkTempDrop() {
   return tdCache.v;
 }
 addEventListener("pageshow", e => { if (e.persisted) { tdCache.at = 0; try { renderAll(); } catch {} } });
-const jobMeta = j => j ? { work:j.work, plat:j.plat, vas:j.vas || null, outcome:j.outcome || null, reason:j.reason || null, ref:j.ref || "",
+const jobMeta = j => j ? { quick:!!j.quick, work:j.work, plat:j.plat, vas:j.vas || null, outcome:j.outcome || null, reason:j.reason || null, ref:j.ref || "",
   serials:j.outcome === "OK" && j.serials && j.serials.length ? j.serials.map(x => ({ ...x })) : [] } : null;
 const outcomeSet = j => !!(j && j.outcome && (!reasonsFor(j, j.outcome).length || j.reason));
 function baseShots(j) { return photosOf(j).filter(p => p[1]).map(p => p[0]); }      // required: progress + missing-shot check
 function shotList(j) { const ps = photosOf(j); return [...ps.filter(p => p[1]).map(p => p[0]), ...ps.filter(p => !p[1]).map(p => p[0]), ...((j && j.custom) || []), OTHER]; }
 const isLevelShot = (label, j = curJob()) => photosOf(j).some(p => p[0] === label && p[2]);
 // Human titles, e.g. "Install · Fixed Wireless · Not Required · No Serviceable Signal"
+// Without an SA (Field Kit menu): "quick" photos. No job type, no required photos, labels optional.
+const isQuick = j => !!(j && j.quick);
 function jobTitle(j) {
+  if (isQuick(j)) return "Photos";
   if (!j || !j.work || !("plat" in j)) return "Earlier job";
   const base = `${byId(JOB_TYPES, j.work).name} · ${platName(j)}`;
   if (!outcomeSet(j)) return base;
@@ -1611,7 +1618,7 @@ function snapshot(extra = {}) {
   return Object.assign({
     when, pos, headingRef:th.ref,
     addr:S.addr && S.addrPos && S.pos && distM(S.addrPos, S.pos) < 150 ? S.addr : null,
-    heading:th.heading, pitch:S.pitch, tech:settings.name.trim(), dealer:(settings.dealer || "").trim(), labels:[...selLabels()], label:labelText(selLabels()), unlabelled:!selLabels().length, note:S.note || "",
+    heading:th.heading, pitch:S.pitch, tech:settings.name.trim(), dealer:(settings.dealer || "").trim(), labels:[...selLabels()], label:labelText(selLabels()), unlabelled:!selLabels().length && !isQuick(curJob()), note:S.note || "",
     job:jobMeta(j), level:selLabels().some(l => isLevelShot(l, j)), zf:zoomFactor(), fsrc:focalSrc(), zoomLabel:zoomLabel(), skew:S.levelDev || 0, imported:false, size:effSize(j), full:effSize(j) === "full"
   }, extra);
 }
@@ -1739,7 +1746,7 @@ function drawZeroLine(c, m) {
 // Everything is measured so it always fits: fewer columns, then smaller text, then wrapping; "…" only as a last resort.
 function bandContent(m) {
   const items = [];
-  if (m.job) items.push(["Job", jobTitle(m.job), "top"]);   // long (outcome + reason): its own row first
+  if (m.job && !m.job.quick) items.push(["Job", jobTitle(m.job), "top"]);   // long (outcome + reason): its own row first
   items.push(["When", fmtTime(m.when) + (m.imported ? " (photo time)" : "")]);
   items.push(["GPS", m.pos ? `${m.pos.latitude.toFixed(6)}, ${m.pos.longitude.toFixed(6)}` : "No fix"]);
   const dir = [];
@@ -1917,8 +1924,8 @@ async function blobCanvas(blob) {
 let renderQ = Promise.resolve();
 async function relabel(rec, labels) {
   const j = jobs[rec.sessionId] || null;
-  rec.labels = [...labels]; rec.label = labels[0] || ""; rec.unlabelled = !labels.length;
-  if (rec.meta) Object.assign(rec.meta, { labels:[...labels], label:labelText(labels), unlabelled:!labels.length,
+  rec.labels = [...labels]; rec.label = labels[0] || ""; rec.unlabelled = !labels.length && !isQuick(j);
+  if (rec.meta) Object.assign(rec.meta, { labels:[...labels], label:labelText(labels), unlabelled:!labels.length && !isQuick(jobs[rec.sessionId]),
     level:labels.some(l => isLevelShot(l, j)), job:j ? jobMeta(j) : rec.meta.job });
   rec.downloaded = false;
   try { await DB.put(rec); } catch {}
@@ -1985,7 +1992,7 @@ async function capture(force = false, opts = {}) {
   finally { S.busy = false; $("shutter").classList.remove("busy"); }
 }
 async function storePhoto(out, meta) {
-  const rec = { id:Date.now().toString(36) + Math.random().toString(36).slice(2, 6), sessionId:current.id, label:meta.labels[0] || "", labels:meta.labels, unlabelled:!meta.labels.length, job:meta.job,
+  const rec = { id:Date.now().toString(36) + Math.random().toString(36).slice(2, 6), sessionId:current.id, label:meta.labels[0] || "", labels:meta.labels, unlabelled:!!meta.unlabelled, job:meta.job,
     meta, raw:out.raw || null, pw:out.pw, ph:out.ph, qflag:out.qc ? (out.qc.dark ? "dark" : out.qc.blurry ? "blurry" : "") : "",
     blob:out.blob, thumb:out.thumb, w:out.w, h:out.h, q:Math.round(out.q * 100), created:meta.when.getTime(), downloaded:false,
     note:meta.note || "", lat:meta.pos ? meta.pos.latitude : null, lon:meta.pos ? meta.pos.longitude : null, check:out.qc ? { mean:out.qc.mean, sharp:out.qc.sharp } : null };
@@ -2013,10 +2020,11 @@ function showSnack(rec) {
   snRec = rec;
   const n = curPhotos().filter(isUnl).length, warn = !!rec.qflag;
   $("snImg").src = thumbURL(rec);
-  $("snTitle").textContent = isUnl(rec) ? `Saved to To label (${n})` : "✓ " + dispLabel(rec);
-  $("snText").textContent = warn ? flagText(rec) + " · retake?" : isUnl(rec) ? "Label now or later" : "Wrong label? Tap Change";
+  const plain = isQuick(curJob()) && !(rec.labels && rec.labels.length);   // quick photo with no label: fine as is
+  $("snTitle").textContent = plain ? "✓ Photo saved" : isUnl(rec) ? `Saved to To label (${n})` : "✓ " + dispLabel(rec);
+  $("snText").textContent = warn ? flagText(rec) + " · retake?" : plain ? "Add a label if you like" : isUnl(rec) ? "Label now or later" : "Wrong label? Tap Change";
   $("snRetake").hidden = !warn;
-  $("snAct").textContent = isUnl(rec) ? "Label" : "Change";
+  $("snAct").textContent = isUnl(rec) || plain ? "Label" : "Change";
   const el = $("snack"); el.classList.toggle("warn", warn); el.classList.add("show");
   clearTimeout(snT); snT = setTimeout(hideSnack, warn ? 5000 : 3000);
   if (warn) try { navigator.vibrate && navigator.vibrate([20, 40, 20]); } catch {}
@@ -2841,10 +2849,11 @@ function jobChanged() {
 function countLabels() { const c = {}; for (const p of curPhotos()) for (const l of labelsOf(p)) c[l] = (c[l] || 0) + 1; return c; }
 function renderTop() {
   const j = curJob(), req = baseShots(j), counts = countLabels();
+  document.documentElement.classList.toggle("fc-quick", isQuick(j));
   let sh = "";
   if (j) {
-    const base = `${byId(JOB_TYPES, j.work).name} · ${platShort(j.plat, j)}`;
-    if (!outcomeSet(j) || j.outcome === "OK") sh = esc(base);
+    const base = isQuick(j) ? "Photos" : `${byId(JOB_TYPES, j.work).name} · ${platShort(j.plat, j)}`;
+    if (isQuick(j) || !outcomeSet(j) || j.outcome === "OK") sh = esc(base);
     else sh = esc(`${base} · ${j.outcome === "NR" ? "NR" : "CC"}${j.reason ? " · " + j.reason : ""}`);
   }
   $("jobRef").textContent = j && j.ref ? j.ref : ""; $("jobRef").hidden = !(j && j.ref) || fkJob();   // in a Field Kit job the SA-# is on the back button
@@ -2878,8 +2887,8 @@ function renderLabels() {
   const unl = curPhotos().filter(isUnl).length;
   $("toLabelBtn").hidden = !unl; $("toLabelBtn").textContent = `To label (${unl})`;
   $("newBtn").hidden = fkJob();   // a Field Kit job has one Field Cam job; a new job starts from the Field Kit menu
-  const ob = $("outBtn"); ob.hidden = !j;
-  if (j) {
+  const ob = $("outBtn"); ob.hidden = !j || isQuick(j);
+  if (j && !isQuick(j)) {
     const set = outcomeSet(j);
     ob.classList.toggle("need", !set);
     ob.innerHTML = set ? `<i class="oc o-${j.outcome}"></i>${esc(j.reason || byId(OUTCOMES, j.outcome).name)} <span class="ochev" aria-hidden="true">▾</span>` : "Set outcome";
@@ -3062,7 +3071,7 @@ $("textSeg").addEventListener("click", e => { const b = e.target.closest("[data-
 $("themeSeg").addEventListener("click", e => { const b = e.target.closest("[data-t]"); if (!b) return; settings.theme = b.dataset.t; save(); applyTheme(); });
 
 $("jobBtn").addEventListener("click", e => {
-  const j = curJob(); if (!j) return;
+  const j = curJob(); if (!j || isQuick(j)) return;
   if (e.target.closest("#jobNeed")) { saveIds = null; openOutcomeSheet(); return; }
   const sel = { work:j.work, plat:j.plat, vas:j.vas || null };
   const out = { work:j.work, plat:j.plat, vas:j.vas || null, outcome:j.outcome || null, reason:j.reason || null };
@@ -3209,12 +3218,15 @@ function showStart() {
     const st = new Date(j.started);
     $("resumeMeta").innerHTML = `${plural(ps.length, "photo")} · <span>${esc(st.toLocaleDateString("en-CA", { month:"short", day:"numeric" }))}, ${esc(st.toLocaleTimeString("en-US", { hour:"numeric", minute:"2-digit" }))}</span>`;
   }
-  $("newJobH").textContent = j ? "Or start a new job" : "New job";
+  const quick = !fkJob();   // from the Field Kit menu without an SA: photos only, no job type or outcome
+  $("start").classList.toggle("quick", quick);
+  $("newJobH").textContent = quick ? (j ? "Or start new photos" : "Photos without an SA") : j ? "Or start a new job" : "New job";
+  $("refLbl").innerHTML = quick ? 'SA-# <span style="text-transform:none;letter-spacing:0">(optional)</span>' : "SA-#######";
   startSel = { work:null, plat:null, vas:null }; startOut = { outcome:null, reason:null }; startOutLater = false;
   $("inRef").value = fkJob() && FieldKit.job.active() ? FieldKit.job.active().sa || "" : "";
   renderJobPicker($("startPicker"), startSel, () => { $("startErr").hidden = true; drawStartOut(); });
   drawStartOut();
-  $("startBtn").textContent = j ? "Start New Job" : "Start Job";
+  $("startBtn").textContent = quick ? "Open Camera" : j ? "Start New Job" : "Start Job";
   $("startBtn").className = j ? "btn big" : "btn primary big";
   $("startErr").hidden = true;
   $("start").hidden = false;
@@ -3252,16 +3264,19 @@ $("startBtn").addEventListener("click", () => {
   const ref = normRef($("inRef").value);
   if (!name) missing.push("your name");
   if (!dealer) missing.push("dealer name");
-  if (!ref) missing.push("SA-#");
-  else if (!validRef(ref)) { $("startErr").textContent = `“${ref}” isn’t an SA-#. It needs 7 digits, e.g. SA-1234567.`; $("startErr").hidden = false; $("inRef").focus(); return; }
-  if (!startSel.work) missing.push("job type");
+  const quick = !fkJob();
+  if (!ref && !quick) missing.push("SA-#");
+  else if (ref && !validRef(ref)) { $("startErr").textContent = `“${ref}” isn’t an SA-#. It needs 7 digits, e.g. SA-1234567.`; $("startErr").hidden = false; $("inRef").focus(); return; }
+  if (quick) { /* photos only: no job type, platform or outcome */ }
+  else if (!startSel.work) missing.push("job type");
   else if (!startSel.plat) missing.push(startSel.fam === "Fibre" ? "drop" : "platform");
   else if (startSel.plat === "VAS" && !startSel.vas) missing.push("technology (XWR, XWH or XTV)");
   if (missing.length) { $("startErr").textContent = "Still needed: " + missing.join(", ") + "."; $("startErr").hidden = false; return; }
   settings.name = name; settings.dealer = dealer;
   const hadPrev = curPhotos().length;
   const id = Date.now().toString(36);
-  jobs[id] = { work:startSel.work, plat:startSel.plat, vas:startSel.vas || null, outcome:startOut.outcome, reason:startOut.reason, ref, started:Date.now() };
+  jobs[id] = quick ? { quick:true, work:null, plat:null, vas:null, outcome:"OK", reason:null, ref, started:Date.now() }
+    : { work:startSel.work, plat:startSel.plat, vas:startSel.vas || null, outcome:startOut.outcome, reason:startOut.reason, ref, started:Date.now() };
   current = { id, sel:[] };
   S.sel = []; S.selected.clear();
   beginSession();
