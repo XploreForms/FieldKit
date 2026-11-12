@@ -220,6 +220,9 @@ html[data-text="large"] .lhead .outbtn{line-height:44px}
 .lt i{position:absolute;right:5px;top:5px;font:700 10.5px/1 var(--mono);font-style:normal;color:var(--accent)}
 .lt[aria-pressed="true"]{background:var(--accent);color:var(--ink);box-shadow:none}
 .lt[aria-pressed="true"] i{color:var(--ink)}
+.lt .lk{position:absolute;right:5px;top:5px;width:14px;height:14px;color:var(--muted);display:block}
+.lt .lk svg{width:100%;height:100%;display:block}
+.lt[aria-pressed="true"] .lk{color:inherit;opacity:.85}
 .lt.other{color:var(--muted);font-weight:500}
 /* after-shot note: never blocks the shutter, fades by itself */
 .snack{position:absolute;left:10px;right:10px;bottom:10px;z-index:5;display:flex;gap:8px;align-items:center;padding:7px;border-radius:14px;background:rgba(10,18,17,.9);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid var(--line);opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none}
@@ -449,6 +452,7 @@ html[data-text="large"] .notebtn{width:42px;height:42px}
 html[data-text="large"] .lgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
 html[data-text="large"] .lt{font-size:16px;min-height:48px;padding:5px 10px}
 html[data-text="large"] .lt i{font-size:13px}
+html[data-text="large"] .lt .lk{width:17px;height:17px}
 html[data-text="large"] .lt span{padding-right:24px}
 html[data-text="large"] .zoombar button{min-width:46px;height:38px;font-size:16px}
 html[data-text="large"] .vfctl .hq{font-size:15px}
@@ -2956,12 +2960,25 @@ function tileList(j, sel, counts) {
   const extra = Object.keys(counts).filter(l => counts[l] && !list.includes(l));               // photos labelled under another outcome
   return extra.length ? [...list.slice(0, -1), ...extra, OTHER] : list;
 }
+/* 1.20.54 (Curtis picked option 2): a small mark in the corner says how a label can be photographed.
+   Stack = can share a picture with other labels; single layer = always its own picture; the ONT/Router pair has no mark.
+   Only in an SA (Field Cam on its own has no rules), and only until it's taken (then the ✓ count takes the corner). */
+const LK_STACK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l9 5-9 5-9-5z"/><path d="M3 14l9 5 9-5"/></svg>';
+const LK_SOLO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7l9 5-9 5-9-5z"/></svg>';
+function labelKind(j, l) {
+  if (SN_LABELS.includes(l)) return "solo";
+  const rule = j && (PHOTO_RULES[j.plat] || PHOTO_RULES[platFamily(j.plat || "")]);
+  if (rule && (rule.solo || []).includes(l)) return "solo";
+  if (rule && (rule.pairs || []).some(g => g.includes(l))) return "pair";
+  return "free";
+}
 function tilesHTML(j, sel, counts) {
-  const req = baseShots(j);
+  const req = baseShots(j), marks = j && !isQuick(j);
   return tileList(j, sel, counts).map(l => {
     if (l === OTHER) return `<button class="lt other opt" data-l="${OTHER}" aria-pressed="false"><span>Other…</span></button>`;
     const n = counts[l] || 0, cls = n ? "done" : req.includes(l) ? "" : "opt";
-    return `<button class="lt ${cls}" data-l="${esc(l)}" aria-pressed="${sel.includes(l)}" title="${esc(l)}"><span>${esc(tileName(l))}</span>${n ? `<i>✓${n > 1 ? n : ""}</i>` : ""}</button>`;
+    const k = marks && !n ? labelKind(j, l) : "", mk = k === "free" ? `<b class="lk" title="Can share a picture">${LK_STACK}</b>` : k === "solo" ? `<b class="lk" title="Its own picture">${LK_SOLO}</b>` : "";
+    return `<button class="lt ${cls}" data-l="${esc(l)}" aria-pressed="${sel.includes(l)}" title="${esc(l)}"><span>${esc(tileName(l))}</span>${n ? `<i>✓${n > 1 ? n : ""}</i>` : mk}</button>`;
   }).join("");
 }
 function renderLabels() {
