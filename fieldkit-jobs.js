@@ -345,7 +345,7 @@
   if (jobMode && APP !== "home") {
     document.addEventListener("DOMContentLoaded", function () {
       var j = active(), label = "‹ " + ((j && j.sa) || "SA");
-      [].forEach.call(document.querySelectorAll(".fk-back"), function (a) { a.setAttribute("href", "index.html#job"); a.classList.add("sa"); a.innerHTML = '<span class="fk-chev" aria-hidden="true">‹</span>'; /* just the arrow (1.20.31) */ a.setAttribute("aria-label", "Back to SA " + ((j && j.sa) || "")); });
+      [].forEach.call(document.querySelectorAll(".fk-back"), function (a) { a.setAttribute("href", "index.html#job"); a.classList.add("sa"); /* keeps its arrow icon (1.20.31: just the arrow) */ a.setAttribute("aria-label", "Back to SA " + ((j && j.sa) || "")); });
     });
   }
 

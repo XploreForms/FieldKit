@@ -87,3 +87,25 @@ html.fk-slim .fk-head{gap:0}
 .fk-pastein svg{width:20px;height:20px}
 .fk-pastein:active{background:var(--fk-line)}
 
+
+/* ---------- 1.20.41: one header for every page (Field Stock, Manual Order, Field Cam, Pictures, Comments,
+   Settings, SA History, New SA, SA summary). Content row is 56px: 4px + a 48px back button + 4px.
+   Back = 48×48 tap box with a drawn chevron (centred exactly, unlike the old ‹ character);
+   then the 30px tile, then the title in 20px bold display type, all centred on the same line. ---------- */
+.fk-chev{display:grid;place-items:center;width:30px;height:30px;margin:0!important;font-size:0;line-height:0}
+.fk-chev svg{width:30px;height:30px;display:block}
+.fk-back:has(.fk-chev){width:46px!important;min-width:46px!important;height:48px!important;min-height:48px!important;padding:0!important;margin:0!important;gap:0!important;align-self:center!important;justify-content:center;align-items:center;display:inline-flex}
+.fk-row,#app>.top,.start .camhead{align-items:center!important;column-gap:2px!important}
+.fk-row .fk-tile,html.fc-quick #app>.top .qtile,header.top.fk-row .mark{width:30px!important;height:30px!important;border-radius:8px!important}
+.fk-row .fk-tile svg,html.fc-quick #app>.top .qtile svg,header.top.fk-row .mark svg{width:18px!important;height:18px!important}
+.fk-row .fk-head,header.top.fk-row .top-in{gap:10px!important}
+.fk-row .fk-title:not(#lbRef),header.top.fk-row h1,html.fc-quick #app>.top #jobTxt{font:700 20px/1.2 var(--fk-display)!important;letter-spacing:.01em!important;margin:0!important}
+html #lobby .lhead .fk-title{font:600 20px/1.2 var(--f-mono,ui-monospace,monospace)!important}   /* SA summary keeps its SA-# look, same size */
+/* the same 4px above and below the 48px back button everywhere */
+html .lhead.fk-row,html #app>.top,html .start .camhead{padding-top:calc(4px + env(safe-area-inset-top,0px))!important;padding-bottom:4px!important}
+html header.app-header:has(.fk-row){padding:env(safe-area-inset-top,0px) 0 0!important}
+html header.app-header .app-header-inner.fk-row{padding-top:4px!important;padding-bottom:4px!important}
+html header.top.fk-row{padding-top:4px!important;padding-bottom:4px!important}
+html header.top.fk-row .top-in{padding-top:0!important;padding-bottom:0!important}
+html header.top.fk-row .fk-bar{margin:0!important}
+html.fc-quick #app>.top .qtile{margin:0 8px 0 0!important}

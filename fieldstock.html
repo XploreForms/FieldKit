@@ -455,7 +455,7 @@ header.top.fk-row h1{font-size:1.2rem}
 header.top.fk-row .who{display:none}
 </style>
 <header class="top fk-row">
-  <nav class="fk-bar"><a class="fk-back" href="index.html" aria-label="Back to Field Kit"><span class="fk-chev" aria-hidden="true">‹</span></a></nav>
+  <nav class="fk-bar"><a class="fk-back" href="index.html" aria-label="Back to Field Kit"><span class="fk-chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4.5 7.5 12l7.5 7.5"/></svg></span></a></nav>
   <div class="top-in">
     <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg></div>
     <div class="top-txt">
@@ -3009,6 +3009,7 @@ paintHeader(); showSetup(); paintLoc(); setType("receive"); renderAll();   // de
 if(GS.connected && gsAvailable()){ if(gsTokenOk() && gsPending()) gsSync(); else if(!gsTokenOk()){ gsErr="auth"; paintGoogle(); } }
 if(document.documentElement.classList.contains("order-only")){
   const h1=document.querySelector(".top h1"); if(h1) h1.textContent="Manual Order Request";
+  const mk=document.querySelector(".top .mark svg"); if(mk) mk.innerHTML='<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/>';   /* same icon as its menu tile */
   document.title="Manual Order Request";
   const who=$("who"); if(who && ME && ME.name) who.textContent=ME.name;
 }
