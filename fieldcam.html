@@ -1224,7 +1224,7 @@ const canUltraNow = () => S.lens === "ultra" || hwUltra() || !!(S.lenses && (S.l
    don't change (".5×" popping in and shifting the others) once the lens check finishes */
 const UW_KEY = "fieldcam.hasUltra";
 const canUltra = () => S.lensesScanned ? canUltraNow() : (() => { try { return localStorage.getItem(UW_KEY) === "1"; } catch { return false; } })();
-const isUltra = () => S.lens === "ultra" || (S.ultra && S.caps.zoom && S.zoom < 0.95);
+const isUltra = () => !!(S.lens === "ultra" || (S.ultra && S.caps.zoom && S.zoom < 0.95));
 const zoomRange = () => S.caps.zoom ? [Math.max(S.ultra ? S.caps.zoom.min : 1, S.caps.zoom.min || 1), Math.max(1, Math.min(S.caps.zoom.max || 1, 10))] : [1, MAX_DIGITAL];
 async function goUltra() {
   if (hwUltra() && S.lens === "wide") { S.ultra = true; setZoom(Math.max(0.5, S.caps.zoom.min)); flashZoomRead(); }
@@ -1282,7 +1282,7 @@ function applyZoomUI() {
   else btns.push({ k:"w3", t:wide && z >= 3 ? fmtZ(z) : "3×", on:wide && z >= 3 });
   $("zoomBar").innerHTML = btns.map(b => `<button data-z="${b.k}" aria-pressed="${b.on}">${b.t}</button>`).join("");
   $("zoomRead").textContent = zoomLabel();
-  $("zoomBar").classList.toggle("ultra", isUltra());
+  $("zoomBar").classList.toggle("ultra", !!isUltra());   /* 1.20.59: !! matters; an undefined force flipped the class on every repaint (orange .5× at start-up) */
   if (S.lensesScanned) try { localStorage.setItem(UW_KEY, canUltraNow() ? "1" : "0"); } catch {}
 }
 try { applyZoomUI(); } catch {}   // draw the zoom buttons before the camera starts (from what this phone had last time)
