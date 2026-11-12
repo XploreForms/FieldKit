@@ -1,6 +1,6 @@
 # Field Kit — handoff note
 
-Current as of **Field Kit 1.20.47** (Nov 12, 2026). Paste the "First message" into a new Claude chat to pick up where this left off. The rest is reference: what exists, the decisions Curtis already made (keep them), what's still open, and the traps.
+Current as of **Field Kit 1.20.54** (Nov 12, 2026). Paste the "First message" into a new Claude chat to pick up where this left off. The rest is reference: what exists, the decisions Curtis already made (keep them), what's still open, and the traps.
 
 ---
 
@@ -115,6 +115,8 @@ The home screen (1.20.27) **fills the screen with no scrolling** on any phone: h
 - SA home: no "Also logged in Field Stock…" line under equipment and no "You can leave any time…" line above Complete SA.
 
 ### Field Cam: photos and scanning
+- (1.20.54, Curtis picked option 2) **Label marks** in an SA: a **stack** icon (top right) = can share a picture; a **single layer** = always its own picture (SN labels and `PHOTO_RULES` solo); the ONT/Router pair is unmarked for now. The mark gives way to the ✓ count once taken (`labelKind`, `LK_STACK`/`LK_SOLO`). Not shown in Field Cam on its own.
+- (1.20.52–53) Scanners show just the scan line (no fade/box); the flash button is always shown, greyed until available.
 - (1.20.39) **No pop-up after each picture**; only the too blurry / too dark warning (with Retake) still shows.
 - (1.20.39) **"To label (n)" is the first tile in the label grid** (orange), not a row of its own.
 - (1.20.39) **Gallery shows only the current job/SA** (no Previous jobs). Unsaved pictures from an earlier set stay on the phone until auto-clean, but aren't listed.
