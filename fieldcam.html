@@ -9,6 +9,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Field Cam">
+<link rel="preload" href="fonts/Barlow-Regular.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="fonts/Barlow-SemiBold.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="fonts/BarlowSemiCondensed-Bold.woff" as="font" type="font/woff" crossorigin>
 </head><body>
 <script src="version.js"></script>
 <script src="fieldkit.js" data-app="cam"></script>
@@ -21,9 +24,6 @@ try { var _c = JSON.parse(localStorage.getItem("fieldcam.current") || "null"), _
 </script>
 <style>html.fk-resuming #start{visibility:hidden}</style>
 <link rel="stylesheet" href="fieldkit.css">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
 /* Layout: full-screen camera. Top bar (job + GPS), viewfinder with tilt-first HUD, bottom deck (shot labels, zoom, shutter, download). Sheets slide up over it. */
 :root{

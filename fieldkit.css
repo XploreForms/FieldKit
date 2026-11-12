@@ -5,6 +5,17 @@
    loaded by each page from Google Fonts. Theme: fieldkit.js sets data-theme on <html> to light, dark or black. */
 
 /* ---------- colours ---------- */
+/* Fonts (1.20.76): bundled with Field Kit (fonts/, Latin subset, SIL Open Font License: fonts/OFL-*.txt), so every page has the
+   same fonts instantly and offline. font-display:block = wait briefly for the real font instead of flashing a fallback. */
+@font-face{font-family:"Barlow";font-style:normal;font-weight:400;font-display:block;src:url("fonts/Barlow-Regular.woff") format("woff")}
+@font-face{font-family:"Barlow";font-style:normal;font-weight:500;font-display:block;src:url("fonts/Barlow-Medium.woff") format("woff")}
+@font-face{font-family:"Barlow";font-style:normal;font-weight:600;font-display:block;src:url("fonts/Barlow-SemiBold.woff") format("woff")}
+@font-face{font-family:"Barlow";font-style:normal;font-weight:700;font-display:block;src:url("fonts/Barlow-Bold.woff") format("woff")}
+@font-face{font-family:"Barlow Semi Condensed";font-style:normal;font-weight:500;font-display:block;src:url("fonts/BarlowSemiCondensed-Medium.woff") format("woff")}
+@font-face{font-family:"Barlow Semi Condensed";font-style:normal;font-weight:600;font-display:block;src:url("fonts/BarlowSemiCondensed-SemiBold.woff") format("woff")}
+@font-face{font-family:"Barlow Semi Condensed";font-style:normal;font-weight:700;font-display:block;src:url("fonts/BarlowSemiCondensed-Bold.woff") format("woff")}
+@font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:500;font-display:block;src:url("fonts/IBMPlexMono-Medium.woff") format("woff")}
+@font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:600;font-display:block;src:url("fonts/IBMPlexMono-SemiBold.woff") format("woff")}
 :root{
   --fk-bg:#F2F5F3;           /* page */
   --fk-surface:#FFFFFF;      /* cards, sheets */

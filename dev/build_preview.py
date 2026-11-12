@@ -46,6 +46,13 @@ window.claude = window.claude || { use: function () {} };
 </script>"""
 
 
+def inline_fonts(css):
+    """The preview's pages run from srcdoc, so bundled fonts go in as data: URLs (1.20.76)."""
+    import base64
+    def sub(m):
+        return 'url("data:font/woff;base64,' + base64.b64encode((SRC / m.group(1)).read_bytes()).decode() + '")'
+    return re.sub(r'url\("(fonts/[^"]+\.woff)"\)', sub, css)
+
 def inline_js(m):
     attrs, src = m.group(1) + m.group(3), m.group(2)
     js = read(src).replace("</script", "<\\/script")
@@ -57,7 +64,8 @@ def build(page):
     # drop install bits and file icons (they can't load from a single file); keep data: icons
     html = re.sub(r'<link rel="(?:icon|apple-touch-icon|manifest|shortcut icon)"[^>]*href="(?!data:)[^"]*"[^>]*>\n?', "", html)
     html = re.sub(r'<script src="https://accounts\.google\.com/gsi/client"[^>]*></script>\n?', "", html)
-    html = html.replace('<link rel="stylesheet" href="fieldkit.css">', "<style>\n" + read("fieldkit.css") + "\n</style>")
+    html = html.replace('<link rel="stylesheet" href="fieldkit.css">', "<style>\n" + inline_fonts(read("fieldkit.css")) + "\n</style>")
+    html = re.sub(r'<link rel="preload" href="fonts/[^"]+"[^>]*>\n?', "", html)   # the fonts are inside the CSS here
     html = re.sub(r'<script((?:\s+[a-z-]+="[^"]*")*?)\s+src="([a-z-]+\.js)"((?:\s+[a-z-]+="[^"]*")*)\s*></script>', inline_js, html)
     # navigation between tools goes through the shell
     html = re.sub(r'location\.href\s*=(?!=)\s*([^;\n]+?)\s*;', r'__fkNav(\1);', html)

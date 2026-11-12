@@ -9,6 +9,9 @@
 <meta name="apple-mobile-web-app-title" content="Field Stock">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#002B2B">
+<link rel="preload" href="fonts/Barlow-Regular.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="fonts/Barlow-SemiBold.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="fonts/BarlowSemiCondensed-Bold.woff" as="font" type="font/woff" crossorigin>
 </head><body>
 <link rel="stylesheet" href="fieldkit.css">
 <script src="version.js"></script>
@@ -16,9 +19,6 @@
 <script src="fieldkit.js" data-app="stock"></script>
 <script>if(/^#order/.test(location.hash))document.documentElement.classList.add("order-only");   /* Manual Order Request opens as its own page */</script>
 <script>try{var t=localStorage.getItem("techstock.theme");if(t==="light"||t==="dark"||t==="black")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
 /* Layout: one-column phone app. Sticky brand header, scrolling panel, fixed 4-tab bar. Standalone: all data on this phone, Excel file is the backup. */
 :root{

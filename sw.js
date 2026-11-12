@@ -7,7 +7,7 @@ importScripts("version.js");
 const VERSION = (self.FIELDKIT_VERSION && self.FIELDKIT_VERSION.version) || "0";
 const UPDATED = (self.FIELDKIT_VERSION && self.FIELDKIT_VERSION.updated) || "";
 const CACHE = "fieldkit-" + VERSION;
-const FILES = ["./", "index.html", "fieldcam.html", "fieldstock.html", "fieldnotes.html", "frame.html", "fieldkit.js", "fieldkit.css", "fieldkit-catalog.js", "fieldkit-jobs.js", "version.js", "icon.svg", "manifest.webmanifest", "icon-192.png", "icon-512.png", "icon-maskable-512.png", "favicon-32.png", "apple-touch-icon.png"];
+const FILES = ["./", "index.html", "fieldcam.html", "fieldstock.html", "fieldnotes.html", "frame.html", "fonts/Barlow-Regular.woff", "fonts/Barlow-Medium.woff", "fonts/Barlow-SemiBold.woff", "fonts/Barlow-Bold.woff", "fonts/BarlowSemiCondensed-Medium.woff", "fonts/BarlowSemiCondensed-SemiBold.woff", "fonts/BarlowSemiCondensed-Bold.woff", "fonts/IBMPlexMono-Medium.woff", "fonts/IBMPlexMono-SemiBold.woff", "fieldkit.js", "fieldkit.css", "fieldkit-catalog.js", "fieldkit-jobs.js", "version.js", "icon.svg", "manifest.webmanifest", "icon-192.png", "icon-512.png", "icon-maskable-512.png", "favicon-32.png", "apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
   // fetch every file fresh from the site, skipping the browser's own cache
