@@ -401,10 +401,10 @@ details.grp summary small{display:block;font-weight:400;font-size:.82rem;color:v
 .scan-last.pending{background:rgba(255,255,255,.94);color:#0E2A27}
 .scan-last.pending .warn{color:#B4400E;font-weight:600}
 #zoomLbl{min-width:3em;text-align:right;font-variant-numeric:tabular-nums;font-weight:600;font-size:.9rem}
-.aim{position:absolute;left:8%;right:8%;top:50%;height:22%;transform:translateY(-50%);border:2px solid rgba(255,255,255,.85);border-radius:12px;box-shadow:0 0 0 100vmax rgba(0,0,0,.45);transition:border-color .15s}
-.aim::after{content:"";position:absolute;left:6%;right:6%;top:50%;height:2px;background:#ff5a4e;opacity:.9}
-.aim.hit{border-color:#58C774;border-width:3px}
-.aim.dup{border-color:#F2B05A;border-width:3px}
+.aim{position:absolute;left:8%;right:8%;top:50%;height:22%;transform:translateY(-50%);pointer-events:none}   /* 1.20.52: no box or dark surround; just the red line, like Field Cam */
+.aim::after{content:"";position:absolute;left:4%;right:4%;top:50%;height:2px;margin-top:-1px;background:#FF4B3E;box-shadow:0 0 6px #FF4B3E;transition:background .15s}
+.aim.hit::after{background:#58C774;box-shadow:0 0 6px #58C774}
+.aim.dup::after{background:#F2B05A;box-shadow:0 0 6px #F2B05A}
 .scan-top,.scan-bot{position:relative;z-index:2;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .scan-top{padding-top:calc(12px + env(safe-area-inset-top,0px));display:flex;align-items:center;gap:12px}
 .scan-top b{flex:1;font:700 1.15rem/1.2 var(--f-display)}

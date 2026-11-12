@@ -462,7 +462,7 @@ details.grp .btn{margin-bottom:12px}
   var LINKS = [
     { id: "stock", name: "Field Stock", desc: "Receive, deploy, transfer and RMA", href: "fieldstock.html", icon: '<path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/>' },
     { name: "Inventory", desc: "Xplore Dealer Portal", href: "https://dealerportal.xplore.ca/", out: true, icon: '<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.3a1 1 0 0 0 1 .7h9.6a1 1 0 0 0 1-.8L21 8H6"/>' },
-    { name: "Manual Order Request", desc: "When you can't order through Salesforce", href: "fieldstock.html#order", icon: '<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/>' },
+    { name: "Manual Order Request", desc: "When you can't order in the portal", href: "fieldstock.html#order", icon: '<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/>' },
     { name: "RMA Request", desc: "Request an RMA number", href: "https://form.jotform.com/72404477841257", out: true, icon: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>' },
     { name: "Compass", desc: "eCoverage Intelligence", href: "https://ecoverage-intelligence-29408448304181.1.azure.databricksapps.com/", out: true, app: true, icon: '<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>' },
     { name: "Percipio", desc: "Xplore University", href: "https://xploreuniversity.percipio.com/", out: true, icon: '<path d="M2 9l10-5 10 5-10 5-10-5z"/><path d="M6 11v5c2 2 10 2 12 0v-5"/><path d="M22 9v6"/>' },   /* learning platform (1.20.48) */
@@ -485,7 +485,7 @@ details.grp .btn{margin-bottom:12px}
   var FK_GLYPH = '<svg class="fkglyph" viewBox="8 13.875 48 48"><path d="M24 23v-5h16v5" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><rect x="10" y="23" width="44" height="30" rx="5" fill="currentColor"/><path d="M15 52l-2 8 11-8z" fill="currentColor"/><circle cx="22" cy="38" r="7.5" fill="var(--tile)"/><circle cx="22" cy="38" r="2.8" fill="currentColor"/><circle cx="35" cy="38" r="3.3" fill="var(--tile)"/><circle cx="42.5" cy="38" r="3.3" fill="var(--tile)"/><circle cx="50" cy="38" r="3.3" fill="var(--tile)"/></svg>';
   var RESTART = svg('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>', 2.2);
   // Home screen tiles: the tools, then Field Cam for photos without an SA (2 across; they share the screen's height)
-  var TILE = { stock: ["Field Stock", "Receive, deploy, transfer and RMA"], "Manual Order Request": ["Manual Order", "When you can't order in Salesforce"],
+  var TILE = { stock: ["Field Stock", "Receive, deploy, transfer and RMA"], "Manual Order Request": ["Manual Order", "When you can't order in the portal"],
     "Inventory": ["Inventory", "Xplore Dealer Portal"], "RMA Request": ["RMA", "Request an RMA number"], "Compass": ["Compass", "eCoverage Intelligence"] };
   function paintTools() {
     var prog = inProgress(), OUT = svg('<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>');

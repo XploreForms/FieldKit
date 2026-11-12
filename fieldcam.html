@@ -131,7 +131,7 @@ html[data-grid="on"] .grid3{display:block}
 .grid3 i:nth-child(3){top:33.333%}.grid3 i:nth-child(4){top:66.667%}
 .zclip{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);overflow:hidden;width:100%;height:100%}
 .aim{position:absolute;left:8%;right:8%;top:50%;height:22%;transform:translateY(-50%);border:0;border-radius:10px;pointer-events:none}
-.aim::before{content:"";position:absolute;left:-12%;right:-12%;top:-250%;bottom:-250%;pointer-events:none;background:radial-gradient(ellipse 50% 22% at 50% 50%,rgba(0,0,0,0) 55%,rgba(0,0,0,.28) 72%,rgba(0,0,0,.62) 100%)}   /* 1.20.39: dark edges fading to a clear middle, no white box */
+.aim::before{content:none}   /* 1.20.52: no dark fade around the scan area (Curtis); just the red line */
 .aim i{position:absolute;left:4%;right:4%;top:50%;height:2px;margin-top:-1px;background:#FF4B3E;box-shadow:0 0 6px #FF4B3E}
 .aim.hit i{background:var(--signal);box-shadow:0 0 6px var(--signal)}
 .aim.miss i{background:var(--warn);box-shadow:0 0 6px var(--warn)}
