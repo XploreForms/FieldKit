@@ -353,6 +353,10 @@ a.btn.primary{color:var(--accent-ink)}
 .count-stats .stat{padding:10px 12px}
 .count-stats .stat b{font-size:1.4rem}
 .cmp-head{display:flex;align-items:center;gap:10px}
+/* 1.20.64: the Items heading (with Clear) and the search stay pinned under the header while the list scrolls */
+.ord-stick{position:sticky;top:calc(var(--fs-hdr,56px) + env(safe-area-inset-top,0px));z-index:6;display:flex;flex-direction:column;gap:14px;
+  background:var(--surface);margin:-14px -14px 0;padding:14px 14px 10px;border-radius:var(--r) var(--r) 0 0}
+.ord-stick.stuck{border-radius:0;box-shadow:0 6px 10px -8px rgba(0,0,0,.35)}
 .cmp-head h3{flex:1}
 details.grp{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow)}
 details.grp summary{list-style:none;display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;font-weight:600}
@@ -671,9 +675,9 @@ header.top.fk-row .who{display:none}
     <div><h2>Manual Order Request</h2>
       <p class="help intro">Only use this when you can't order through Salesforce. Your Xplore approver gets the order by email to approve.</p></div>
     <div class="card">
-      <div class="cmp-head"><h3 id="ordCount">Items</h3><button class="btn ghost" type="button" id="ordClear" hidden>Clear</button></div>
+      <div class="ord-stick"><div class="cmp-head"><h3 id="ordCount">Items</h3><button class="btn ghost" type="button" id="ordClear" hidden>Clear</button></div>
       <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-        <input type="search" id="ordQ" placeholder="Find an item" autocomplete="off"></div>
+        <input type="search" id="ordQ" placeholder="Find an item" autocomplete="off"></div></div>
       <div id="ordList"></div>
     </div>
     <div class="card">
@@ -1572,6 +1576,12 @@ $("ordList").addEventListener("change",e=>{
   if(n>it.max){ n=it.max; toast("The most you can order on one line is "+it.max+"."); }
   if(n) ORD.qty[k]=n; else delete ORD.qty[k]; saveOrd(); $("ordErr").innerHTML=""; renderOrder(); });
 $("ordQ").addEventListener("input",renderOrder);
+/* keep the pinned search right under the header (its height changes with the offline bar), and shade it once it's pinned */
+(()=>{ const h=document.querySelector("header.top"), st=document.querySelector(".ord-stick"); if(!h||!st) return;
+  const set=()=>document.documentElement.style.setProperty("--fs-hdr", h.offsetHeight+"px"); set();
+  if(window.ResizeObserver) new ResizeObserver(set).observe(h); addEventListener("resize",set);
+  const mark=()=>{ const top=parseFloat(getComputedStyle(st).top)||0; st.classList.toggle("stuck", st.getBoundingClientRect().top<=top+0.5 && scrollY>0); };
+  addEventListener("scroll",mark,{passive:true}); })();
 $("ordReason").addEventListener("input",()=>{ ORD.reason=$("ordReason").value; saveOrd(); $("ordErr").innerHTML=""; });
 $("ordNotes").addEventListener("input",()=>{ ORD.notes=$("ordNotes").value; saveOrd(); });
 $("ordMgr").addEventListener("change",()=>{ const v=$("ordMgr").value.trim().toLowerCase(); $("ordMgr").value=v;
