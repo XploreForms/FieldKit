@@ -12,7 +12,11 @@
 (function () {
   try {
     if (window.top !== window || !window.matchMedia || !matchMedia("(min-width:600px) and (min-height:700px)").matches) return;
+    // 1.20.66: the device itself must be bigger than a phone. A page that runs this before its viewport tag (Comments)
+    // briefly reports a desktop width on a phone; without this it bounced between itself and the frame (white screen).
+    if (Math.min(screen.width || 0, screen.height || 0) < 600) return;
     if (/[?&]fkframe=off\b/.test(location.search)) return;
+    try { if (+sessionStorage.getItem("fieldkit.noFrameUntil") > Date.now()) return; } catch (e) {}   // the frame just sent us back: don't go again
     var page = location.pathname.split("/").pop() || "index.html";
     location.replace("frame.html?u=" + encodeURIComponent(page + location.search + location.hash));
     document.write('<plaintext style="display:none">');   // stop the rest of this page (its scripts, the camera) while the frame opens

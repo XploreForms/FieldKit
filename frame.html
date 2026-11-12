@@ -45,7 +45,8 @@
   }
   var start = clean(new URLSearchParams(location.search).get("u"));
   // a phone-sized window doesn't need the frame
-  if (!matchMedia(BIG).matches) { location.replace(start); return; }
+  function back(u) { try { sessionStorage.setItem("fieldkit.noFrameUntil", String(Date.now() + 10000)); } catch (e) {} location.replace(u); }   // never bounce back and forth
+  if (!matchMedia(BIG).matches || Math.min(screen.width || 0, screen.height || 0) < 600) { back(start); return; }
   f.src = start;
   function inner() { try { var l = f.contentWindow.location; return clean(l.pathname.split("/").pop() + l.search + l.hash); } catch (e) { return start; } }
   // keep this page's address and title in step with the page in the frame, so a reload or a bookmark opens the same page
@@ -60,7 +61,7 @@
     try { var th = f.contentDocument.documentElement.getAttribute("data-theme"); if (th) document.documentElement.setAttribute("data-theme", th); } catch (e) {}
   });
   // window made phone-sized: drop the frame and show the page itself
-  matchMedia(BIG).addEventListener("change", function (e) { if (!e.matches && !document.fullscreenElement) location.replace(inner()); });
+  matchMedia(BIG).addEventListener("change", function (e) { if (!e.matches && !document.fullscreenElement) back(inner()); });
 })();
 </script>
 </body>
