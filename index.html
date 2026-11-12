@@ -692,7 +692,7 @@ details.grp .btn{margin-bottom:12px}
         }).join("") + (list.length > show.length ? '<span class="more">+' + (list.length - show.length) + '</span>' : "") + '</div>';
       } else if (n) html += '<p class="help">' + n + ' photo' + (n === 1 ? "" : "s") + ' taken. They\'ve been cleared from this phone since.</p>';
       else html += '<p class="help">No pictures yet. Pictures lists each picture FSL needs for this job.</p>';
-      html += '<a class="btn' + (lobbyState.photosOk ? "" : " primary") + '" href="fieldcam.html#job">' + (n ? (uns ? "Save Pictures" : "Open Pictures") : "Take Pictures") + '</a>';
+      html += '<a class="btn' + (lobbyState.photosOk ? "" : " primary") + '" href="fieldcam.html#job">' + (!n || (j.need && (j.missing || 0) > 0) ? "Take Pictures" : uns ? "Save Pictures" : "Open Pictures") + '</a>';
       box.innerHTML = html;
       paintLobbyWarn(j);
     });

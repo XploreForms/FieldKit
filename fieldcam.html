@@ -130,10 +130,11 @@ html[data-grid="on"] .grid3{display:block}
 .grid3 i:nth-child(3),.grid3 i:nth-child(4){left:0;right:0;height:1px}
 .grid3 i:nth-child(3){top:33.333%}.grid3 i:nth-child(4){top:66.667%}
 .zclip{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);overflow:hidden;width:100%;height:100%}
-.aim{position:absolute;left:8%;right:8%;top:50%;height:22%;transform:translateY(-50%);border:2px solid rgba(255,255,255,.85);border-radius:10px;box-shadow:0 0 0 2000px rgba(0,0,0,.35);pointer-events:none}
+.aim{position:absolute;left:8%;right:8%;top:50%;height:22%;transform:translateY(-50%);border:0;border-radius:10px;pointer-events:none}
+.aim::before{content:"";position:absolute;left:-12%;right:-12%;top:-250%;bottom:-250%;pointer-events:none;background:radial-gradient(ellipse 50% 22% at 50% 50%,rgba(0,0,0,0) 55%,rgba(0,0,0,.28) 72%,rgba(0,0,0,.62) 100%)}   /* 1.20.39: dark edges fading to a clear middle, no white box */
 .aim i{position:absolute;left:4%;right:4%;top:50%;height:2px;margin-top:-1px;background:#FF4B3E;box-shadow:0 0 6px #FF4B3E}
-.aim.hit{border-color:var(--signal)} .aim.hit i{background:var(--signal);box-shadow:0 0 6px var(--signal)}
-.aim.miss{border-color:var(--warn)}
+.aim.hit i{background:var(--signal);box-shadow:0 0 6px var(--signal)}
+.aim.miss i{background:var(--warn);box-shadow:0 0 6px var(--warn)}
 .hud.scan .tiltbox,.hud.scan .zeroline,.hud.scan .reticle{display:none}
 .scantop{position:absolute;left:10px;right:66px;top:10px;z-index:6;display:flex;align-items:center;gap:8px;padding:5px 5px 5px 12px;border-radius:12px;background:rgba(10,18,17,.78);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);font-size:13px;line-height:1.3}
 .scantop span{flex:1;min-width:0}
@@ -571,6 +572,8 @@ html.fc-fs .fsctl::after{content:"";width:44px;height:44px}
   html.fc-fs .fsctl .fsshut{margin:0}
   html.fc-fs .fshint{display:block;position:absolute;z-index:8;left:50%;top:16px;transform:translateX(-50%);padding:8px 14px;border-radius:12px;background:rgba(10,18,17,.7);color:#fff;font:600 14px var(--fk-body,system-ui);white-space:nowrap}
 }
+.lgrid .lt.tolabel{background:var(--warn-bg,#FCE3D5);color:var(--warn,#B4461D);box-shadow:inset 0 0 0 1.5px currentColor;font-weight:700}
+.lgrid .lt.tolabel::before{display:none}
 /* one-row header (1.20.22), like the other tools: back arrow, small tile, title; pinned while the job screen scrolls */
 .start .camhead{position:sticky;top:calc(-4px - env(safe-area-inset-top,0px));z-index:5;display:flex;align-items:center;gap:2px;background:var(--fk-bg);
   margin:calc(-4px - env(safe-area-inset-top,0px)) -20px 0;padding:calc(4px + env(safe-area-inset-top,0px)) 20px 4px 10px;box-shadow:0 1px 0 var(--fk-line)}
@@ -1519,7 +1522,7 @@ let frameTurn = 0;
 const capRatio = () => frameTurn === 90 ? 3 / 4 : 4 / 3;      // width ÷ height of the photo area on screen
 function capArea(vw, vh) { const r = capRatio(), w0 = vw / vh > r ? vh * r : vw; return { w0, h0:w0 / r }; }
 const measureVf = () => {
-  frameTurn = extraTurn() % 180;
+  frameTurn = document.documentElement.classList.contains("fc-fs") ? extraTurn() % 180 : 0;   // 1.20.39: turning the phone only matters in full screen
   // 1.20.34: no black band. The viewfinder is exactly the picture's height (shrinking only if the labels and shutter need
   // the room); the deck under it takes the rest, with the shutter at the bottom.
   if (document.documentElement.classList.contains("fc-fs")) vfEl.style.height = $("app").clientHeight + "px";
@@ -1605,7 +1608,7 @@ function fastTick() {
   const de = document.documentElement, s90 = side && xt === 90, s270 = side && xt === 270;
   if (de.classList.contains("s90") !== s90) de.classList.toggle("s90", s90);
   if (de.classList.contains("s270") !== s270) de.classList.toggle("s270", s270);
-  if (xt % 180 !== frameTurn) { measureVf(); lastHz = ""; }   // phone turned: reshape the frame
+  if ((document.documentElement.classList.contains("fc-fs") ? xt % 180 : 0) !== frameTurn) { measureVf(); lastHz = ""; }   // phone turned: reshape the frame
   if (p == null) { setText(E.tilt, "—"); setText(E.level, "NO TILT DATA"); }
   else { setText(E.tilt, fmtTilt(p)); setText(E.level, Math.abs(p) <= LEVEL_TOL ? "LEVEL ✓" : p > 0 ? "AIM LOWER" : "AIM HIGHER"); }
   // 0° line: where the horizon sits in the frame (camera field of view), tilted with skew
@@ -2025,7 +2028,7 @@ async function capture(force = false, opts = {}) {
     const rec = await storePhoto(out, meta);
     S.note = "";
     clearSel(); renderLabels();          // labels un-select after every shot; Retake brings them back
-    if (!opts.quiet) showSnack(rec);
+    if (!opts.quiet && rec.qflag) showSnack(rec);   // 1.20.39: only a warning (too blurry / too dark) pops up
     if (isUltra()) {                      // ultra-wide is for one photo only
       if (S.lens === "ultra" && S.altTry >= 0 && S.lenses.ultra) { try { localStorage.setItem(ALT_KEY, S.lenses.ultra); } catch {} S.altTry = -1; }
       leaveUltra();
@@ -2305,7 +2308,7 @@ function prepDividers() {
   divT = setTimeout(async () => {
     const sids = new Set(S.photos.filter(p => !p.downloaded).map(p => p.sessionId));
     if (current) sids.add(current.id);
-    for (const sid of sids) for (const kind of ["start", "end"]) {
+    for (const sid of sids) if (!isQuick(jobs[sid])) for (const kind of ["start", "end"]) {
       const k = divKey(sid, kind), ck = sid + "|" + kind; if (!k || (divCache.get(ck) || {}).key === k) continue;
       try { const f = await makeDivider(sid, kind); if (f) divCache.set(ck, { key:k, file:f }); } catch {}
     }
@@ -2456,14 +2459,27 @@ function requestSave(items) {
 }
 // Whole job saved, nothing missing, nothing to label: offer the next job
 function afterSave() {
-  if (fkJob() || isQuick(curJob())) return;   // in a Field Kit job, saving moves on to Field Notes instead; without an SA there is no "next job"
+  if (isQuick(curJob())) {   // Field Cam on its own: once everything is saved, offer to finish and go home
+    const ps = curPhotos();
+    if (!current || !ps.length || ps.some(p => !p.downloaded)) return;
+    $("doneTitle").textContent = "All pictures saved ✓";
+    $("doneMsg").textContent = `${plural(ps.length, "picture")} saved to your phone. Finish this session and go back to Field Kit?`;
+    $("doneNext").textContent = "Finish & Go Home"; $("doneNext").dataset.quick = "1";
+    setTimeout(() => openSheet("doneSheet"), 400);
+    return;
+  }
+  if (fkJob()) return;   // in a Field Kit job, saving moves on to Field Notes instead; without an SA there is no "next job"
   const ps = curPhotos();
   if (!current || !ps.length || ps.some(p => !p.downloaded || isUnl(p)) || missingShots().length) return;
   const j = curJob();
   $("doneMsg").textContent = `${plural(ps.length, "photo")} for ${j && j.ref ? j.ref + " · " : ""}${jobShort(j).replace(j && j.ref ? j.ref + " · " : "", "")} are saved. They stay on this phone under Previous jobs.`;
   setTimeout(() => openSheet("doneSheet"), 400);
 }
-$("doneNext").addEventListener("click", () => { closeSheets(); finishJob(); });
+$("doneNext").addEventListener("click", () => {
+  closeSheets();
+  if ($("doneNext").dataset.quick) { delete $("doneNext").dataset.quick; const id = current && current.id; current = null; if (id && jobs[id]) jobs[id].ended = Date.now(); save(); try { FieldKit.clearTool && FieldKit.clearTool("cam"); } catch {} location.href = "index.html"; return; }
+  finishJob();
+});
 $("doneKeep").addEventListener("click", closeSheets);
 function saveItems() { return (saveIds || []).map(id => S.photos.find(p => p.id === id)).filter(Boolean); }
 function openSaveSheet() { renderSaveSheet(); openSheet("saveSheet"); }
@@ -2505,6 +2521,7 @@ function renderGallery() {
   renderPrev();
 }
 function renderPrev() {
+  $("prevBlock").hidden = true; return;   // 1.20.39: no earlier jobs in the gallery
   const groups = new Map();
   for (const p of S.photos) {
     const k = p.sessionId || "legacy";
@@ -2945,12 +2962,13 @@ function tilesHTML(j, sel, counts) {
 function renderLabels() {
   const j = curJob(), counts = countLabels();
   S.sel = S.sel.filter(l => tileList(j, S.sel, counts).includes(l));
-  $("lGrid").innerHTML = tilesHTML(j, S.sel, counts);
+  const unl0 = curPhotos().filter(isUnl).length;
+  $("lGrid").innerHTML = (unl0 ? `<button class="lt tolabel" data-tolabel="1" title="Label the pictures taken without a label"><span>To label (${unl0})</span></button>` : "") + tilesHTML(j, S.sel, counts);
   const full = effSize(j) === "full";
   $("hqBtn").hidden = settings.size === "full";
   $("hqBtn").setAttribute("aria-pressed", full);
   const unl = curPhotos().filter(isUnl).length;
-  $("toLabelBtn").hidden = !unl; $("toLabelBtn").textContent = `To label (${unl})`;
+  $("toLabelBtn").hidden = true; $("toLabelBtn").textContent = `To label (${unl})`;   // 1.20.39: shown as the first label tile instead of its own row
   $("newBtn").hidden = fkJob() || isQuick(j);   // without an SA: one running set of photos, no "New Job"   // a Field Kit job has one Field Cam job; a new job starts from the Field Kit menu
   const ob = $("outBtn"); ob.hidden = !j || isQuick(j);
   if (j && !isQuick(j)) {
@@ -2963,6 +2981,7 @@ function renderLabels() {
 $("outBtn").addEventListener("click", () => { saveIds = null; openOutcomeSheet(); });
 $("lGrid").addEventListener("click", e => {
   const b = e.target.closest(".lt"); if (!b || !current) return;
+  if (b.dataset.tolabel) return $("toLabelBtn").click();
   if (b.dataset.l === OTHER) return askOther(l => { tapLabel(l, true); toast(`Next photo: <b>${esc(labelText(S.sel))}</b>`); });
   tapLabel(b.dataset.l);
   // an SN label goes straight into barcode scanning; picking something else (or un-picking it) leaves that scanning
@@ -3173,7 +3192,7 @@ $("finishBtn").addEventListener("click", () => {
   if (!outcomeSet(curJob())) msgs.push(`<p><b>No outcome picked yet.</b> Choose it above${curJob().outcome ? ", with its reason" : " (Complete, Cannot Complete or Not Required)"}.</p>`);
   if (unl) msgs.push(`<p><b>${plural(unl, "photo")} still to label.</b> ${unl === 1 ? "It" : "They"} can’t be saved until labelled.</p>`);
   if (miss.length) msgs.push(`<p><b>No photo yet for:</b> ${miss.map(esc).join(", ")}.</p>`);
-  if (und) msgs.push(`<p>${plural(und, "photo")} ${und === 1 ? "hasn’t" : "haven’t"} been saved. If you finish now ${und === 1 ? "it stays" : "they stay"} on this phone under Previous jobs.</p>`);
+  if (und) msgs.push(`<p>${plural(und, "photo")} ${und === 1 ? "hasn’t" : "haven’t"} been saved. If you finish now ${und === 1 ? "it stays" : "they stay"} on this phone (not in the gallery) until it clears them.</p>`);
   if (!msgs.length) return finishJob();
   $("finishMsg").innerHTML = msgs.join("");
   $("finishDl").hidden = !und;
@@ -3198,7 +3217,7 @@ function openNewSheet() {
   if (!ps.length) msgs.push(`<p class="hint">No photos taken in this job yet.</p>`);
   else if (!und) msgs.push(`<p class="hint">All ${plural(ps.length, "photo")} in this job are saved ✓</p>`);
   if (unl) msgs.push(`<p><b>${plural(unl, "photo")} still to label.</b></p>`);
-  if (und) msgs.push(`<p><b>${plural(und, "photo")} not saved yet.</b> Starting a new job without saving keeps ${und === 1 ? "it" : "them"} on this phone under Previous jobs.</p>`);
+  if (und) msgs.push(`<p><b>${plural(und, "photo")} not saved yet.</b> Starting a new job without saving keeps ${und === 1 ? "it" : "them"} on this phone (not in the gallery) until it clears them.</p>`);
   if (und && miss.length) msgs.push(`<p class="hint">No photo yet for: ${miss.map(esc).join(", ")}.</p>`);
   $("newMsg").innerHTML = msgs.join("");
   $("newLabel").hidden = !unl;
@@ -3345,7 +3364,6 @@ $("startBtn").addEventListener("click", () => {
   current = { id, sel:[] };
   S.sel = []; S.selected.clear();
   beginSession();
-  if (hadPrev) toast("The last job’s photos are under Previous jobs in the gallery.", 3200);
 });
 
 applyRot();

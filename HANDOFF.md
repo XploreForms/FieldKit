@@ -30,6 +30,7 @@ One installable web app (PWA), no build step, hosted on GitHub Pages. The main w
 **New SA** (SA-#, job type, platform, drop for Fibre, Technology) → **Field Cam** (stamped photos, scanned equipment) → **Field Notes** (FSL completion comment, prefilled from the SA) → **SA summary / home** (photos, comment, equipment, outcome, Complete SA). SAs stay in **SA history** (bottom of the menu, collapsed) for 7 days.
 
 The home screen (1.20.27) **fills the screen with no scrolling** on any phone: header (bigger: 58px logo, Field Kit, name, dealer, **clock = SA History** on its own page `#history`, gear = Settings), the one-line "Google backup is off · Connect" banner when needed, then **Tools as 2-across tiles that share the leftover height** (Field Stock, Inventory, Manual Order, RMA, Compass, and a **Field Cam** tile = photos without an SA, same colour as the others since 1.20.36). When Field Cam has pictures in progress its tile says "In progress · N photos" and has a **New** button (two taps, same size both times; round icon in compact layouts) that starts a fresh set; the old pictures stay saved. Since 1.20.33 the layout is fitted by **`fitHome()`** (index.html): it sets the menu's height from the real visible window (`innerHeight`/`visualViewport`, not CSS vh/dvh, which come out wrong after a refresh when the phone's page zoom / text size is above 100%) and picks the biggest layout that fits with nothing cut off: stacked roomy → stacked → side-by-side roomy → side-by-side → compact 2-line → compact 1-line → no descriptions. Runs on load, resize, fonts ready, pageshow and after the menu paints. Don't go back to CSS-only height rules, and at the bottom (thumb) **Start New SA** or the SA in progress (progress chips, **Open SA**, **New** — fixed width so "Tap again" doesn't resize it). Field Notes without an SA is gone.
+- SA summary's Pictures button says **Take Pictures** until every required picture is taken; **Save Pictures** only when they're all taken but some aren't saved; otherwise Open Pictures (1.20.39).
 - **Start SA opens the SA summary**, not the camera (1.20.27).
 - **Names inside an SA**: Field Cam is **Pictures** (was "Photos" in 1.20.27–34), Field Notes is **Comments** (headers, page titles, SA summary buttons, toasts). Field Stock keeps its name. On its own, Field Cam stays "Field Cam".
 
@@ -110,6 +111,12 @@ The home screen (1.20.27) **fills the screen with no scrolling** on any phone: h
 - SA home: no "Also logged in Field Stock…" line under equipment and no "You can leave any time…" line above Complete SA.
 
 ### Field Cam: photos and scanning
+- (1.20.39) **No pop-up after each picture**; only the too blurry / too dark warning (with Retake) still shows.
+- (1.20.39) **"To label (n)" is the first tile in the label grid** (orange), not a row of its own.
+- (1.20.39) **Gallery shows only the current job/SA** (no Previous jobs). Unsaved pictures from an earlier set stay on the phone until auto-clean, but aren't listed.
+- (1.20.39) **No sideways/landscape mode** outside full screen: turning the phone doesn't reshape the frame (`frameTurn` is 0 unless `fc-fs`); saved pictures are still turned upright.
+- (1.20.39) Without an SA: **no start/end cards**, and once every picture is saved a sheet offers **Finish & Go Home** (ends the set, back to the menu) or Keep shooting.
+- (1.20.39) Barcode scanner: **no white box**; a dark vignette fading to a clear middle; the red line turns green/orange on hit/miss.
 - (1.20.35) **Labels sit at the bottom**, right above the shutter (deck `justify-content:flex-end`).
 - Field Cam settings no longer have a Text size option (1.20.38; always normal).
 - Viewfinder buttons, top to bottom: **HQ, Flash, Scanner, Full screen** (1.20.36).
