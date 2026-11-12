@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
 <title>Field Cam</title>
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -1150,6 +1150,7 @@ const DB = {
 /* ================= camera (rear only) ================= */
 async function startCamera(deviceId) {
   const v = $("video");
+  if (!FieldKit.shown() || document.visibilityState === "hidden") return;   // never open the camera while Field Cam is off screen
   deviceId = typeof deviceId === "string" ? deviceId : S.deviceId;
   try {
     if (S.stream) S.stream.getTracks().forEach(t => t.stop());
@@ -1174,7 +1175,7 @@ async function startCamera(deviceId) {
     if (S.caps.zoom) pushHwZoom();   // always start at exactly 1×, even on a camera that could go wider
     $("torchBtn").classList.remove("on");
     $("vfMsg").hidden = true;
-    S.track.addEventListener("ended", () => { if (document.visibilityState === "visible" && !S.switching) startCamera(); });
+    S.track.addEventListener("ended", () => { if (document.visibilityState === "visible" && !S.switching && !S.paused && FieldKit.shown()) startCamera(); });   // not when Field Cam stopped it itself (iPhone reports that as "ended" too)
     if (!S.lensesScanned) await detectLenses();
     applyZoomUI();
   } catch (e) {
@@ -1362,7 +1363,10 @@ function syncPause() {
     const v = $("video"); try { v.pause(); } catch {}
     try { if (S.wake) S.wake.release(); } catch {} S.wake = null;
     // let go of the camera completely (1.20.83): no camera light or battery use while Field Cam isn't on screen
-    if (S.stream) { try { S.stream.getTracks().forEach(t => t.stop()); } catch {} }
+    if (!FieldKit.shown() || document.visibilityState !== "visible") {   // off screen: close the camera (1.20.83/85)
+      if (S.stream) { try { S.stream.getTracks().forEach(t => t.stop()); } catch {} S.stream = null; }
+      try { v.srcObject = null; } catch {}
+    } else if (S.track) S.track.enabled = false;   // a sheet over the camera: just pause it, so it's back instantly
     stopGeo();
   } else if (!hide && S.paused) {
     S.paused = false;

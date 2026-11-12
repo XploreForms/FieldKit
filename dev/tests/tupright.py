@@ -1,0 +1,37 @@
+"""1.20.85: phone held sideways keeps the app upright (shell turns it back, Field Cam left to its own turning),
+no zooming (touch-action / gestures), home fills its frame."""
+import asyncio, json
+exec(open('dev/tests/tshell2.py').read().split('async def main')[0])
+async def main():
+  async with async_playwright() as p:
+    b=await p.chromium.launch(args=['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream'])
+    ctx=await b.new_context(viewport={'width':390,'height':844},is_mobile=True,has_touch=True,permissions=['camera'])
+    await ctx.add_init_script("(s=>{for(const k in s) if(!localStorage.getItem(k)) localStorage.setItem(k,s[k]);})(%s)"%json.dumps(SEED)); await ctx.add_init_script(CAM)
+    pg=await ctx.new_page(); errs=[]; pg.on('pageerror',lambda e:errs.append(str(e)))
+    await pg.goto(U+'index.html'); await pg.wait_for_timeout(2500)
+    h=await cur(pg)
+    m=await h.evaluate("[document.getElementById('menu').getBoundingClientRect().bottom, document.documentElement.clientHeight]")
+    check('home menu reaches the bottom of its frame', abs(m[0]-m[1])<=2, m)
+    check('no zoom on the pages', await h.evaluate("document.documentElement.style.touchAction")=='pan-x pan-y')
+    # sideways
+    await pg.set_viewport_size({'width':844,'height':390}); await pg.evaluate("window.__forceAngle=90; __fkUpright()"); await pg.wait_for_timeout(500)
+    r=await pg.evaluate("[document.documentElement.className, (()=>{const f=document.querySelector('#stage iframe.on').getBoundingClientRect(); return [Math.round(f.width),Math.round(f.height)]})()]")
+    fh=await h.evaluate("[innerWidth, innerHeight]")
+    check('sideways: app turned back upright (frame is portrait inside)', 'srot90' in r[0] and fh[0]<fh[1], [r, fh])
+    m=await h.evaluate("[document.getElementById('menu').getBoundingClientRect().bottom, document.documentElement.clientHeight]")
+    check('…home still fills it', abs(m[0]-m[1])<=2, m)
+    await h.locator('.tiles a',has_text='Field Stock').click(); await until(pg,'fieldstock.html'); await pg.wait_for_timeout(300)
+    s=await cur(pg); check('Field Stock upright too', await pg.evaluate("document.documentElement.classList.contains('srot90')") and (await s.evaluate("innerWidth<innerHeight")))
+    await s.locator('.fk-back').first.click(); await until(pg,'index.html'); await pg.wait_for_timeout(300)
+    h=await cur(pg); await h.locator('.tiles a',has_text='Field Cam').first.click(); await until(pg,'fieldcam.html'); await pg.wait_for_timeout(1500)
+    c=await cur(pg)
+    check('Field Cam: shell leaves it to its own turning', not await pg.evaluate("document.documentElement.classList.contains('srot')") and await c.evaluate("innerWidth>innerHeight"))
+    await c.locator('.fk-back').first.click(); await until(pg,'index.html'); await pg.wait_for_timeout(400)
+    check('back on home: upright again', await pg.evaluate("document.documentElement.classList.contains('srot90')"))
+    await pg.set_viewport_size({'width':390,'height':844}); await pg.evaluate("window.__forceAngle=0; __fkUpright()"); await pg.wait_for_timeout(500)
+    check('upright phone: not turned', not await pg.evaluate("document.documentElement.classList.contains('srot')"))
+    m=await h.evaluate("[document.getElementById('menu').getBoundingClientRect().bottom, document.documentElement.clientHeight]")
+    check('…home fills its frame again', abs(m[0]-m[1])<=2, m)
+    errs=[e for e in errs if 'ViewTransition' not in e]; check('no page errors', not errs, errs)
+    print('ALL PASS' if ok else 'SOME FAILED'); await b.close()
+asyncio.run(main())

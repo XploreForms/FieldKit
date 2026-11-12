@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
 
 <title>Field Kit</title>
@@ -690,7 +690,7 @@ details.grp .btn{margin-bottom:12px}
     }).join("");
   }
   // SA history: its own page (the clock at the top of the home screen)
-  function openHist() { if (!/^#history/.test(location.hash)) history.pushState(null, "", "#history"); paintJobs(); showView("histView"); }
+  function openHist() { if (!/^#history/.test(location.hash)) history[FK.inShell ? "replaceState" : "pushState"](null, "", "#history"); paintJobs(); showView("histView"); }
   $("openHist").addEventListener("click", openHist);
   $("histBack").addEventListener("click", function (e) { e.preventDefault(); history.replaceState(null, "", location.pathname + location.search); openMenu(); });
   var jobSureT = null;
@@ -957,17 +957,20 @@ details.grp .btn{margin-bottom:12px}
     var mr = m.getBoundingClientRect(), gr = g.getBoundingClientRect(), de = document.documentElement.style;
     de.setProperty("--go-gap", Math.max(0, Math.round(mr.bottom - gr.bottom)) + "px"); de.setProperty("--go-h", Math.round(gr.height) + "px");
   }
+  // the height to fill. In the shell the page is a frame and its own box is the screen (an iPhone frame can report
+  // the outer viewport, which left a gap under Start New SA, 1.20.85)
+  function screenH(vv) { return window.__fkInShell ? (document.documentElement.clientHeight || window.innerHeight) : Math.min(window.innerHeight, vv ? vv.height : window.innerHeight); }
   // New SA fills exactly the visible screen (same measure as the home screen; CSS vh is wrong with page zoom/text size)
   function sizeNewJob() {
     var cs = getComputedStyle(document.documentElement), vv = window.visualViewport;
-    var h = Math.min(window.innerHeight, vv ? vv.height : window.innerHeight) - (parseFloat(cs.paddingTop) || 0) - (parseFloat(cs.paddingBottom) || 0);
+    var h = screenH(vv) - (parseFloat(cs.paddingTop) || 0) - (parseFloat(cs.paddingBottom) || 0);
     ["newjob", "lobby"].forEach(function (id) { var v = $(id); if (v && !v.hidden) v.style.minHeight = Math.max(320, Math.floor(h)) + "px"; });   // New SA and the SA summary (1.20.48)
   }
   ["resize", "orientationchange", "pageshow"].forEach(function (ev) { addEventListener(ev, sizeNewJob); });
   function fitPick() {
     var m = $("menu"); if (!m || m.hidden) return;
     var cs = getComputedStyle(document.documentElement), vv = window.visualViewport;
-    var h = Math.min(window.innerHeight, vv ? vv.height : window.innerHeight) - (parseFloat(cs.paddingTop) || 0) - (parseFloat(cs.paddingBottom) || 0);
+    var h = screenH(vv) - (parseFloat(cs.paddingTop) || 0) - (parseFloat(cs.paddingBottom) || 0);
     m.style.height = Math.max(320, Math.floor(h)) + "px";
     var tiles = m.querySelectorAll(".tiles a");
     function over() {
@@ -986,6 +989,8 @@ details.grp .btn{margin-bottom:12px}
     }
   }
   ["resize", "orientationchange", "pageshow", "load"].forEach(function (ev) { addEventListener(ev, function () { fitHome(); setTimeout(fitHome, 250); }); });
+  // the frame's size can change without a resize event reaching it (iPhone, as the app starts)
+  try { var fitW = 0, fitH = 0; new ResizeObserver(function () { var de = document.documentElement; if (de.clientWidth === fitW && de.clientHeight === fitH) return; fitW = de.clientWidth; fitH = de.clientHeight; fitHome(); sizeNewJob(); }).observe(document.documentElement); } catch (e) {}
   if (window.visualViewport) visualViewport.addEventListener("resize", fitHome);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitHome);
   function paintMenu() {
@@ -1239,7 +1244,11 @@ details.grp .btn{margin-bottom:12px}
     { h: "Back up with Google Sheets", sub: "So your stock history is never lost. You can skip this for now and connect later in Settings." }
   ];
   var step = 0;
-  function showView(id) { ["menu", "setup", "settings", "lobby", "newjob", "histView"].forEach(function (v) { $(v).hidden = v !== id; }); if (typeof sizeNewJob === "function") sizeNewJob(); scrollTo(0, 0); }
+  function showView(id) {
+    ["menu", "setup", "settings", "lobby", "newjob", "histView"].forEach(function (v) { $(v).hidden = v !== id; }); if (typeof sizeNewJob === "function") sizeNewJob(); scrollTo(0, 0);
+    // tell the shell which screen this is (iPhone: each screen is its own history entry, for the swipe back, 1.20.85)
+    try { var sh = FK.inShell && window.parent.__fkShell; if (sh && sh.screen) sh.screen(window, "index.html" + ({ settings: "#settings", lobby: "#job", newjob: "#new-job", histView: "#history", setup: "#setup" }[id] || "")); } catch (e) {}
+  }
   function renderStep() {
     var info = STEP_INFO[step], form = $("stepForm");
     $("stepBar").querySelectorAll("i").forEach(function (b, i) { b.classList.toggle("on", i <= step); });

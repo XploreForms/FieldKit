@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Field Kit</title>
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -32,6 +32,13 @@
   #stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;visibility:hidden;pointer-events:none;background:transparent}
   #stage iframe.on{visibility:visible;pointer-events:auto;z-index:1}
   #stage.busy iframe.on{pointer-events:none}
+  /* phone turned sideways: iPhone web apps can't be locked upright, so the shell turns the app back, like rotation lock
+     (1.20.85). Field Cam does its own turning (photos still come out landscape), so it's left alone while it's on screen. */
+  html.srot #stage{top:0;left:0;right:auto;bottom:auto;width:var(--rh);height:var(--rw);transform-origin:0 0}
+  html.srot90 #stage{transform:rotate(-90deg) translateX(-100%)}
+  html.srot270 #stage{transform:rotate(90deg) translateY(-100%)}
+  html.srot #stage iframe{inset:var(--it,0px) var(--ir,0px) var(--ib,0px) var(--il,0px);width:calc(100% - var(--il,0px) - var(--ir,0px));height:calc(100% - var(--it,0px) - var(--ib,0px))}
+  #inset{position:fixed;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
   #toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 96px);transform:translate(-50%,10px);z-index:5;max-width:calc(100% - 40px);
     padding:10px 16px;border-radius:12px;background:#0E2A27;color:#F2F5F3;font:600 15px/1.3 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
     opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;text-align:center}
@@ -49,8 +56,8 @@
 </style>
 </head>
 <body>
-<div id="stage"></div>
-<div id="toast" role="status" aria-live="polite"></div>
+<div id="stage"><div id="toast" role="status" aria-live="polite"></div></div>
+<div id="inset"></div>
 <script>
 (function () {
   "use strict";
@@ -202,13 +209,14 @@
       if (!kept(old.k)) drop(old);
     }
     cur = f;
+    upright();
     f.el.classList.add("on"); f.el.removeAttribute("aria-hidden");
     if (old !== f) host(f, true);
     finish(f, route);
   }
   function finish(f, route) {
     var w = win(f);
-    if (route !== undefined && f.k === "home") { try { if (w.__fkRoute) w.__fkRoute(route); } catch (e) {} }
+    if (route !== undefined && f.k === "home") { routing = true; try { if (w.__fkRoute) w.__fkRoute(route); } catch (e) {} routing = false; }
     try { document.title = w.document.title || "Field Kit"; var th = w.document.documentElement.getAttribute("data-theme"); if (th) de.setAttribute("data-theme", th); } catch (e) {}
     try { w.focus(); } catch (e) {}
     if (f.k === "home") refreshSoon();
@@ -255,12 +263,32 @@
 
   /* ---------- history: one entry per page change; Back goes to the previous page ---------- */
   var stack = [start], pos = 0, pendingRoute = null;
+  var routing = false, silentBack = false;
+  // home changed screen by itself (iPhone only): record it as a history entry, or step back one if it's the screen before
+  function screen(w, url) {
+    if (!IOS || routing || !cur || cur.k !== "home" || win(cur) !== w || url === stack[pos]) return;
+    if (pos > 0 && stack[pos - 1] === url) { silentBack = true; history.back(); return; }
+    // Start SA turns New SA into the SA page, and finishing setup turns into the menu: those replace, not add
+    if (/#(new-job|setup)$/.test(stack[pos])) { stack[pos] = url; try { history.replaceState({ fk: url, i: pos }, "", addr(url)); } catch (e) {} return; }
+    stack = stack.slice(0, pos + 1); stack.push(url); pos++;
+    try { history.pushState({ fk: url, i: pos }, "", addr(url)); } catch (e) {}
+  }
+  var IOS = window.__fkIOS != null ? !!window.__fkIOS : (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1));
   function addr(u) { return "frame.html?u=" + encodeURIComponent(u); }
   try { history.replaceState({ fk: start, i: 0 }, "", addr(start)); } catch (e) {}
   function samePage(a, b) { var ka = keyOf(a), kb = keyOf(b); return ka === kb && (kept(ka) || pageOf(a) === pageOf(b)); }
   function nav(url, replace) {
     url = clean(url);
-    if (cur && kept(cur.k) && keyOf(url) === cur.k) { show(url, cur.k === "home" ? hashOf(url) : undefined); return; }   // same page, another screen of it
+    if (cur && kept(cur.k) && keyOf(url) === cur.k) {   // same page, another screen of it
+      // iPhone (1.20.85): no Back button, only the swipe, which slides between real history entries. So each home screen
+      // (menu, SA page, New SA, settings…) gets its own entry, and the swipe shows the screen it's going back to.
+      if (IOS && cur.k === "home" && url !== stack[pos]) {
+        if (!replace && pos > 0 && stack[pos - 1] === url) { pendingRoute = url; pendingFrom = pos; history.back(); return; }
+        if (replace) { stack[pos] = url; try { history.replaceState({ fk: url, i: pos }, "", addr(url)); } catch (e) {} }
+        else { stack = stack.slice(0, pos + 1); stack.push(url); pos++; try { history.pushState({ fk: url, i: pos }, "", addr(url)); } catch (e) {} }
+      }
+      show(url, cur.k === "home" ? hashOf(url) : undefined); return;
+    }
     // going to the page just before (e.g. "‹ Field Kit"): a real Back, so history doesn't keep growing
     if (!replace && pos > 0 && samePage(stack[pos - 1], url)) { pendingRoute = url; pendingFrom = pos; history.back(); return; }
     if (replace) { stack[pos] = url; try { history.replaceState({ fk: url, i: pos, guard: guard ? 1 : undefined }, "", addr(url)); } catch (e) {} }
@@ -276,6 +304,7 @@
      page. On the home screen's menu the first Back says "Press back again to close Field Kit"; the next one closes it. */
   var guard = false, lastWarn = 0, pendingFrom = -1;
   function touched(w) {
+    if (IOS) return;   // iPhone: no Back button to catch, and a spare entry made the swipe slide to a copy of the same screen
     if (guard || !cur || win(cur) !== w) return;
     try { history.pushState({ fk: stack[pos], i: pos, guard: 1 }, "", addr(stack[pos])); guard = true; } catch (e) {}
   }
@@ -296,6 +325,7 @@
     var st = e.state;
     if (!st || st.fk === undefined) return;
     var np = st.i || 0;
+    if (silentBack) { silentBack = false; pos = np; return; }   // home already shows this screen
     if (pendingRoute) {
       if (np >= pendingFrom) { history.back(); return; }          // stepped off a spare entry: keep going back
       pos = np; guard = !!st.guard;
@@ -306,13 +336,13 @@
     if (np === pos && guard && !st.guard) { guard = false; pageBack(); return; }   // Back pressed on this page
     pos = np; guard = !!st.guard;
     if (!stack[pos] || !samePage(stack[pos], st.fk)) stack[pos] = st.fk;
-    show(st.fk, undefined);
+    show(st.fk, IOS && keyOf(st.fk) === "home" ? hashOf(st.fk) : undefined);
   });
 
   var tt = 0;
   function toast(t) { var el = document.getElementById("toast"); el.textContent = t; el.classList.add("show"); clearTimeout(tt); tt = setTimeout(function () { el.classList.remove("show"); }, 2200); }
 
-  window.__fkShell = { nav: function (u, r) { nav(u, r); }, touched: touched, toast: toast };
+  window.__fkShell = { nav: function (u, r) { nav(u, r); }, touched: touched, toast: toast, screen: screen };
 
   // a new version has taken over: reload the whole app (the pages leave this to the shell)
   try {
@@ -321,7 +351,23 @@
       navigator.serviceWorker.addEventListener("controllerchange", function () { if (had) location.reload(); had = true; });
     }
   } catch (e) {}
-  matchMedia(BIGQ).addEventListener("change", function () { de.classList.toggle("big", isBig()); });
+  matchMedia(BIGQ).addEventListener("change", function () { de.classList.toggle("big", isBig()); upright(); });
+  function upright() {
+    var a = 0; try { a = (screen.orientation && typeof screen.orientation.angle === "number") ? screen.orientation.angle : (typeof window.orientation === "number" ? (window.orientation + 360) % 360 : 0); } catch (e) {}
+    if (window.__forceAngle != null) a = window.__forceAngle;   // tests
+    var touch = window.__forceAngle != null || matchMedia("(pointer:coarse)").matches, cam = !!cur && pageOf(cur.url) === "fieldcam.html";
+    var r = !isBig() && touch && !cam && innerWidth > innerHeight && (a === 90 || a === 270) ? a : 0;
+    de.classList.toggle("srot", !!r); de.classList.toggle("srot90", r === 90); de.classList.toggle("srot270", r === 270);
+    if (!r) return;
+    var cs = getComputedStyle(document.getElementById("inset")), t = parseFloat(cs.paddingTop) || 0, rt = parseFloat(cs.paddingRight) || 0, b = parseFloat(cs.paddingBottom) || 0, l = parseFloat(cs.paddingLeft) || 0;
+    var st = de.style; st.setProperty("--rw", innerWidth + "px"); st.setProperty("--rh", innerHeight + "px");
+    // the app's top is the phone's top: the screen's left edge (90) or right edge (270)
+    var m = r === 90 ? [l, t, rt, b] : [rt, b, l, t];   // app top, right, bottom, left
+    st.setProperty("--it", m[0] + "px"); st.setProperty("--ir", m[1] + "px"); st.setProperty("--ib", m[2] + "px"); st.setProperty("--il", m[3] + "px");
+  }
+  window.__fkUpright = upright;
+  ["resize", "orientationchange"].forEach(function (ev) { addEventListener(ev, function () { upright(); setTimeout(upright, 300); }); });
+  try { if (screen.orientation) screen.orientation.addEventListener("change", function () { setTimeout(upright, 50); }); } catch (e) {}
   addEventListener("storage", function (e) {
     if (!e.key || e.key === "techstock.theme") theme();
     if (!e.key || /^techstock\.|^fieldkit\.|^fieldcam\.|^xplore_fsl_/.test(e.key)) refreshSoon(800);

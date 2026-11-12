@@ -52,7 +52,7 @@ async def main():
     check('camera starts once shown', await cam.evaluate("S.started && !S.paused && !!document.getElementById('video').srcObject"))
     await cam.locator('#shutter').click(); await pg.wait_for_timeout(2500)
     await back(); await pg.wait_for_timeout(300)
-    check('camera paused and released while hidden', await cam.evaluate("S.paused && !FieldKit.shown() && S.stream.getVideoTracks().every(t=>t.readyState==='ended')"))
+    check('camera paused and released while hidden', await cam.evaluate("S.paused && !FieldKit.shown() && !S.stream && !document.getElementById('video').srcObject"))
     h=await cur(pg); check('SA page shows the photo', '1 NOT SAVED' in (await h.locator('#lobby').inner_text()), (await h.locator('#lobby').inner_text())[:200])
     t=await open_('Comments','fieldnotes.html#job'); print('   Comments after',t,'ms')
     check('Comments instant', t is not None and t<200, t)
@@ -69,7 +69,7 @@ async def main():
       check(f'…answer still there ({i+1})', await nt.evaluate("STATE.other_notes")=='kept')
       await back()
     # hidden: the camera is let go right away (1.20.83), and comes back when shown
-    check('camera released as soon as hidden', await cam.evaluate("S.stream.getVideoTracks()[0].readyState")=='ended')
+    check('camera released as soon as hidden', await cam.evaluate("!S.stream && !document.getElementById('video').srcObject"))
     t=await open_('Pictures','fieldcam.html#job'); await pg.wait_for_timeout(2000)
     check('…and restarts when shown', t is not None and t<200 and await cam.evaluate("document.getElementById('video').srcObject.getVideoTracks()[0].readyState")=='live', t)
     await back()

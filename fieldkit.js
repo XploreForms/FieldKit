@@ -67,6 +67,10 @@ if (!window.__fkFraming) (function () {
 if (!window.__fkFraming) (function () {
   "use strict";
   var VERSION = (window.FIELDKIT_VERSION && window.FIELDKIT_VERSION.version) || "0";   // set in version.js
+  // No zooming the app (1.20.85): iPhone ignores the viewport's no-zoom, so pinch and double-tap are turned off here.
+  // Field Cam's viewfinder and Field Stock's scanner still get their own pinch (they're touch-action:none and handle it).
+  try { document.documentElement.style.touchAction = "pan-x pan-y"; } catch (e) {}
+  document.addEventListener("gesturestart", function (e) { e.preventDefault(); }, { passive: false });
   var me = document.currentScript, APP = (me && me.getAttribute("data-app")) || "home";
 
   /* ---- shown / hidden, and moving between pages (step 2 of the one-app rebuild, 1.20.80) ----
