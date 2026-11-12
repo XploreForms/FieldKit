@@ -3655,8 +3655,14 @@ function fkSession() {
 }
 FieldKit.onLeave(fkSession);
 // the shell hiding or showing this page pauses and resumes the camera, like switching apps does (1.20.80)
-FieldKit.onLeave(() => { try { syncPause(); } catch {} });
-FieldKit.onShow(() => { try { syncPause(); if (S.started && !S.paused) { if (!S.track || S.track.readyState === "ended") startCamera(); keepAwake(); } renderAll(); } catch {} });
+let relT = 0;
+FieldKit.onLeave(() => {
+  try { syncPause(); } catch {}
+  // kept hidden by the shell: let go of the camera after a while, so it isn't held (and its light isn't on) on other pages
+  clearTimeout(relT);
+  if (!FieldKit.shown()) relT = setTimeout(() => { if (!FieldKit.shown() && S.stream) { try { S.stream.getTracks().forEach(t => t.stop()); } catch {} } }, 20000);
+});
+FieldKit.onShow(() => { clearTimeout(relT); try { syncPause(); if (S.started && !S.paused) { if (!S.track || S.track.readyState === "ended") startCamera(); keepAwake(); } renderAll(); } catch {} });
 </script>
 
 <div id="fk-end" hidden></div>

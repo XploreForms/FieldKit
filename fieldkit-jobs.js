@@ -379,6 +379,9 @@
   function outcomeFollow(j, outcome) {
     var st = j.notes && j.notes.state, name = NOTE_OUT[outcome] || "";
     if (st && name && st.job_outcome !== name) { st.job_outcome = name; if (st.job_drop && name !== "Complete") delete st.job_drop; }
+    // and Comments' saved form for this SA, which is what Comments opens with (1.20.82)
+    var w = get(KN, null);
+    if (w && w.owner === j.id && w.state && name && w.state.job_outcome !== name) { w.state.job_outcome = name; if (w.state.job_drop && name !== "Complete") delete w.state.job_drop; set(KN, w); }
     if (j.notes && j.notes.comment) j.notes.stale = true;
   }
   // the SA's Technology (FTX, FWN, HJ3...) goes after the platform: "Install · Fixed Wireless · FWN"

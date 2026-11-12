@@ -86,7 +86,9 @@ if (!window.__fkFraming) (function () {
   var lateLeave = [];
   function onLeave(fn, last) { (last ? lateLeave : leaveFns).push(fn); }   // last: runs after the page's own saving (e.g. copying saved work into the SA)
   function fireLeave() { leaveFns.concat(lateLeave).forEach(function (fn) { safe(fn); }); }
-  addEventListener("pagehide", fireLeave);
+  // a page the shell is keeping hidden already saved as it was hidden; reloading or dropping it must not save again
+  // (its copy of the data could be older than what other pages have saved since)
+  addEventListener("pagehide", function () { if (!hostHidden) fireLeave(); });
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden" && !hostHidden) fireLeave(); });
   function hostSet(show) {
     show = !!show; if (show === !hostHidden) return;

@@ -80,6 +80,10 @@
     if (p === "index.html") return "home";
     if (p === "fieldstock.html" && (h === "" || h === "#log")) return "stock";
     if (p === "fieldstock.html" && /^#order/.test(h)) return "order";
+    // Field Cam and Comments (1.20.82): Field Cam on its own, and Pictures / Comments inside the SA
+    if (u === "fieldcam.html") return "cam";
+    if (u === "fieldcam.html#job") return "camsa";
+    if (u === "fieldnotes.html#job") return "notessa";
     return "t:" + p;
   }
   function kept(k) { return k.indexOf("t:") !== 0; }
@@ -108,7 +112,7 @@
       try { if (!w || w.location.href === "about:blank") return; } catch (e) { return; }
       f.ready = true;
       try { f.url = clean(w.location.pathname.split("/").pop() + w.location.search + w.location.hash); } catch (e) {}
-      if (k === "stock" || k === "order") setTimeout(function () { if (frames[k] === f && f !== cur && f.ready) f.snap = snap(); }, 1500);
+      if (k !== "home") setTimeout(function () { if (frames[k] === f && f !== cur && f.ready) f.snap = sigOf(k); }, 1500);
       var q = f.waits; f.waits = []; q.forEach(function (fn) { fn(); });
     });
     el.src = url;
@@ -134,7 +138,44 @@
     for (var n = 0; n < ks.length; n++) { s = ks[n] + "=" + (localStorage.getItem(ks[n]) || "") + "\n"; for (j = 0; j < s.length; j++) h = ((h << 5) + h + s.charCodeAt(j)) | 0; }
     return ks.length + ":" + h;
   }
-  function stale(f) { return (f.k === "stock" || f.k === "order") && f.ready && f.snap !== null && f.snap !== snap(); }
+  /* Field Cam and Comments kept in the background (1.20.82): what each one shows that another page can change.
+     A page's own saving happens as it's hidden, before this is taken, so it never makes itself out of date.
+     Comments doesn't care about Field Cam's photo counts, and Pictures doesn't care about Comments' answers
+     (except how many XWH / XTV), so going back and forth between them doesn't reload either one. */
+  function raw(k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } }
+  function hash(s) { var h = 5381; for (var j = 0; j < s.length; j++) h = ((h << 5) + h + s.charCodeAt(j)) | 0; return s.length + ":" + h; }
+  function stable(v) {
+    if (v === null || typeof v !== "object") return JSON.stringify(v === undefined ? null : v);
+    if (Array.isArray(v)) return "[" + v.map(stable).join(",") + "]";
+    return "{" + Object.keys(v).sort().map(function (k) { return JSON.stringify(k) + ":" + stable(v[k]); }).join(",") + "}";
+  }
+  var COMMON = ["fieldkit.profile", "fieldkit.prefs", "techstock.theme"];
+  // an empty value is the same as none ({} vs null slots after Field Cam first saves the SA)
+  function put(o, k, v) { if (v == null || v === "" || (typeof v === "object" && !Object.keys(v).length)) return; o[k] = v; }
+  function activeJob() {
+    var id = raw("fieldkit.activeJob"); if (!id) return null;
+    try { return (JSON.parse(raw("fieldkit.jobs") || "{}") || {})[id] || null; } catch (e) { return null; }
+  }
+  function sigOf(k) {
+    if (k === "stock" || k === "order") return snap();
+    var parts = COMMON.map(raw), j, o, n;
+    if (k === "cam") parts.push(raw("fieldcam.jobs"), raw("fieldcam.current"), raw("fieldcam.settings"));
+    else if (k === "camsa") {
+      j = activeJob(); o = {};
+      if (j) Object.keys(j).forEach(function (x) { if (x !== "notes" && x !== "step" && x !== "updated") put(o, x, j[x]); });
+      n = (j && j.notes && j.notes.state) || {};
+      parts.push(raw("fieldkit.activeJob"), raw("fieldcam.jobs"), raw("fieldcam.settings"), raw("fieldkit.camInJob"), stable(o), stable([n.xwh, n.tv]));
+    } else if (k === "notessa") {
+      j = activeJob(); o = {};
+      if (j) ["sa", "work", "plat", "tech", "vas", "base", "outcome", "reason", "labels", "serials", "slots", "status"].forEach(function (x) { put(o, x, j[x]); });
+      if (j && j.notes) Object.keys(j.notes).forEach(function (x) { if (x !== "state") put(o, "n." + x, j.notes[x]); });
+      parts.push(raw("fieldkit.activeJob"), raw("fieldkit.notesInJob"), stable(o));
+      try { for (var i = 0; i < localStorage.length; i++) { var key = localStorage.key(i); if (/^xplore_fsl_/.test(key) && key !== "xplore_fsl_wip_v2") parts.push(key + "=" + raw(key)); } } catch (e) {}
+    }
+    if (window.__fkSigDebug) (window.__fkSigLog = window.__fkSigLog || []).push([k, parts.slice()]);
+    return hash(parts.join("\n"));
+  }
+  function stale(f) { return f.k !== "home" && kept(f.k) && f.ready && f.snap !== null && f.snap !== sigOf(f.k); }
 
   // put a page on screen; route: send home to this screen ("#job", "" for the menu…) once it's showing
   function show(url, route) {
@@ -157,7 +198,7 @@
       try { var ad = win(old).document.activeElement; if (ad && ad.blur) ad.blur(); } catch (e) {}
       host(old, false);
       old.el.classList.remove("on"); old.el.setAttribute("aria-hidden", "true");
-      if (old.k === "stock" || old.k === "order") old.snap = snap();   // its own changes don't make it out of date
+      if (old.k !== "home" && kept(old.k)) old.snap = sigOf(old.k);   // its own changes (saved as it was hidden) don't make it out of date
       if (!kept(old.k)) drop(old);
     }
     cur = f;
@@ -179,8 +220,25 @@
   function refreshSoon(ms) {
     clearTimeout(rt);
     rt = setTimeout(function () {
-      ["stock", "order"].forEach(function (k) { var f = frames[k]; if (f && f !== cur && stale(f) && Date.now() - (f.at || 0) > 5000) { f.at = Date.now(); reload(f); } });
+      ["stock", "order", "camsa", "notessa"].forEach(function (k) {
+        var f = frames[k]; if (!f || f === cur || !cur) return;
+        if (cur.k !== "home" && (k === "camsa" || k === "notessa" || cur.k === "cam" || cur.k === "camsa")) return;   // not while the camera's on screen; Pictures / Comments only from home
+        if ((k === "camsa" || k === "notessa") && !activeJob()) { drop(f); return; }   // the SA was completed
+        if (stale(f) && Date.now() - (f.at || 0) > 5000) { f.at = Date.now(); reload(f); }
+      });
+      preloadSA();
     }, ms || 600);
+  }
+  /* An SA is open: load Pictures, then Comments, in the background so they open instantly (the camera doesn't
+     start until Pictures is on screen). Only while the tech is on the home page. */
+  function preloadSA() {
+    if (!KEEP || !preloaded || !activeJob() || !cur || cur.k !== "home") return;
+    var todo = ["fieldcam.html#job", "fieldnotes.html#job"].filter(function (u) { return !frames[keyOf(u)]; });
+    if (!todo.length) return;
+    var u = todo[0], wait = setTimeout(function () {
+      if (frames[keyOf(u)] || !cur || cur.k !== "home" || !activeJob()) return;
+      var f = make(keyOf(u), u, true); whenReady(f, function () { setTimeout(preloadSA, 1200); });
+    }, 1500);
   }
   // after the first screen is up: load home, Field Stock and Manual Order in the background, one at a time
   var preloaded = false;
@@ -192,6 +250,7 @@
       if (frames[keyOf(u)]) { next(); return; }
       setTimeout(function () { if (frames[keyOf(u)]) { next(); return; } var f = make(keyOf(u), u, true); whenReady(f, next); }, 1200);
     })();
+    setTimeout(refreshSoon, 6000);   // then Pictures and Comments, if an SA is open
   }
 
   /* ---------- history: one entry per page change; Back goes to the previous page ---------- */
@@ -230,7 +289,7 @@
       if (Date.now() - lastWarn > 2500) { lastWarn = Date.now(); toast("Press back again to close Field Kit"); }
       return;
     }
-    try { if (w.FieldKit && w.FieldKit.goHome && (cur.k.indexOf("t:") === 0)) { w.FieldKit.goHome(); return; } } catch (e) {}
+    try { if (w.FieldKit && w.FieldKit.goHome && cur.k !== "stock" && cur.k !== "order") { w.FieldKit.goHome(); return; } } catch (e) {}
     nav("index.html");
   }
   addEventListener("popstate", function (e) {
@@ -265,7 +324,7 @@
   matchMedia(BIGQ).addEventListener("change", function () { de.classList.toggle("big", isBig()); });
   addEventListener("storage", function (e) {
     if (!e.key || e.key === "techstock.theme") theme();
-    if (!e.key || /^techstock\.|^fieldkit\.(profile|prefs)$/.test(e.key)) refreshSoon(800);
+    if (!e.key || /^techstock\.|^fieldkit\.|^fieldcam\.|^xplore_fsl_/.test(e.key)) refreshSoon(800);
   });
 
   show(start, undefined);
