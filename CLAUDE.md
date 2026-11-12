@@ -7,7 +7,8 @@ Read this file first. It's kept short on purpose. `HANDOFF.md` holds the full li
 - When he asks for a **change**: make it, test it, release it with `dev/release.sh`, and republish the preview artifact. Then tell him in a line or two what changed.
 - Don't send before/after screenshots unless he asks; the preview artifact is how he tries changes.
 - Design for phones first.
-- His messages are often voice-dictated, so read past transcription slips.
+- His messages are often voice-dictated, so read past transcription slips ("essay" means SA).
+- Naming: inside an SA, Field Cam is **Pictures** and Field Notes is **Comments**. On its own it's **Field Cam**. Field Stock keeps its name.
 
 ## Save time and usage (do this every time)
 - **Don't read whole pages.** They run to 3,000+ lines. Run `grep -n "/\* [=-]\{3,\}" <file>` to list a file's sections, then read only the section you need using offset/limit. To find a specific function, grep for it.
@@ -17,8 +18,11 @@ Read this file first. It's kept short on purpose. `HANDOFF.md` holds the full li
   - commits and pushes to `main`
   - builds `/tmp/fk-shots/fieldkit-preview.html`
 
-  After it finishes, publish that preview file to the Field Kit preview artifact.
-- **Test narrowly:** run `dev/run.sh dev/check.py` for page errors, and only the one or two `dev/tests/*.py` near the change. `dev/README.md` lists them by area. Old tests may need their selectors updated.
+  After it finishes, publish that preview file to the Field Kit preview artifact: slug `ae0707bb-f348-4cb3-8ce2-9b29d79c552a` ("Field Kit 1.20.x preview"). Copy the file out of `/tmp` first, because `/tmp` files can't be attached. The older preview (`ad3d17ec…`) is stuck at 1.20.15.
+- **Check the live site published:** `gh run list -R XploreForms/FieldKit -L 1`. If GitHub's run shows `startup_failure` or stays queued, re-run it or push an empty commit. Installed phones update from `version.js`, not `index.html`.
+- **Test narrowly:** run `dev/run.sh dev/check.py` for page errors, and only the one or two `dev/tests/*.py` near the change. `dev/README.md` lists them by area. Old tests may need their selectors updated. Since 1.20.27, Start SA opens the SA summary, so tests go to `fieldcam.html#job` themselves.
+  - Newer tests (1.20.3x): `tfit` (home screen fits, many sizes and reloads), `tcam5` (Field Cam layout), `tq2` (Field Cam without an SA), `tfs` (full screen), `tsa3` (To label tile, Pictures button), `tcamnew` (Field Cam tile New).
+  - For a camera, launch Chromium with `--use-fake-device-for-media-stream` (these tests show how). Its picture always counts as "blurry".
 - **Screenshots:** only for your own checking (360×780), and only when the change is visual. Don't send them unless he asks.
 - **Batch:** when Curtis sends several small changes, ship them as a single release.
 
