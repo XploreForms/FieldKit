@@ -472,7 +472,7 @@ details.grp .btn{margin-bottom:12px}
     $("links").innerHTML = items.map(function (l) {
       var t = TILE[l.id] || TILE[l.name] || [l.name, l.desc], busy = l.id && prog[l.id], viaApp = l.app && ANDROID;
       var desc = t[1], restart = "";
-      if (l.id === "cam" && busy) { desc = "In progress" + (busy.detail ? " · " + busy.detail : ""); restart = '<button class="tnew" type="button" data-new="cam" aria-label="Start new Field Cam pictures (the current ones stay saved)">' + RESTART + '<span>New</span></button>'; }
+      if (l.id === "cam" && busy) { desc = "In progress" + (busy.detail ? " · " + busy.detail : ""); restart = '<button class="tnew" type="button" data-new="cam" aria-label="Start new Field Cam pictures (the current ones stay saved)">' + RESTART + '</button>'; }
       return '<li class="tile' + (l.quiet ? " quiet" : "") + (busy ? " busy" : "") + '"><a href="' + esc(viaApp ? appHref(l.href) : l.href) + '"' + (l.out && !viaApp ? ' target="_blank" rel="noopener"' : '') + '>' +
         '<i aria-hidden="true">' + svg(l.icon) + '</i><b>' + esc(t[0]) + (l.out ? '<span class="out" aria-hidden="true">' + OUT + '</span><span class="sr-only"> (opens in a new tab)</span>' : '') + '</b>' +
         '<small>' + esc(desc) + '</small>' + (busy && !restart ? '<em class="live">In progress</em>' : '') + '</a>' + restart + '</li>';
@@ -865,7 +865,7 @@ details.grp .btn{margin-bottom:12px}
     var app = b.getAttribute("data-new");
     if (!b.classList.contains("sure")) {
       // first tap: ask, without changing the card's size
-      b.classList.add("sure"); b.innerHTML = b.classList.contains("tnew") ? RESTART + "<span>Tap again</span>" : "Tap to clear";
+      b.classList.add("sure"); if (b.classList.contains("tnew")) toast("Tap again to start new pictures"); else b.innerHTML = "Tap to clear";   /* the Field Cam tile's button stays just the icon (1.20.42) */
       b.setAttribute("aria-label", { cam: "Tap again to end the Field Cam job (photos stay saved)", stock: "Tap again to clear the unsaved Field Stock items", notes: "Tap again to clear the Field Notes comments" }[app]);
       clearTimeout(sureT); sureT = setTimeout(paintTools, 4000);
       return;
@@ -876,7 +876,18 @@ details.grp .btn{margin-bottom:12px}
   /* Home screen fit (1.20.33). CSS screen units (vh/dvh) come out wrong after a refresh when the phone's page zoom / text size
      is above 100%, so the height comes from the real visible window, and the layout steps down only as far as it must. */
   var FIT = ["fit-stack fit-roomy", "fit-stack", "fit-roomy", "", "fit-c1 fit-two", "fit-c1", "fit-c2"];
-  function fitHome() {
+  /* Field Cam tile's New: just the icon, top right, the same size and the same distance from the edges as the tile's own icon (1.20.42) */
+  function placeNew() {
+    [].forEach.call(document.querySelectorAll(".tiles .tnew"), function (b) {
+      var li = b.parentNode, ic = li.querySelector("a > i"); if (!ic) return;
+      var t = li.getBoundingClientRect(), r = ic.getBoundingClientRect();
+      b.style.top = Math.round(r.top - t.top) + "px"; b.style.right = Math.round(r.left - t.left) + "px";
+      b.style.width = b.style.height = Math.round(r.width) + "px"; b.style.borderRadius = getComputedStyle(ic).borderRadius;
+      li.style.setProperty("--tnew", Math.round(r.width) + "px");
+    });
+  }
+  function fitHome() { fitPick(); placeNew(); }
+  function fitPick() {
     var m = $("menu"); if (!m || m.hidden) return;
     var cs = getComputedStyle(document.documentElement), vv = window.visualViewport;
     var h = Math.min(window.innerHeight, vv ? vv.height : window.innerHeight) - (parseFloat(cs.paddingTop) || 0) - (parseFloat(cs.paddingBottom) || 0);
@@ -1353,14 +1364,10 @@ details.grp .btn{margin-bottom:12px}
 .tiles{flex:1;min-height:0;list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:10px;overflow:hidden}
 /* 1.20.32: description always shown; icon beside the title so every tile fits its share of the height (never grows the page) */
 .tiles .tile{position:relative;min-height:0;min-width:0;overflow:hidden;border-radius:16px}
-.tiles .tnew{position:absolute;top:8px;right:8px;z-index:1;width:96px;height:30px;display:flex;align-items:center;justify-content:center;gap:5px;border:0;border-radius:99px;background:var(--surface-2);color:var(--fg);font:600 .78rem var(--f-body);cursor:pointer}
-.tiles .tnew svg{width:14px;height:14px}
-.tiles .tnew.sure{background:var(--warn-bg);color:var(--warn)}
-/* side-by-side (compact) tiles: a round icon button in the bottom-right corner, same size before and after the first tap */
-#menu:not(.fit-stack) .tiles .tnew{top:auto;bottom:6px;right:6px;width:32px;height:32px;padding:0;gap:0}
-#menu:not(.fit-stack) .tiles .tnew span{display:none}
-#menu:not(.fit-stack) .tiles .tnew svg{width:16px;height:16px}
-#menu:not(.fit-stack) .tiles .tile:has(.tnew) small{padding-right:34px}
+.tiles .tnew{position:absolute;top:10px;right:12px;z-index:1;width:36px;height:36px;padding:0;display:grid;place-items:center;border:0;border-radius:10px;background:var(--surface-2);color:var(--fg);cursor:pointer}   /* 1.20.42: icon only, top right; placeNew() matches it to the tile's icon */
+.tiles .tnew svg{width:55%;height:55%}
+.tiles .tnew.sure{background:var(--warn-bg);color:var(--warn);box-shadow:inset 0 0 0 1.5px currentColor}
+.tiles .tile:has(.tnew) b{margin-right:calc(var(--tnew,36px) + 6px)}
 .tiles a{position:relative;height:100%;display:grid;grid-template-columns:36px minmax(0,1fr);grid-template-rows:auto auto;column-gap:10px;row-gap:5px;align-content:center;padding:10px 12px;border-radius:16px;background:var(--surface);box-shadow:var(--shadow);text-decoration:none;color:var(--fg);overflow:hidden}
 .tiles a:active{background:var(--surface-2)}
 .tiles i{grid-row:1;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;align-self:center;background:color-mix(in srgb,var(--btn) 16%,transparent);color:var(--accent)}
