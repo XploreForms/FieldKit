@@ -372,7 +372,7 @@ details.grp .btn{margin-bottom:12px}
   </section>
   <div class="njgo"><div id="njErr"></div>
   <!-- 1.20.68: the SA-# is typed right in the Start SA bar (Curtis) -->
-  <div class="gobig sabar"><span class="fk-inwrap sain"><input id="njRef" inputmode="numeric" maxlength="10" placeholder="SA number" aria-label="SA number" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go"><button class="fk-pastein" type="button" id="njPaste" aria-label="Paste SA number" title="Paste"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg></button></span><button class="sago" type="button" id="njStart">Start SA</button></div></div>
+  <div class="gobig sabar"><span class="fk-inwrap sain"><input id="njRef" inputmode="numeric" maxlength="10" placeholder="SA-#######" aria-label="SA number" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go"><button class="fk-pastein" type="button" id="njPaste" aria-label="Paste SA number" title="Paste"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg></button></span><button class="sago" type="button" id="njStart">Start SA</button></div></div>
 </div>
 
 <!-- ============ JOB SUMMARY ============ -->
@@ -1481,7 +1481,7 @@ html body #menu .tiles .tile.split small{display:none}
 .gobig.sabar{gap:6px;padding:6px;cursor:default;align-items:stretch;justify-content:stretch}
 .sabar .sain{flex:0 0 max(150px,46%);min-width:0;position:relative;display:flex;background:var(--surface);border-radius:13px}
 .sabar .sain input{flex:1;min-width:0;width:100%;height:100%;border:0;margin:0;background:transparent;color:var(--fg);font:600 clamp(.88rem,3.9vw,1.02rem) var(--f-mono,ui-monospace,monospace);padding:0 36px 0 11px;border-radius:13px;box-shadow:none}
-.sabar .sain input::placeholder{color:var(--muted);opacity:.85;font-family:var(--f-body);font-weight:500}
+.sabar .sain input::placeholder{color:var(--muted);opacity:.8;font-family:var(--f-display);font-weight:600;font-size:1.06em;letter-spacing:.08em}   /* 1.20.70: the title font's # are narrower and lighter than the mono font's */
 .sabar .sain input:focus{outline:2px solid var(--btn-ink);outline-offset:-2px}
 .sabar .sain .fk-pastein{position:absolute;right:4px;top:50%;transform:translateY(-50%)}
 .sabar .sago{flex:1 1 54%;min-width:0;border:0;background:transparent;color:var(--btn-ink);font:700 clamp(1rem,4.6vw,1.25rem) var(--f-display);cursor:pointer;white-space:nowrap;padding:0 4px;border-radius:12px}
