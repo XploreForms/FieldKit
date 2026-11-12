@@ -135,8 +135,8 @@ h3{margin:0;font:700 1.1rem/1.2 var(--f-display)}
   padding:10px max(16px,env(safe-area-inset-right,0px)) var(--go-gap,34px) max(16px,env(safe-area-inset-left,0px))}
 #newjob .njgo #njErr:empty{display:none}
 #newjob .njgo .sabar{height:var(--go-h,68px);flex:none}
-.nj .seg{background:none;box-shadow:none;padding:0;gap:6px}   /* 1.20.45: separate tiles, not one joined group */
-.nj .seg button{white-space:nowrap;padding:11px 2px;font-size:min(.86rem,3.6vw);line-height:1.15;min-height:46px;color:var(--fg);background:var(--surface);border-radius:10px;box-shadow:inset 0 0 0 1px var(--line)}
+.nj .seg{background:var(--surface);box-shadow:inset 0 0 0 1px var(--line)}   /* 1.20.71: joined groups again, matching Comments (Curtis) */
+.nj .seg button{white-space:nowrap;padding:11px 2px;font-size:min(.86rem,3.6vw);line-height:1.15;min-height:44px;color:var(--fg)}
 .nj .seg button[aria-pressed="true"]{background:var(--btn);color:var(--btn-ink);box-shadow:none}
 .nj .seg button:disabled{opacity:.35;cursor:default}
 .nj .njpts{display:flex;flex-direction:column;gap:6px}
@@ -1479,9 +1479,9 @@ html body #menu .tiles .tile.split small{display:none}
 .gobig svg{width:28px;height:28px;stroke-width:2.6}
 /* 1.20.68: Start New SA / Start SA with the SA-# box inside it (same size and spot as the old button) */
 .gobig.sabar{gap:6px;padding:6px;cursor:default;align-items:stretch;justify-content:stretch}
-.sabar .sain{flex:0 0 max(150px,46%);min-width:0;position:relative;display:flex;background:var(--surface);border-radius:13px}
-.sabar .sain input{flex:1;min-width:0;width:100%;height:100%;border:0;margin:0;background:transparent;color:var(--fg);font:600 clamp(.88rem,3.9vw,1.02rem) var(--f-mono,ui-monospace,monospace);padding:0 36px 0 11px;border-radius:13px;box-shadow:none}
-.sabar .sain input::placeholder{color:var(--muted);opacity:.8;font-family:var(--f-display);font-weight:600;font-size:1.06em;letter-spacing:.08em}   /* 1.20.70: the title font's # are narrower and lighter than the mono font's */
+.sabar .sain{flex:0 0 max(158px,47%);min-width:0;position:relative;display:flex;background:var(--surface);border-radius:13px}
+.sabar .sain input{flex:1;min-width:0;width:100%;height:100%;border:0;margin:0;background:transparent;color:var(--fg);font:600 clamp(.88rem,3.9vw,1.02rem) var(--f-mono,ui-monospace,monospace);padding:0 46px 0 11px;border-radius:13px;box-shadow:none}
+.sabar .sain input::placeholder{color:var(--muted);opacity:.8;font-family:var(--f-display);font-weight:600;font-size:1.04em;letter-spacing:.04em}   /* 1.20.70: the title font's # are narrower and lighter than the mono font's */
 .sabar .sain input:focus{outline:2px solid var(--btn-ink);outline-offset:-2px}
 .sabar .sain .fk-pastein{position:absolute;right:4px;top:50%;transform:translateY(-50%)}
 .sabar .sago{flex:1 1 54%;min-width:0;border:0;background:transparent;color:var(--btn-ink);font:700 clamp(1rem,4.6vw,1.25rem) var(--f-display);cursor:pointer;white-space:nowrap;padding:0 4px;border-radius:12px}
