@@ -940,6 +940,16 @@ details.grp .btn{margin-bottom:12px}
     });
   }
   function fitHome() { fitPick(); placeNew(); goSpot(); }
+  /* iPhone: motion access (tilt and direction on photos) can only be asked from a tap, and Field Cam now opens straight into
+     the camera with no tap of its own. So a tap on anything that opens Field Cam asks first, then goes (1.20.77). */
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest('a[href*="fieldcam.html"]');
+    if (!a || typeof DeviceOrientationEvent === "undefined" || typeof DeviceOrientationEvent.requestPermission !== "function") return;
+    try { if (sessionStorage.getItem("fieldkit.motionAsked")) return; sessionStorage.setItem("fieldkit.motionAsked", "1"); } catch (x) {}
+    e.preventDefault();
+    var go = function () { location.href = a.href; };
+    DeviceOrientationEvent.requestPermission().then(go, go);
+  }, true);
   // where the home screen's Start New SA sits (gap below it and its height): New SA puts Start SA in the same spot (1.20.47)
   function goSpot() {
     var m = $("menu"), g = $("jobArea") && $("jobArea").querySelector(".gobig"); if (!m || m.hidden || !g) return;

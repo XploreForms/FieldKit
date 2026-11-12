@@ -2369,6 +2369,7 @@ async function dividersFor(list) {
   if (!settings.dividers) return { starts, ends };
   for (const sid of [...new Set(list.map(p => p.sessionId))]) {
     const j = jobs[sid] || {};
+    if (isQuick(j) || !j.work) continue;   // 1.20.77: Field Cam without an SA never saves SA START / SA END cards
     for (const kind of ["start", "end"]) {
       const edge = edgeOfJob(sid, kind); if (!edge || !list.includes(edge)) continue;
       const t = edge.created + (kind === "start" ? -2000 : 2000);
@@ -3351,11 +3352,15 @@ function beginSession() {
   S.fresh = true;
   if (!S.started) {
     S.started = true;
-    let perm = Promise.resolve("granted");
-    if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") perm = DeviceOrientationEvent.requestPermission().catch(() => "denied");
-    perm.then(() => {
-      startOrientation();
-      setTimeout(() => { if (S.pitch == null) toast("No motion data: tilt and direction won’t be stamped. Check Motion &amp; Orientation access.", 4000); }, 3500);
+    /* 1.20.77: iPhone only allows motion access from a tap. Field Cam now opens straight into the camera (no Open Camera
+       screen), so: the Field Kit tile already asked (see index.html); if not, the first tap anywhere here asks. */
+    const motionWarn = () => setTimeout(() => { if (S.pitch == null) toast("No motion data: tilt and direction won’t be stamped. Check Motion &amp; Orientation access.", 4000); }, 3500);
+    const askable = typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function";
+    if (!askable) { startOrientation(); motionWarn(); }
+    else DeviceOrientationEvent.requestPermission().then(r => { if (r === "granted") startOrientation(); motionWarn(); }, () => {
+      const onTap = () => { document.removeEventListener("touchend", onTap, true); document.removeEventListener("click", onTap, true);
+        DeviceOrientationEvent.requestPermission().then(r => { if (r === "granted") startOrientation(); motionWarn(); }, motionWarn); };
+      document.addEventListener("touchend", onTap, true); document.addEventListener("click", onTap, true);
     });
     try { screen.orientation && screen.orientation.lock && screen.orientation.lock("portrait").catch(() => {}); } catch {}
     startCamera(); startGeo(); keepAwake();
@@ -3485,8 +3490,8 @@ $("updGo").addEventListener("click", async () => {
   // Field Kit: coming back from the menu (or another tool) goes straight back into the job in progress.
   // Opening fieldcam.html#new always shows the job screen instead (for a future "Start New Job").
   if (curJob() && !/^#new/.test(location.hash)) $("resumeBtn").click();
-  // without an SA: straight into the camera (an iPhone needs one tap first, for motion access, so it keeps the Open Camera button)
-  else if (!fkJob() && !(/iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1)) && settings.name.trim() && (settings.dealer || "").trim()) $("startBtn").click();
+  // without an SA: straight into the camera, iPhone included (1.20.77; motion access is asked on a tap, see beginSession)
+  else if (!fkJob() && settings.name.trim() && (settings.dealer || "").trim()) $("startBtn").click();
   // outcome changed on the job summary: redraw the info band on photos not saved yet
   if (curJob() && curJob().fkRestamp) { delete curJob().fkRestamp; jobChanged(); }
   document.documentElement.classList.remove("fk-resuming");

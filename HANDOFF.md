@@ -124,6 +124,7 @@ The home screen (1.20.27) **fills the screen with no scrolling** on any phone: h
 - SA home: no "Also logged in Field Stock…" line under equipment and no "You can leave any time…" line above Complete SA.
 
 ### Field Cam: photos and scanning
+- (1.20.77) Field Cam without an SA opens straight into the camera on iPhone too (no Open Camera screen). Motion access is asked on the Field Kit tap that opens Field Cam (index.html, once per session), or else on the first tap in the camera. It never saves SA START / SA END divider cards (`dividersFor` skips quick sets).
 - (1.20.54, Curtis picked option 2) **Label marks** in an SA: a **stack** icon (top right) = can share a picture; a **single layer** = always its own picture (SN labels and `PHOTO_RULES` solo); the ONT/Router pair is unmarked for now. The mark gives way to the ✓ count once taken (`labelKind`, `LK_STACK`/`LK_SOLO`). Not shown in Field Cam on its own.
 - (1.20.52–53) Scanners show just the scan line (no fade/box); the flash button is always shown, greyed until available.
 - (1.20.39) **No pop-up after each picture**; only the too blurry / too dark warning (with Retake) still shows.
