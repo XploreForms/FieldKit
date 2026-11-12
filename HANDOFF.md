@@ -1,6 +1,6 @@
 # Field Kit — handoff note
 
-Current as of **Field Kit 1.20.43** (Nov 11, 2026). Paste the "First message" into a new Claude chat to pick up where this left off. The rest is reference: what exists, the decisions Curtis already made (keep them), what's still open, and the traps.
+Current as of **Field Kit 1.20.47** (Nov 12, 2026). Paste the "First message" into a new Claude chat to pick up where this left off. The rest is reference: what exists, the decisions Curtis already made (keep them), what's still open, and the traps.
 
 ---
 
@@ -74,6 +74,9 @@ The home screen (1.20.27) **fills the screen with no scrolling** on any phone: h
 - The in-progress SA card uses the **truck with work-order lines** icon. Its restart is a full-width button inside the card, under the SA: circular arrow + "Start a new SA", two taps ("Tap again to start new", resets after 4 s). Field Cam/Field Notes tiles show an "In progress" badge and a small restart button on the corner.
 - No version numbers inside the tools; the version shows only on the menu footer.
 - **Paste is always a clipboard icon inside the box**, no "Paste" buttons (`.fk-inwrap` + `.fk-pastein`): SA-# boxes and every serial box.
+
+- **One-handed, bottom-aligned (Curtis, 1.20.47)**: put things at the bottom wherever possible. New SA's **Start SA** is pinned in the exact spot and size of the home screen's Start New SA (`goSpot()` saves `--go-gap`/`--go-h`; `sizeNewJob()` sizes the screen), the questions sit right above it, and a newly added question slides into view.
+- Home tiles (1.20.45): Compass · Inventory / RMA · Manual Order / Field Cam · Field Stock (`ORDER` in `paintTools`). New SA choices are separate outlined tiles (Comments still uses joined groups; asked Curtis whether to switch those too). Comments' text boxes are white.
 
 ### Profile and setup
 - Step 1: Your Name, Work Email (@xplore.ca), **Work Phone Number**, **Xplore Approver Email**. Only the approver email has hint text ("Approves your manual order requests and is CC'd on your transfer requests"). The approver is CC'd on every transfer email, with both techs.
