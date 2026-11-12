@@ -87,7 +87,9 @@
         opts: [["J-Arm", ["PVJM-39"]], ["Gable Mount", ["FK-GABLE"]], ["Gable Mount + 10ft Pole", ["FK-GABLE", "FK-POLE10"]], ["Bipod", ["FK-BIPOD", "FK-POLE5"]],
           ["Tripod", ["FK-TRIPOD"]], ["Tripod + 10ft Pole", ["FK-TRIPOD", "FK-POLE10"]], ["No new mount", []]] },
       surge: { name: "Surge", opts: [["Deployed", ["PVFWSURGE"]]], def: "Deployed" },
-      nid: { name: "NID", opts: [["Deployed", ["FTH602A010XP"]], ["Not Needed", []]] },
+      /* 1.20.67 (Curtis): Drop Required / Drop Only assume a new NID (with a "Reused existing" tick); Existing Drop picks
+         Deployed or Reused existing. "Not Needed" saved before this reads as Reused existing. */
+      nid: { name: "NID", opts: [["Deployed", ["FTH602A010XP"]], ["Reused existing", []]] },
       drop: { name: "Drop", opts: DROPS },
       trimast: { name: "Trimast", opts: [["Deployed", ["1140662"]], ["Reused existing", []], ["Pole mount", ["FK-SATPOLE"]]] },
       azel: { name: "AzEl", opts: [["Deployed", ["1172770"]], ["Reused existing", []]] },
@@ -131,13 +133,15 @@
     ids.forEach(function (id) {
       var d = D[id];
       if (d.opts) {
-        var opts = d.opts.map(function (o) { return o[0]; }), def = maybe ? "" : (d.def || "");
+        var opts = d.opts.map(function (o) { return o[0]; }), def = maybe ? "" : (d.def || ""), ui = d.ui || "";
+        if (id === "nid" && !maybe && /Drop (Required|Only)\)$/.test((src && src.plat) || "")) { def = "Deployed"; ui = "nidtick"; }
         if (maybe && !d.ui && opts.indexOf("Not Needed") < 0) opts = opts.concat(["Not Needed"]);   // Surge on a repair isn't a given
         var v = picks[id] || def;
         if (d.ui === "mount") v = MOUNT_OLD[v] || v;
+        if (id === "nid" && v === "Not Needed" && !maybe) v = "Reused existing";
         v = ({ Yes: "Deployed", No: "Not Needed", "J-arm": "J-Arm", "Bi-pod": "Bipod + 5ft Pole", "Gable mount + 10ft pole": "Gable Mount + 10ft Pole", "Tripod + 10ft pole": "Tripod + 10ft Pole" })[v] || v;   // answers saved before the wording changed
         if (v && opts.indexOf(v) < 0) v = def;
-        rows.push({ id: id, kind: "choice", ui: d.ui || "", name: d.name, opts: opts, value: v, done: !!v, optional: maybe }); return;
+        rows.push({ id: id, kind: "choice", ui: ui, name: d.name, opts: opts, value: v, done: !!v, optional: maybe }); return;
       }
       if (!d.multi) { rows.push({ id: id, kind: "serial", name: d.name, item: got[id][0] || null, done: !!got[id][0], optional: maybe, hint: maybe && !got[id][0] ? "If deployed" : "" }); return; }
       var want = unitsWanted(ns, d.multi), have = got[id], n = Math.max(want || 0, have.length);
@@ -225,6 +229,12 @@
         if (M.poles.indexOf(base) >= 0)
           mh += '<label class="fkj-chk"><input type="checkbox" data-slot-set="mount" data-v="' + esc(pole ? base : base + " + 10ft Pole") + '"' + (pole ? " checked" : "") + '><span>Deployed 10ft pole</span></label>';
         return mh + '</div>';
+      }
+      if (r.kind === "choice" && r.ui === "nidtick") {
+        // a new NID is assumed (Drop Required): one line, with a "Reused existing" tick on the right
+        var reused = r.value === "Reused existing";
+        return '<div class="fkj-slot fkj-row"><div class="fkj-sh">' + tick + '<b>' + esc(r.name) + '</b></div><span class="fkj-val">' + (reused ? "Reused existing" : "Deployed") + '</span>' +
+          '<label class="fkj-chk fkj-chk-r"><input type="checkbox" data-slot-set="nid" data-v="' + (reused ? "Deployed" : "Reused existing") + '"' + (reused ? " checked" : "") + '><span>Reused existing</span></label></div>';
       }
       if (r.kind === "choice") {
         // only one possible answer (Surge): just shows it

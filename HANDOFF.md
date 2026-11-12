@@ -82,6 +82,9 @@ The home screen (1.20.27) **fills the screen with no scrolling** on any phone: h
 
 - **Manual Order list (1.20.62)** follows Curtis's "Manual Order Request List" sheet exactly: `ORDER_LIST` in fieldstock.html (Wi-Fi, TV, Fibre, Fixed Wireless, Satellite > item > line, with tech codes and small subheadings). It's no longer built from the catalogue, and email lines carry no part numbers (e.g. "Modem: HT2000 (HTJ, HJ2)"). Max 10 for J-Arm and High Gain Pro Max, 20 otherwise. Old tests tord/tord2/torder3 use the old list.
 
+- **New SA platform = technology (1.20.67)**: one row per platform with its technology buttons (Fibre FTX/ATX/CTX, Fixed Wireless FWN/LTE, Satellite HJ3/HJ2/HTJ/HV2/HTV, VAS Only XWR/XWH/XTV); one tap sets both (`data-nj="pt"`). Tests that click `[data-nj=tech]` need `[data-nj=pt][data-fam=..][data-v=..]` now.
+- **NID slot (1.20.67)**: Drop Required/Drop Only assume Deployed with a "Reused existing" tick (`ui: nidtick`); Existing Drop picks Deployed or Reused existing; old "Not Needed" reads as Reused existing.
+
 ### Profile and setup
 - Step 1: Your Name, Work Email (@xplore.ca), **Work Phone Number**, **Xplore Approver Email**. Only the approver email has hint text ("Approves your manual order requests and is CC'd on your transfer requests"). The approver is CC'd on every transfer email, with both techs.
 - Step 2: Dealer Name (format **Location XCI Tech**, e.g. Cambridge XCI Tech), **SAP Dealer Account #** (exactly 6 digits), **Salesforce Dealer Account #** (exactly 7 digits); both boxes take digits only and stop at the limit. Shipping address, **Ship to Purolator depot hold for pickup** (checkbox, no hint), **Default Shipping Instructions** (optional, ≤300 chars, no hint). Both shipping options go into every manual order email.
