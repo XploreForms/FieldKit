@@ -333,7 +333,7 @@ details.grp .btn{margin-bottom:12px}
 
   <div class="banner" id="gsWarn" hidden><div><b>Google backup is off</b></div><button class="btn primary" type="button" data-open-backup>Connect</button></div>
 
-  <h2 class="eyebrow" id="moreH">Tools</h2>
+  <h2 class="eyebrow sr-only" id="moreH">Tools</h2><!-- 1.20.57: no visible Tools heading (Curtis); kept for screen readers -->
   <ul class="tiles" id="links" aria-labelledby="moreH"></ul>
 
   <section id="jobArea"></section>
@@ -947,6 +947,8 @@ details.grp .btn{margin-bottom:12px}
       for (var i = 0; i < tiles.length; i++) if (tiles[i].scrollHeight > tiles[i].clientHeight + 1) return true;
       var titles = m.querySelectorAll(".tiles b");   // a title cut short ("Manual O…") doesn't fit either
       for (var t = 0; t < titles.length; t++) if (titles[t].scrollWidth > titles[t].clientWidth + 1) return true;
+      var smalls = m.querySelectorAll(".tiles small");   // a description cut short by its 2-line limit doesn't fit either (1.20.57)
+      for (var d = 0; d < smalls.length; d++) if (smalls[d].offsetParent !== null && smalls[d].scrollHeight > smalls[d].clientHeight + 1) return true;
       return false;
     }
     for (var n = 0; n < FIT.length; n++) {
