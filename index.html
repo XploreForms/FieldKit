@@ -144,6 +144,7 @@ h3{margin:0;font:700 1.1rem/1.2 var(--f-display)}
 .nj .njpl{font-size:.86rem;font-weight:700;color:var(--fg);line-height:1.15;letter-spacing:.03em}
 .nj .njpt.off .njpl{color:var(--muted);opacity:.6}
 .nj .njpt .seg button{letter-spacing:.02em}
+.nj .njgone{visibility:hidden}
 .nj .seg.njhold{opacity:.55}.nj .seg.njhold button{opacity:1;color:var(--muted);font-weight:500;background:var(--surface)}
 .njref{display:flex;gap:8px}.njref input{flex:1;font:500 1.05rem var(--f-mono)}.njref .btn{min-height:46px;padding:0 14px}
 html:not(.fk-slim) .njtitle{font-family:var(--f-display)!important;font-size:1.5rem!important;font-weight:700!important}
@@ -585,9 +586,9 @@ details.grp .btn{margin-bottom:12px}
     // greyed placeholders show what's still to come, so the screen doesn't jump as answers are picked
     var njHold = function (lbl, msg) { return '<div class="field"><span class="lbl">' + lbl + '</span><div class="seg njhold" style="--n:1"><button type="button" disabled tabindex="-1">' + esc(msg) + '</button></div></div>'; };
     // 1.20.72 (Curtis): Drop is always shown, greyed until a Fibre technology is picked, so nothing moves when it's needed
-    // 1.20.74: greyed until a platform is picked; gone once a platform other than Fibre is picked
+    // greyed until a platform is picked; invisible (its space kept, so nothing moves) once a platform other than Fibre is picked (1.20.75)
     var dropOn = nj.fam === "Fibre" && njDrops().length > 0;
-    if (!nj.fam || dropOn) html += '<div class="field' + (dropOn ? "" : " njoff") + '"><span class="lbl">Drop</span>' +
+    html += '<div class="field' + (dropOn ? "" : " njoff") + (nj.fam && !dropOn ? " njgone" : "") + '"' + (nj.fam && !dropOn ? ' aria-hidden="true"' : "") + '><span class="lbl">Drop</span>' +
       njSeg("drop", NJ_DROPS.map(function (d) { return [d, d, !dropOn || ps.indexOf("Fibre (" + d + ")") < 0]; }), dropOn ? nj.drop : null, 3) + '</div>';
     $("njPick").innerHTML = html;
   }
