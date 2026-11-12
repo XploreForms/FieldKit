@@ -314,6 +314,7 @@ button.link-row{font:inherit;text-align:left;width:100%;cursor:pointer}
 .ord-pickhead{display:flex;align-items:baseline;gap:8px;padding:10px 0 2px;border-bottom:1px solid var(--line)}.ord-pickhead b{font-weight:600}.ord-pickhead small{color:var(--muted)}
 .ord-more{display:block;border:0;background:none;padding:2px 0 10px;color:var(--accent-text,var(--ink));font:600 .82rem var(--f-body);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .ord-models{margin:0 0 8px 14px;padding-left:10px;border-left:2px solid var(--line)}
+.ord-subhead{font-size:.72rem;font-weight:600;letter-spacing:.04em;color:var(--muted);padding:8px 0 0}
 .ord-row.sub{padding:6px 0}.ord-row.sub .ord-txt b{font-weight:500;font-size:.92rem}
 .ord-row .ord-txt small{font-size:.75rem;color:var(--muted);letter-spacing:.02em}
 .ord-row.on .ord-txt b{color:var(--brand-2)}
@@ -1489,41 +1490,36 @@ function openTransferMail(jobId){
 }
 
 /* ---------- manual order request (replaces the Jotform) ---------- */
-/* Manual orders go by product family (5G CPE, Router, Dish…): inventory sends what they have of that type.
-   Where a family has more than one item, the tech can still choose a specific one under "Choose a model".
-   Built from fieldkit-catalog.js (fam / famName / name) plus its ORDER_EXTRA lines. */
-const ORDER_SECTIONS = [["Wi-Fi & Routers",["Wi-Fi & routers"]],["Fixed Wireless & LTE",["5G & fixed wireless","LTE","Mounts & surge"]],
-  ["Satellite",["Hughes satellite","SurfBeam satellite"]],["Fibre & TV",["Fibre ONTs","Fibre drops & NIDs","TV"]]];
-const ORDER_MAX = {"J ARM":10, "HIGH-GAIN":10};
-/* how each family is ordered. "pick": the tech must choose a model (no "any model"). "family": family only, no model choice.
-   hide: not orderable. Every other family has one item, so it is just that item. */
-const ORDER_PICK = ["ROUTER","HIGH-GAIN","ONT","DROP CABLE","STB","AERIAL","AZEL","TRIMAST","ANTENNA"];
-const ORDER_FAMILY_ONLY = ["5G CPE","CAT12 2.5GHZ","CAT12 3.5GHZ"];
-const ORDER_HIDE = ["CAT4 3.5GHZ"];
-const ORDER_FAMS = (()=>{
-  const C=window.FK_CATALOG, fams=[], by={};
-  const secOf=g=>{ const x=ORDER_SECTIONS.find(([,gs])=>gs.includes(g)); return x?x[0]:"Fibre & TV"; };
-  C.SKUS.forEach(sk=>{
-    if(!sk.fam || sk.hidden || sk.noOrder || ORDER_HIDE.includes(sk.fam) || /^NLA\b/i.test(sk.desc||"")) return;   // NLA = no longer available
-    let f=by[sk.fam]; if(!f){ f=by[sk.fam]={fam:sk.fam, title:sk.famName, sec:secOf(sk.group), max:ORDER_MAX[sk.fam]||20, plats:new Set(), opts:[]}; fams.push(f); }
-    (sk.platforms||[]).forEach(p=>f.plats.add(p));
-    const o=f.opts.find(o=>o.name===sk.name); if(o) o.ids.push(sk.id); else f.opts.push({key:"sku:"+sk.id, name:sk.name, ids:[sk.id]});
-  });
-  (C.ORDER_EXTRA||[]).forEach(x=>{
-    let f=by[x.fam]; if(!f){ f=by[x.fam]={fam:x.fam, title:x.famName||x.fam, sec:"Fibre & TV", max:20, plats:new Set(), opts:[]}; fams.push(f); }
-    f.opts.push({key:"x:"+x.name, name:x.name, ids:[], label:x.label});
-  });
-  fams.forEach(f=>{ f.key="fam:"+f.fam; f.plats=[...f.plats]; f.pick = ORDER_PICK.includes(f.fam) && f.opts.length>0; });
-  return ORDER_SECTIONS.flatMap(([sec])=>fams.filter(f=>f.sec===sec));
-})();
-const ORDER_OPEN=new Set();   // families showing "Choose a model"
+/* Manual order list (1.20.62): laid out exactly as Curtis's "Manual Order Request List" sheet.
+   Section (Wi-Fi, TV…) > item (Router, Modem…) > what to order. A line can name the technologies it's for
+   (HT2000 for HTJ, HJ2), and an item can group lines under a small heading (Drop Cable for FTX, ATX, CTX).
+   oL(label, forCodes, max): one orderable line. oG(heading, lines): lines under a small heading. oI(item, parts). oS(section, items). */
+const oL=(label,codes,max)=>({label,codes:codes||"",max:max||20}), oG=(head,lines)=>({head,lines}), oI=(name,parts)=>({name,parts}), oS=(sec,items)=>({sec,items});
+const ORDER_LIST=[
+  oS("Wi-Fi",[ oI("Router",[oL("XWR")]), oI("Extender (CUBE)",[oL("XWH")]) ]),
+  oS("TV",[ oI("TV Box",[oL("XTV"),oL("MTV")]), oI("Leave Behind",[oL("XTV")]) ]),
+  oS("Fibre",[ oI("ONT",[oL("FTX"),oL("ATX")]), oI("NID",[oL("FTX, ATX, CTX")]),
+    oI("Drop Cable",[oG("FTX, ATX, CTX",["100M","200M","300M","500M","750M","1000M"].map(m=>oL(m+" Evolv Dielectric Drop PushLok Tech")))]) ]),
+  oS("Fixed Wireless",[ oI("Radio",[oL("FWN"), oG("LTE",[oL("CAT12 2.5GHz"),oL("CAT12 3.5GHz")]), oG("High Gain",[oL("Pro Max","",10)])]),
+    oI("Surge",[oL("FWN, LTE")]),
+    oI("Mount",[oG("FWN, LTE",[oL("J-Arm","",10),oL("Gable Mount"),oL("Bi-Pod"),oL("10ft Pole")])]) ]),
+  oS("Satellite",[ oI("Modem",[oL("HTV"),oL("HV2"),oL("HT2000","HTJ, HJ2"),oL("HT3000","HJ2, HJ3")]),
+    oI("TRIA",[oL("HTV"),oL("HV2"),oL("1 Watt","HTJ"),oL("2 Watt","HTJ, HJ2, HJ3")]),
+    oI("Antenna",[oL("HTV, HV2"),oL("Dish - 74cm","HTJ"),oL("Dish - 90cm","HJ2, HJ3")]),
+    oI("AzEl",[oL("HTV, HV2"),oL("AzEl - 74cm","HTJ"),oL("AzEl - 90cm","HJ2, HJ3")]),
+    oI("Trimast",[oL("HTV, HV2"),oL("HTJ, HJ2, HJ3")]) ])
+];
+// every orderable line, with a stable key (section/item/heading/label) and how it reads in the email
+const ORDER_LINES=ORDER_LIST.flatMap(sc=>sc.items.flatMap(it=>it.parts.flatMap(p=>(p.lines?p.lines.map(l=>[p.head,l]):[["",p]]).map(([head,l])=>({
+  key:"mo:"+[sc.sec,it.name,head,l.label].join("/"), sec:sc.sec, item:it.name, head, l, max:l.max,
+  text:`${it.name}${head?` (${head})`:""}: ${l.label}${l.codes?` (${l.codes})`:""}`
+})))));
 const OK_ORDER="techstock.order", OK_MGR="techstock.manager";
 const ORD=Object.assign({qty:{}, reason:"", notes:""}, lsGet(OK_ORDER,{}));
 if(Object.keys(ORD.qty).some(k=>/^\d+$/.test(k))) ORD.qty={};   // an order started on the old item list: start the items again
 const saveOrd=()=>lsSet(OK_ORDER, ORD);
-// a "pick" family is ordered only by model; every other family by its family line
-const ordLines=()=>ORDER_FAMS.flatMap(f=>f.pick ? f.opts.map(o=>({f, o, key:o.key, max:f.max})) : [{f, key:f.key, max:f.max}]);
-{ const ok=new Set(ordLines().map(x=>x.key)); Object.keys(ORD.qty).forEach(k=>{ if(!ok.has(k)) delete ORD.qty[k]; }); }   // lines that can't be ordered any more (any-model router, CAT4…)
+const ordLines=()=>ORDER_LINES;
+{ const ok=new Set(ordLines().map(x=>x.key)); Object.keys(ORD.qty).forEach(k=>{ if(!ok.has(k)) delete ORD.qty[k]; }); }   // lines from an older list
 const validEmail=v=>/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
 /* transfers: your email is saved once; the receiving tech's email is remembered per dealer */
 const K_MYEMAIL="techstock.myEmail", K_DEALEREMAIL="techstock.dealerEmails";
@@ -1538,19 +1534,20 @@ function renderOrder(){
   const q=$("ordQ").value.trim().toLowerCase();
   let html="", last="";
   const qtyBtns=(key,n,max)=>`<div class="qty sm"><button type="button" data-oq="${esc(key)}" data-d="-1" aria-label="Fewer"${n?"":" disabled"}>−</button><input class="oqn${n?"":" zero"}" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" enterkeyhint="done" data-oqn="${esc(key)}" value="${n}" aria-label="Quantity (max ${max})"><button type="button" data-oq="${esc(key)}" data-d="1" aria-label="More"${n>=max?" disabled":""}>+</button></div>`;
-  ORDER_FAMS.forEach(f=>{
-    const hay=(f.title+" "+f.fam+" "+f.opts.map(o=>o.name).join(" ")+" "+f.plats.join(" ")).toLowerCase();
-    if(q && !hay.includes(q)) return;
-    if(f.sec!==last){ html+=`<div class="ord-group">${esc(f.sec)}</div>`; last=f.sec; }
-    if(f.pick){   // choose a model: the family is a heading, the models are the lines
-      const showAll = !q || f.title.toLowerCase().includes(q) || f.fam.toLowerCase().includes(q);
-      html+=`<div class="ord-pickhead"><b>${esc(f.title)}</b><small>Choose a model</small></div><div class="ord-models">`+
-        f.opts.filter(o=>showAll || o.name.toLowerCase().includes(q)).map(o=>{ const m=ORD.qty[o.key]||0; return `<div class="ord-row sub${m?" on":""}"><div class="ord-txt"><b>${esc(o.name)}</b></div>${qtyBtns(o.key,m,f.max)}</div>`; }).join("")+`</div>`;
-      return;
-    }
-    const n=ORD.qty[f.key]||0, one=f.opts[0];
-    const sub = f.opts.length>1 ? "Any model" : (one && !f.title.toLowerCase().includes(one.name.toLowerCase()) ? one.name : "");
-    html+=`<div class="ord-row${n?" on":""}"><div class="ord-txt"><b>${esc(f.title)}</b>${sub?`<small>${esc(sub)}</small>`:""}</div>${qtyBtns(f.key,n,f.max)}</div>`;
+  const row=(x,sub)=>{ const n=ORD.qty[x.key]||0, name=sub?x.l.label:x.item, small=sub?x.l.codes:x.l.label;
+    return `<div class="ord-row${sub?" sub":""}${n?" on":""}"><div class="ord-txt"><b>${esc(name)}</b>${small?`<small>${esc(small)}</small>`:""}</div>${qtyBtns(x.key,n,x.max)}</div>`; };
+  ORDER_LIST.forEach(sc=>{
+    let secHtml="";
+    sc.items.forEach(it=>{
+      const lines=ORDER_LINES.filter(x=>x.sec===sc.sec && x.item===it.name);
+      const hit=x=>!q || [sc.sec,it.name,x.head,x.l.label,x.l.codes].join(" ").toLowerCase().includes(q);
+      const shown=lines.filter(hit); if(!shown.length) return;
+      if(lines.length===1 && !lines[0].head){ secHtml+=row(lines[0],false); return; }   // one line: the item and what it is, on one row
+      let inner="", lastHead="";
+      shown.forEach(x=>{ if(x.head && x.head!==lastHead) inner+=`<div class="ord-subhead">${esc(x.head)}</div>`; lastHead=x.head; inner+=row(x,true); });
+      secHtml+=`<div class="ord-pickhead"><b>${esc(it.name)}</b></div><div class="ord-models">${inner}</div>`;
+    });
+    if(secHtml) html+=`<div class="ord-group">${esc(sc.sec)}</div>`+secHtml;
   });
   $("ordList").innerHTML = html || `<div class="help" style="padding:10px 0">No items match "${esc($("ordQ").value)}".</div>`;
   const lines=Object.values(ORD.qty).filter(n=>n>0).length, units=Object.values(ORD.qty).reduce((a,b)=>a+(b||0),0);
@@ -1578,13 +1575,8 @@ $("ordReason").addEventListener("input",()=>{ ORD.reason=$("ordReason").value; s
 $("ordNotes").addEventListener("input",()=>{ ORD.notes=$("ordNotes").value; saveOrd(); });
 $("ordMgr").addEventListener("change",()=>{ const v=$("ordMgr").value.trim().toLowerCase(); $("ordMgr").value=v;
   if(v && !validEmail(v)){ showMgrErr("Enter a full email address, e.g. first.last@xplore.ca."); return; } showMgrErr(""); $("ordErr").innerHTML=""; lsSet(OK_MGR,v); if(v) toast("Manager's email saved"); });
-/* how a line reads in the order email: the family, and the model only when the tech chose one */
-function ordLine(it){
-  const f=it.f, code=o=>o.label ? o.label.split(" - ").slice(0,2).join(" · ") : `${f.fam}${o.ids.length?` · ${o.ids.join(" / ")}`:""}`;   // system codes, for inventory to match
-  if(!it.o){ const one=f.opts.length===1 ? f.opts[0] : null;
-    return one ? `${f.title}${one.name!==f.title?`: ${one.name}`:""} (${code(one)})` : `${f.title}, any model (${f.fam})`; }
-  return `${f.title}: ${it.o.name} (${code(it.o)})`;
-}
+/* how a line reads in the order email, e.g. "Modem: HT2000 (HTJ, HJ2)" or "Drop Cable (FTX, ATX, CTX): 500M Evolv…" */
+function ordLine(it){ return it.text; }
 function showMgrErr(m){ $("ordMgr").classList.toggle("bad",!!m); $("ordMgr_err").hidden=!m; $("ordMgr_err").textContent=m; }
 function clearOrder(){ ORD.qty={}; ORD.reason=""; ORD.notes=""; saveOrd(); $("ordReason").value=""; $("ordNotes").value=""; $("ordErr").innerHTML=""; renderOrder(); }
 $("ordClear").addEventListener("click",clearOrder);

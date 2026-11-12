@@ -80,6 +80,8 @@ The home screen (1.20.27) **fills the screen with no scrolling** on any phone: h
 
 - **Big screens (1.20.61, Curtis picked option A)**: on a tablet, desktop or big window (`(min-width:600px) and (min-height:700px)`), fieldkit.js sends the page to `frame.html?u=<page>`, which shows it in a 412px phone-sized frame in the middle. Inside the frame it's exactly the phone app. Phones (and sideways phones) never match; pages already in a frame (incl. the preview) skip it; `?fkframe=off` skips it. The preview shell has the same frame. Phone layout unchanged.
 
+- **Manual Order list (1.20.62)** follows Curtis's "Manual Order Request List" sheet exactly: `ORDER_LIST` in fieldstock.html (Wi-Fi, TV, Fibre, Fixed Wireless, Satellite > item > line, with tech codes and small subheadings). It's no longer built from the catalogue, and email lines carry no part numbers (e.g. "Modem: HT2000 (HTJ, HJ2)"). Max 10 for J-Arm and High Gain Pro Max, 20 otherwise. Old tests tord/tord2/torder3 use the old list.
+
 ### Profile and setup
 - Step 1: Your Name, Work Email (@xplore.ca), **Work Phone Number**, **Xplore Approver Email**. Only the approver email has hint text ("Approves your manual order requests and is CC'd on your transfer requests"). The approver is CC'd on every transfer email, with both techs.
 - Step 2: Dealer Name (format **Location XCI Tech**, e.g. Cambridge XCI Tech), **SAP Dealer Account #** (exactly 6 digits), **Salesforce Dealer Account #** (exactly 7 digits); both boxes take digits only and stop at the limit. Shipping address, **Ship to Purolator depot hold for pickup** (checkbox, no hint), **Default Shipping Instructions** (optional, ≤300 chars, no hint). Both shipping options go into every manual order email.
