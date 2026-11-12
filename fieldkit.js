@@ -6,7 +6,20 @@
      3. sends a tech who hasn't finished setup back to the menu, where setup runs
    Load it in each page before the tool's own scripts: <script src="fieldkit.js" data-app="cam"></script>
    data-app: home | cam | stock | notes */
+/* Big screens (1.20.61): a tablet, desktop or big window opens the page inside frame.html, a phone-sized frame in
+   the middle of the screen, so it looks and works exactly like the phone. Phones (and phones turned sideways) never
+   match; neither does a page already inside a frame (frame.html itself, or the preview). Add ?fkframe=off to skip it. */
 (function () {
+  try {
+    if (window.top !== window || !window.matchMedia || !matchMedia("(min-width:600px) and (min-height:700px)").matches) return;
+    if (/[?&]fkframe=off\b/.test(location.search)) return;
+    var page = location.pathname.split("/").pop() || "index.html";
+    location.replace("frame.html?u=" + encodeURIComponent(page + location.search + location.hash));
+    document.write('<plaintext style="display:none">');   // stop the rest of this page (its scripts, the camera) while the frame opens
+    window.__fkFraming = true;
+  } catch (e) {}
+})();
+if (!window.__fkFraming) (function () {
   "use strict";
   var VERSION = (window.FIELDKIT_VERSION && window.FIELDKIT_VERSION.version) || "0";   // set in version.js
   var me = document.currentScript, APP = (me && me.getAttribute("data-app")) || "home";

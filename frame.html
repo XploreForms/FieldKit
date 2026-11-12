@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Field Kit</title>
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#002B2B">
+<!--
+  Big screens (1.20.61, Curtis picked option A): Field Kit is a phone app, so on a tablet, a desktop or any big
+  window it runs inside a phone-sized frame in the middle of the screen. Inside the frame every page is exactly
+  the phone version (same sizes, same layout, same camera). fieldkit.js sends a page here when the screen is big;
+  this page sends it back if the window becomes phone-sized. Not used on phones, and not inside the preview.
+-->
+<style>
+  html,body{margin:0;height:100%}
+  body{display:grid;place-items:center;background:#D6E0DC;overflow:hidden}
+  html[data-theme="dark"] body{background:#05100F}
+  html[data-theme="black"] body{background:#000}
+  iframe{display:block;width:412px;height:min(calc(100vh - 48px),915px);border:0;border-radius:28px;background:#F2F5F3;
+    box-shadow:0 18px 50px rgba(0,40,30,.22),0 2px 8px rgba(0,40,30,.12)}
+  html[data-theme="dark"] iframe{background:#0A1615;box-shadow:0 0 0 1px rgba(255,255,255,.08),0 18px 50px rgba(0,0,0,.5)}
+  html[data-theme="black"] iframe{background:#000;box-shadow:0 0 0 1px rgba(255,255,255,.12)}
+</style>
+</head>
+<body>
+<iframe id="fk" title="Field Kit" allow="camera; microphone; geolocation; clipboard-read; clipboard-write; fullscreen; accelerometer; gyroscope; magnetometer" allowfullscreen></iframe>
+<script>
+(function () {
+  "use strict";
+  var BIG = "(min-width:600px) and (min-height:700px)";   // keep in step with fieldkit.js
+  var PAGES = /^(index|fieldcam|fieldstock|fieldnotes)\.html$/;
+  var f = document.getElementById("fk");
+  try { var t = localStorage.getItem("techstock.theme"); if (t) document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+  // only Field Kit's own pages go in the frame
+  function clean(u) {
+    u = String(u || "");
+    var m = /^([^?#]*)(\?[^#]*)?(#.*)?$/.exec(u) || [];
+    var page = (m[1] || "").split("/").pop() || "index.html";
+    if (!PAGES.test(page)) page = "index.html";
+    return page + (m[2] || "") + (m[3] || "");
+  }
+  var start = clean(new URLSearchParams(location.search).get("u"));
+  // a phone-sized window doesn't need the frame
+  if (!matchMedia(BIG).matches) { location.replace(start); return; }
+  f.src = start;
+  function inner() { try { var l = f.contentWindow.location; return clean(l.pathname.split("/").pop() + l.search + l.hash); } catch (e) { return start; } }
+  // keep this page's address and title in step with the page in the frame, so a reload or a bookmark opens the same page
+  function sync() {
+    var u = inner();
+    try { history.replaceState(null, "", "frame.html?u=" + encodeURIComponent(u)); } catch (e) {}
+    try { document.title = f.contentDocument.title || "Field Kit"; } catch (e) {}
+  }
+  f.addEventListener("load", function () {
+    sync();
+    try { f.contentWindow.addEventListener("hashchange", sync); f.contentWindow.addEventListener("popstate", sync); } catch (e) {}
+    try { var th = f.contentDocument.documentElement.getAttribute("data-theme"); if (th) document.documentElement.setAttribute("data-theme", th); } catch (e) {}
+  });
+  // window made phone-sized: drop the frame and show the page itself
+  matchMedia(BIG).addEventListener("change", function (e) { if (!e.matches && !document.fullscreenElement) location.replace(inner()); });
+})();
+</script>
+</body>
+</html>

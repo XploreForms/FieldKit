@@ -83,6 +83,11 @@ SHELL = f"""<!doctype html>
   html, body {{ height: 100%; margin: 0; }}
   body {{ background: var(--bg); }}
   iframe {{ display: block; width: 100%; height: 100%; border: 0; background: var(--bg); }}
+  /* big screens: the same phone-sized frame as frame.html on the live site (1.20.61) */
+  @media (min-width:600px) and (min-height:700px) {{
+    body {{ display: grid; place-items: center; background: #D6E0DC; }}
+    iframe {{ width: 412px; height: min(calc(100vh - 48px), 915px); border-radius: 28px; box-shadow: 0 18px 50px rgba(0,40,30,.22), 0 2px 8px rgba(0,40,30,.12); }}
+  }}
 </style>
 </head><body>
 <iframe id="fk" title="Field Kit" allow="camera; geolocation; clipboard-read; clipboard-write; fullscreen"></iframe>
