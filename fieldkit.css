@@ -55,6 +55,7 @@ html[data-theme="black"]{
 
 /* ---------- moving between pages: a quick cross-fade instead of a blank flash (Safari 18.2+, Chrome) ---------- */
 @view-transition{navigation:auto}
+html.fk-wait body{opacity:0}   /* until the page is built (fieldkit.js, 1.20.78); the theme background still shows */
 ::view-transition-old(root),::view-transition-new(root){animation-duration:.18s}
 @media (prefers-reduced-motion:reduce){::view-transition-old(root),::view-transition-new(root){animation:none}}
 html{background:var(--fk-bg)}

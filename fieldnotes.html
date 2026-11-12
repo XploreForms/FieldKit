@@ -711,6 +711,7 @@ header.app-header .header-top img.yawn { transform-origin: 50% 100%; animation: 
 <link rel="preload" href="fonts/Barlow-Regular.woff" as="font" type="font/woff" crossorigin>
 <link rel="preload" href="fonts/Barlow-SemiBold.woff" as="font" type="font/woff" crossorigin>
 <link rel="preload" href="fonts/BarlowSemiCondensed-Bold.woff" as="font" type="font/woff" crossorigin>
+<link rel="expect" href="#fk-end" blocking="render">
 </head>
 <body>
 <style>
@@ -3377,5 +3378,6 @@ function skipAnswered() {
 
 
 </script>
+<div id="fk-end" hidden></div>
 </body>
 </html>

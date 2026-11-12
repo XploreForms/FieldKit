@@ -87,6 +87,8 @@ The home screen (1.20.27) **fills the screen with no scrolling** on any phone: h
 
 - **Fonts are bundled (1.20.76)** in `fonts/` (Barlow 400-700, Barlow Semi Condensed 500-700, IBM Plex Mono 500-600; Latin subset, .woff since this machine has no brotli for .woff2; licences in fonts/OFL-*.txt). `@font-face` with `font-display:block` at the top of fieldkit.css, 3 preloads in each page head, all in `sw.js` FILES. No Google Fonts requests any more. The preview builds them in as data URLs (`inline_fonts` in build_preview.py). Test screenshots now show the real fonts.
 
+- **Pages show only when ready (1.20.78)**: each page has `<link rel="expect" href="#fk-end" blocking="render">` in its head and `<div id="fk-end" hidden>` at the end of body, so Chrome doesn't paint until the page is parsed and built. Browsers without it (iPhone Safari) get `html.fk-wait` (body opacity 0) from fieldkit.js until DOMContentLoaded + fonts + 2 frames, capped at 350 ms. Keep `#fk-end` the last thing in each page's body.
+
 ### Profile and setup
 - Step 1: Your Name, Work Email (@xplore.ca), **Work Phone Number**, **Xplore Approver Email**. Only the approver email has hint text ("Approves your manual order requests and is CC'd on your transfer requests"). The approver is CC'd on every transfer email, with both techs.
 - Step 2: Dealer Name (format **Location XCI Tech**, e.g. Cambridge XCI Tech), **SAP Dealer Account #** (exactly 6 digits), **Salesforce Dealer Account #** (exactly 7 digits); both boxes take digits only and stop at the limit. Shipping address, **Ship to Purolator depot hold for pickup** (checkbox, no hint), **Default Shipping Instructions** (optional, ≤300 chars, no hint). Both shipping options go into every manual order email.

@@ -23,6 +23,24 @@
     window.__fkFraming = true;
   } catch (e) {}
 })();
+/* Show each page only when it's ready (1.20.78). Chrome/Android: the page's <link rel="expect" blocking="render"> keeps the
+   browser from drawing until the page is fully parsed and its scripts have built it. Browsers without that (iPhone Safari):
+   the page stays invisible until it's built and its fonts are in, then appears in one go; never more than 350 ms. */
+if (!window.__fkFraming) (function () {
+  try {
+    var canBlock = false; try { canBlock = document.createElement("link").relList.supports("expect"); } catch (e) {}
+    if (canBlock) return;
+    var de = document.documentElement; de.classList.add("fk-wait");
+    var shown = false, show = function () { if (shown) return; shown = true; de.classList.remove("fk-wait"); };
+    var cap = setTimeout(show, 350);
+    var ready = function () {
+      var f = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+      f.then(function () { requestAnimationFrame(function () { requestAnimationFrame(function () { clearTimeout(cap); show(); }); }); }, show);
+    };
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", ready); else ready();
+    addEventListener("pageshow", function (e) { if (e.persisted) show(); });   // back/forward cache: already built
+  } catch (e) { document.documentElement.classList.remove("fk-wait"); }
+})();
 if (!window.__fkFraming) (function () {
   "use strict";
   var VERSION = (window.FIELDKIT_VERSION && window.FIELDKIT_VERSION.version) || "0";   // set in version.js
