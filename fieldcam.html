@@ -1164,6 +1164,7 @@ async function startCamera(deviceId) {
     v.srcObject = S.stream;
     await v.play().catch(() => {});
     S.track = S.stream.getVideoTracks()[0];
+    if (!FieldKit.shown() || document.visibilityState === "hidden") { S.stream.getTracks().forEach(t => t.stop()); return; }   // left while the camera was starting
     S.deviceId = (S.track.getSettings && S.track.getSettings().deviceId) || deviceId || null;
     S.caps = (S.track.getCapabilities && S.track.getCapabilities()) || {};
     if (S.caps.zoom && !(S.caps.zoom.max > S.caps.zoom.min)) S.caps.zoom = null;
@@ -1186,7 +1187,7 @@ async function startCamera(deviceId) {
       } catch {}
     }
     if (e && (e.name === "FrontOnly" || e.name === "OverconstrainedError")) { showVfMsg("Field Cam only uses the rear camera, and none was found on this device."); return; }
-    showVfMsg(window.top !== window
+    showVfMsg(window.top !== window && !window.__fkInShell
       ? "The camera isn’t available in this preview. Tap the picture button to import photos from your phone and test the labels, stamp and compression."
       : e && e.name === "NotAllowedError"
       ? "Camera access is blocked. On iPhone: Settings › Safari › Camera › Allow, then reopen Field Cam."
@@ -1359,7 +1360,8 @@ function syncPause() {
   if (hide && !S.paused) {
     S.paused = true;
     const v = $("video"); try { v.pause(); } catch {}
-    if (S.track) S.track.enabled = false;
+    // let go of the camera completely (1.20.83): no camera light or battery use while Field Cam isn't on screen
+    if (S.stream) { try { S.stream.getTracks().forEach(t => t.stop()); } catch {} }
     stopGeo();
   } else if (!hide && S.paused) {
     S.paused = false;
@@ -3655,14 +3657,8 @@ function fkSession() {
 }
 FieldKit.onLeave(fkSession);
 // the shell hiding or showing this page pauses and resumes the camera, like switching apps does (1.20.80)
-let relT = 0;
-FieldKit.onLeave(() => {
-  try { syncPause(); } catch {}
-  // kept hidden by the shell: let go of the camera after a while, so it isn't held (and its light isn't on) on other pages
-  clearTimeout(relT);
-  if (!FieldKit.shown()) relT = setTimeout(() => { if (!FieldKit.shown() && S.stream) { try { S.stream.getTracks().forEach(t => t.stop()); } catch {} } }, 20000);
-});
-FieldKit.onShow(() => { clearTimeout(relT); try { syncPause(); if (S.started && !S.paused) { if (!S.track || S.track.readyState === "ended") startCamera(); keepAwake(); } renderAll(); } catch {} });
+FieldKit.onLeave(() => { try { syncPause(); } catch {} });
+FieldKit.onShow(() => { try { syncPause(); if (S.started && !S.paused) { if (!S.track || S.track.readyState === "ended") startCamera(); keepAwake(); } renderAll(); } catch {} });
 </script>
 
 <div id="fk-end" hidden></div>
