@@ -2,40 +2,68 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Field Kit</title>
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#002B2B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Field Kit">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <!--
-  Big screens (1.20.61, Curtis picked option A): Field Kit is a phone app, so on a tablet, a desktop or any big
-  window it runs inside a phone-sized frame in the middle of the screen. Inside the frame every page is exactly
-  the phone version (same sizes, same layout, same camera). fieldkit.js sends a page here when the screen is big;
-  this page sends it back if the window becomes phone-sized. Not used on phones, and not inside the preview.
+  The Field Kit shell (1.20.81, step 3 of the one-app rebuild; was the big-screen frame of 1.20.61).
+  Every Field Kit page runs in a frame here. Home, Field Stock and Manual Order stay loaded, so moving between them is
+  instant; Field Cam and Comments load fresh each time, and the old screen stays up until the new one is ready.
+  Big screens: the same, in a phone-sized box in the middle. Off switch: Settings > Instant switching.
+  Pages talk to it through window.__fkShell (see fieldkit.js); it tells them when they're shown or hidden
+  (FieldKit._host) and owns the Back button.
 -->
 <style>
   html,body{margin:0;height:100%}
-  body{display:grid;place-items:center;background:#D6E0DC;overflow:hidden}
-  html[data-theme="dark"] body{background:#05100F}
-  html[data-theme="black"] body{background:#000}
-  iframe{display:block;width:412px;height:min(calc(100vh - 48px),915px);border:0;border-radius:28px;background:#F2F5F3;
+  html{background:#F2F5F3}
+  html[data-theme="dark"]{background:#0A1615}
+  html[data-theme="black"]{background:#000}
+  body{overflow:hidden;background:transparent}
+  /* the pages can't see the phone's notch / home bar from inside a frame, so the frames stop short of them */
+  #stage{position:fixed;top:env(safe-area-inset-top,0px);bottom:env(safe-area-inset-bottom,0px);left:env(safe-area-inset-left,0px);right:env(safe-area-inset-right,0px);overflow:hidden}
+  #stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;visibility:hidden;pointer-events:none;background:transparent}
+  #stage iframe.on{visibility:visible;pointer-events:auto;z-index:1}
+  #stage.busy iframe.on{pointer-events:none}
+  #toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 96px);transform:translate(-50%,10px);z-index:5;max-width:calc(100% - 40px);
+    padding:10px 16px;border-radius:12px;background:#0E2A27;color:#F2F5F3;font:600 15px/1.3 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;text-align:center}
+  #toast.show{opacity:1;transform:translate(-50%,0)}
+  /* big screens: a phone-sized box in the middle */
+  html.big{background:#D6E0DC}
+  html.big[data-theme="dark"]{background:#05100F}
+  html.big[data-theme="black"]{background:#000}
+  html.big body{display:grid;place-items:center}
+  html.big #stage{position:relative;inset:auto;width:412px;height:min(calc(100vh - 48px),915px);border-radius:28px;
     box-shadow:0 18px 50px rgba(0,40,30,.22),0 2px 8px rgba(0,40,30,.12)}
-  html[data-theme="dark"] iframe{background:#0A1615;box-shadow:0 0 0 1px rgba(255,255,255,.08),0 18px 50px rgba(0,0,0,.5)}
-  html[data-theme="black"] iframe{background:#000;box-shadow:0 0 0 1px rgba(255,255,255,.12)}
+  html.big[data-theme="dark"] #stage{box-shadow:0 0 0 1px rgba(255,255,255,.08),0 18px 50px rgba(0,0,0,.5)}
+  html.big[data-theme="black"] #stage{box-shadow:0 0 0 1px rgba(255,255,255,.12)}
+  html.big #toast{bottom:40px}
 </style>
 </head>
 <body>
-<iframe id="fk" title="Field Kit" allow="camera; microphone; geolocation; clipboard-read; clipboard-write; fullscreen; accelerometer; gyroscope; magnetometer" allowfullscreen></iframe>
+<div id="stage"></div>
+<div id="toast" role="status" aria-live="polite"></div>
 <script>
 (function () {
   "use strict";
-  var BIG = "(min-width:600px) and (min-height:700px)";   // keep in step with fieldkit.js
+  var BIGQ = "(min-width:600px) and (min-height:700px)";   // keep in step with fieldkit.js
   var PAGES = /^(index|fieldcam|fieldstock|fieldnotes)\.html$/;
-  var f = document.getElementById("fk");
-  try { var t = localStorage.getItem("techstock.theme"); if (t) document.documentElement.setAttribute("data-theme", t); } catch (e) {}
-  // only Field Kit's own pages go in the frame
+  var stage = document.getElementById("stage"), de = document.documentElement;
+  var mode = ""; try { mode = localStorage.getItem("fieldkit.shell") || ""; } catch (e) {}
+  var KEEP = mode !== "off";                             // off: no pages kept loaded (big screens only, as in 1.20.61)
+  function isBig() { return matchMedia(BIGQ).matches && Math.min(screen.width || 0, screen.height || 0) >= 600; }
+  function theme() { try { var t = localStorage.getItem("techstock.theme"); if (t) de.setAttribute("data-theme", t); } catch (e) {} }
+  theme(); de.classList.toggle("big", isBig());
+
+  // only Field Kit's own pages
   function clean(u) {
     u = String(u || "");
     var m = /^([^?#]*)(\?[^#]*)?(#.*)?$/.exec(u) || [];
@@ -43,25 +71,204 @@
     if (!PAGES.test(page)) page = "index.html";
     return page + (m[2] || "") + (m[3] || "");
   }
-  var start = clean(new URLSearchParams(location.search).get("u"));
-  // a phone-sized window doesn't need the frame
-  function back(u) { try { sessionStorage.setItem("fieldkit.noFrameUntil", String(Date.now() + 10000)); } catch (e) {} location.replace(u); }   // never bounce back and forth
-  if (!matchMedia(BIG).matches || Math.min(screen.width || 0, screen.height || 0) < 600) { back(start); return; }
-  f.src = start;
-  function inner() { try { var l = f.contentWindow.location; return clean(l.pathname.split("/").pop() + l.search + l.hash); } catch (e) { return start; } }
-  // keep this page's address and title in step with the page in the frame, so a reload or a bookmark opens the same page
-  function sync() {
-    var u = inner();
-    try { history.replaceState(null, "", "frame.html?u=" + encodeURIComponent(u)); } catch (e) {}
-    try { document.title = f.contentDocument.title || "Field Kit"; } catch (e) {}
+  function pageOf(u) { return u.split(/[?#]/)[0]; }
+  function hashOf(u) { var i = u.indexOf("#"); return i < 0 ? "" : u.slice(i); }
+  // which frame a page goes in: kept ones by name; everything else gets a fresh frame each time
+  function keyOf(u) {
+    if (!KEEP) return "t:" + pageOf(u);
+    var p = pageOf(u), h = hashOf(u);
+    if (p === "index.html") return "home";
+    if (p === "fieldstock.html" && (h === "" || h === "#log")) return "stock";
+    if (p === "fieldstock.html" && /^#order/.test(h)) return "order";
+    return "t:" + p;
   }
-  f.addEventListener("load", function () {
-    sync();
-    try { f.contentWindow.addEventListener("hashchange", sync); f.contentWindow.addEventListener("popstate", sync); } catch (e) {}
-    try { var th = f.contentDocument.documentElement.getAttribute("data-theme"); if (th) document.documentElement.setAttribute("data-theme", th); } catch (e) {}
+  function kept(k) { return k.indexOf("t:") !== 0; }
+
+  var start = clean(new URLSearchParams(location.search).get("u"));
+  function back(u) { try { sessionStorage.setItem("fieldkit.noFrameUntil", String(Date.now() + 10000)); } catch (e) {} location.replace(u); }
+  if (!KEEP && !isBig()) { back(start); return; }      // switched off, on a phone: plain pages
+
+  /* ---------- frames ---------- */
+  var frames = {}, cur = null, showSeq = 0;
+  function win(f) { try { return f.el.contentWindow; } catch (e) { return null; } }
+  function host(f, show) {
+    if (show) f.el.removeAttribute("data-fk-hidden"); else f.el.setAttribute("data-fk-hidden", "1");
+    var w = win(f); try { if (w && w.FieldKit) w.FieldKit._host(show); } catch (e) {}
+  }
+  function make(k, url, hidden) {
+    var el = document.createElement("iframe");
+    el.title = "Field Kit";
+    el.setAttribute("allow", "camera; microphone; geolocation; clipboard-read; clipboard-write; fullscreen; accelerometer; gyroscope; magnetometer; screen-wake-lock");
+    el.setAttribute("allowfullscreen", "");
+    if (hidden) el.setAttribute("data-fk-hidden", "1");
+    el.setAttribute("aria-hidden", "true");
+    var f = { k: k, url: url, el: el, ready: false, waits: [], snap: null };
+    el.addEventListener("load", function () {
+      var w = win(f);
+      try { if (!w || w.location.href === "about:blank") return; } catch (e) { return; }
+      f.ready = true;
+      try { f.url = clean(w.location.pathname.split("/").pop() + w.location.search + w.location.hash); } catch (e) {}
+      if (k === "stock" || k === "order") setTimeout(function () { if (frames[k] === f && f !== cur && f.ready) f.snap = snap(); }, 1500);
+      var q = f.waits; f.waits = []; q.forEach(function (fn) { fn(); });
+    });
+    el.src = url;
+    stage.appendChild(el);
+    frames[k] = f;
+    return f;
+  }
+  function whenReady(f, fn) {
+    if (f.ready) { fn(); return; }
+    var done = false, go = function () { if (done) return; done = true; fn(); };
+    f.waits.push(go);
+    setTimeout(go, 4000);   // never leave the tech on the old screen for long
+  }
+  function reload(f) { f.ready = false; f.snap = null; try { win(f).location.reload(); } catch (e) { f.el.src = f.url; } }
+  function drop(f) { if (!f) return; if (frames[f.k] === f) delete frames[f.k]; try { f.el.remove(); } catch (e) {} }
+
+  // Field Stock's saved data, to tell when a Field Stock page kept in the background is out of date
+  function snap() {
+    var ks = [];
+    try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if ((/^techstock\./.test(k) && !/^techstock\.(gs|draft|lastTab)$/.test(k)) || k === "fieldkit.profile" || k === "fieldkit.prefs") ks.push(k); } } catch (e) {}
+    ks.sort();
+    var h = 5381, s, j;
+    for (var n = 0; n < ks.length; n++) { s = ks[n] + "=" + (localStorage.getItem(ks[n]) || "") + "\n"; for (j = 0; j < s.length; j++) h = ((h << 5) + h + s.charCodeAt(j)) | 0; }
+    return ks.length + ":" + h;
+  }
+  function stale(f) { return (f.k === "stock" || f.k === "order") && f.ready && f.snap !== null && f.snap !== snap(); }
+
+  // put a page on screen; route: send home to this screen ("#job", "" for the menu…) once it's showing
+  function show(url, route) {
+    url = clean(url);
+    var k = keyOf(url), f = frames[k];
+    if (!kept(k)) {
+      if (f && f === cur && f.url === url) { finish(f, route); return; }
+      if (f && f !== cur) drop(f);
+      f = make(k, url, false);                         // a fresh page about to be shown: it starts as shown (camera starts sooner)
+    } else if (!f) f = make(k, url, cur !== null);
+    else if (f !== cur && stale(f)) reload(f);
+    var mine = ++showSeq;
+    if (f !== cur) stage.classList.add("busy");
+    whenReady(f, function () { if (mine === showSeq) swap(f, route); });
+  }
+  function swap(f, route) {
+    stage.classList.remove("busy");
+    var old = cur;
+    if (old && old !== f) {
+      try { var ad = win(old).document.activeElement; if (ad && ad.blur) ad.blur(); } catch (e) {}
+      host(old, false);
+      old.el.classList.remove("on"); old.el.setAttribute("aria-hidden", "true");
+      if (old.k === "stock" || old.k === "order") old.snap = snap();   // its own changes don't make it out of date
+      if (!kept(old.k)) drop(old);
+    }
+    cur = f;
+    f.el.classList.add("on"); f.el.removeAttribute("aria-hidden");
+    if (old !== f) host(f, true);
+    finish(f, route);
+  }
+  function finish(f, route) {
+    var w = win(f);
+    if (route !== undefined && f.k === "home") { try { if (w.__fkRoute) w.__fkRoute(route); } catch (e) {} }
+    try { document.title = w.document.title || "Field Kit"; var th = w.document.documentElement.getAttribute("data-theme"); if (th) de.setAttribute("data-theme", th); } catch (e) {}
+    try { w.focus(); } catch (e) {}
+    if (f.k === "home") refreshSoon();
+    preload();
+  }
+  // Field Stock pages kept in the background: bring them up to date while the tech is on the home screen
+  // (also when Field Stock's saved data changes while one is hidden; at most once every 5 s per page, the rest waits for show)
+  var rt = 0;
+  function refreshSoon(ms) {
+    clearTimeout(rt);
+    rt = setTimeout(function () {
+      ["stock", "order"].forEach(function (k) { var f = frames[k]; if (f && f !== cur && stale(f) && Date.now() - (f.at || 0) > 5000) { f.at = Date.now(); reload(f); } });
+    }, ms || 600);
+  }
+  // after the first screen is up: load home, Field Stock and Manual Order in the background, one at a time
+  var preloaded = false;
+  function preload() {
+    if (preloaded || !KEEP) return; preloaded = true;
+    var list = ["index.html", "fieldstock.html", "fieldstock.html#order"];
+    (function next() {
+      var u = list.shift(); if (!u) return;
+      if (frames[keyOf(u)]) { next(); return; }
+      setTimeout(function () { if (frames[keyOf(u)]) { next(); return; } var f = make(keyOf(u), u, true); whenReady(f, next); }, 1200);
+    })();
+  }
+
+  /* ---------- history: one entry per page change; Back goes to the previous page ---------- */
+  var stack = [start], pos = 0, pendingRoute = null;
+  function addr(u) { return "frame.html?u=" + encodeURIComponent(u); }
+  try { history.replaceState({ fk: start, i: 0 }, "", addr(start)); } catch (e) {}
+  function samePage(a, b) { var ka = keyOf(a), kb = keyOf(b); return ka === kb && (kept(ka) || pageOf(a) === pageOf(b)); }
+  function nav(url, replace) {
+    url = clean(url);
+    if (cur && kept(cur.k) && keyOf(url) === cur.k) { show(url, cur.k === "home" ? hashOf(url) : undefined); return; }   // same page, another screen of it
+    // going to the page just before (e.g. "‹ Field Kit"): a real Back, so history doesn't keep growing
+    if (!replace && pos > 0 && samePage(stack[pos - 1], url)) { pendingRoute = url; pendingFrom = pos; history.back(); return; }
+    if (replace) { stack[pos] = url; try { history.replaceState({ fk: url, i: pos, guard: guard ? 1 : undefined }, "", addr(url)); } catch (e) {} }
+    else {
+      stack = stack.slice(0, pos + 1); stack.push(url); pos++;
+      try { history.pushState({ fk: url, i: pos }, "", addr(url)); } catch (e) {}
+      guard = false;
+    }
+    show(url, keyOf(url) === "home" ? hashOf(url) : undefined);
+  }
+  /* The phone's Back button. A spare history entry sits on top of the current page (added on a tap, as Chrome requires).
+     Back lands there first: the page closes whatever is open (a panel, the scanner…), or the shell goes to the previous
+     page. On the home screen's menu the first Back says "Press back again to close Field Kit"; the next one closes it. */
+  var guard = false, lastWarn = 0, pendingFrom = -1;
+  function touched(w) {
+    if (guard || !cur || win(cur) !== w) return;
+    try { history.pushState({ fk: stack[pos], i: pos, guard: 1 }, "", addr(stack[pos])); guard = true; } catch (e) {}
+  }
+  function pageBack() {
+    var w = win(cur);
+    try { if (w.__fkBack && w.__fkBack()) return; } catch (e) {}
+    if (cur.k === "home") {
+      var onMenu = true; try { onMenu = !w.document.getElementById("menu").hidden; } catch (e) {}
+      if (!onMenu) { try { w.__fkRoute(""); } catch (e) {} return; }
+      if (pos > 0) { history.back(); return; }
+      if (Date.now() - lastWarn > 2500) { lastWarn = Date.now(); toast("Press back again to close Field Kit"); }
+      return;
+    }
+    try { if (w.FieldKit && w.FieldKit.goHome && (cur.k.indexOf("t:") === 0)) { w.FieldKit.goHome(); return; } } catch (e) {}
+    nav("index.html");
+  }
+  addEventListener("popstate", function (e) {
+    var st = e.state;
+    if (!st || st.fk === undefined) return;
+    var np = st.i || 0;
+    if (pendingRoute) {
+      if (np >= pendingFrom) { history.back(); return; }          // stepped off a spare entry: keep going back
+      pos = np; guard = !!st.guard;
+      var url = pendingRoute; pendingRoute = null;
+      show(url, keyOf(url) === "home" ? hashOf(url) : undefined);
+      return;
+    }
+    if (np === pos && guard && !st.guard) { guard = false; pageBack(); return; }   // Back pressed on this page
+    pos = np; guard = !!st.guard;
+    if (!stack[pos] || !samePage(stack[pos], st.fk)) stack[pos] = st.fk;
+    show(st.fk, undefined);
   });
-  // window made phone-sized: drop the frame and show the page itself
-  matchMedia(BIG).addEventListener("change", function (e) { if (!e.matches && !document.fullscreenElement) back(inner()); });
+
+  var tt = 0;
+  function toast(t) { var el = document.getElementById("toast"); el.textContent = t; el.classList.add("show"); clearTimeout(tt); tt = setTimeout(function () { el.classList.remove("show"); }, 2200); }
+
+  window.__fkShell = { nav: function (u, r) { nav(u, r); }, touched: touched, toast: toast };
+
+  // a new version has taken over: reload the whole app (the pages leave this to the shell)
+  try {
+    if (navigator.serviceWorker) {
+      var had = !!navigator.serviceWorker.controller;
+      navigator.serviceWorker.addEventListener("controllerchange", function () { if (had) location.reload(); had = true; });
+    }
+  } catch (e) {}
+  matchMedia(BIGQ).addEventListener("change", function () { de.classList.toggle("big", isBig()); });
+  addEventListener("storage", function (e) {
+    if (!e.key || e.key === "techstock.theme") theme();
+    if (!e.key || /^techstock\.|^fieldkit\.(profile|prefs)$/.test(e.key)) refreshSoon(800);
+  });
+
+  show(start, undefined);
 })();
 </script>
 </body>

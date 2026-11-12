@@ -23,6 +23,6 @@ Not an organised suite: grab the ones near what you changed.
 | Field Stock | `tlog.py` (opens on Log), `tdeploy.py` (pick any item by hand), `tcat.py` (bundled names, one stock row), `tord.py`, `tord2.py`, `torder3.py`, `tordshot.py` (order form, email, own page), `tappr.py`, `t6.py` (transfer email CC) |
 | Test inventory (removed from the app) | `tstate.py`, `ttest.py`, `tclean.py` (the clean-up that removed it) |
 | Header experiments (obsolete: Curtis chose full-size headers) | `tj.py`–`tj3.py`, `tf.py`, `ts.py` |
-| Side by side (one-app rebuild) | `tside.py` (Field Cam / Comments inside an SA vs on their own, a second page loading alongside, migration), `thidden.py` (a page loaded in the background stays inert until shown) |
+| Side by side (one-app rebuild) | `tside.py` (Field Cam / Comments inside an SA vs on their own, a second page loading alongside, migration), `thidden.py` (a page loaded in the background stays inert until shown), `tshell.py` (the shell: preload, instant switching, Back, SA flow, stale refresh, off switch). Automated browsers get plain pages unless `fieldkit.shell` is `"test"` |
 | Other | `tchk.py` (prints page errors on load), `tsv.py` (checks every barcode on the test-serials page scans), `tsb.py`, `tsb2.py` (runs the preview in a sandboxed frame), `tnm.py`–`tnm3.py` (the old stock-names tool, obsolete), `tstate.py`, `shotset.py` |
 

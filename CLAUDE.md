@@ -43,4 +43,5 @@ Read this file first. It's kept short on purpose. `HANDOFF.md` holds the full li
 - Install, manifest and icon tags stay in `<head>`.
 - Never rename `localStorage` keys (`fieldkit.*`, `techstock.*`, `fieldcam.*`, `xplore_fsl_*`), and never write Field Stock entries without sealing them.
 - Using a `const` before its declaration silently kills the whole page, so always run `dev/check.py`.
+- Pages run inside `frame.html` (the shell, 1.20.81): it keeps home, Field Stock and Manual Order loaded and owns the Back button. Change pages with `FieldKit.go()`, save work in `FieldKit.onLeave()`, start things like the camera in `FieldKit.whenShown()`. Test browsers get plain pages unless `fieldkit.shell` is `"test"` (see `dev/tests/tshell.py`).
 - `dev/` is tooling only. Nothing in the app loads it, and the service worker doesn't cache it.

@@ -1378,7 +1378,7 @@ details.grp .btn{margin-bottom:12px}
   var NAV = window.navigation && typeof window.navigation.entries === "function" ? window.navigation : null;
   var guard = false, jumping = false;
   function armBack() { if (guard) return; try { history.pushState({ fkGuard: 1 }, "", location.href); guard = true; } catch (e) {} }
-  document.addEventListener("pointerdown", armBack, true);
+  if (!FK.inShell) document.addEventListener("pointerdown", armBack, true);   // in the shell, the shell keeps the guard (1.20.81)
   function rootEntry() {
     if (!NAV) return null;
     try { var e0 = NAV.entries()[0], u = new URL(e0.url); return u.origin === location.origin && /(\/|\/index\.html)$/.test(u.pathname) ? e0 : null; } catch (e) { return null; }
@@ -1401,7 +1401,7 @@ details.grp .btn{margin-bottom:12px}
     if (b.then === "warn") toast("Press back again to close Field Kit");
   }
   var lastWarn = 0;
-  addEventListener("popstate", function (e) {
+  if (!FK.inShell) addEventListener("popstate", function (e) {
     if (jumping) { jumping = false; landed(); return; }
     if (e.state && e.state.fkGuard) return;   // stepped onto a spare entry: nothing to do
     guard = false;
@@ -1414,7 +1414,35 @@ details.grp .btn{margin-bottom:12px}
     if (!goRoot("warn")) toast("Press back again to close Field Kit");
   });
   start();
-  landed();
+  if (!FK.inShell) landed();
+  /* In the shell (1.20.81) this page stays loaded: the shell sends it to a screen ("#job", "#backup"…, or "" for the
+     menu) instead of reloading it, and it repaints whenever it comes back into view. */
+  window.__fkRoute = function (h) {
+    h = h || "";
+    try { history.replaceState(null, "", location.pathname + location.search + h); } catch (e) {}
+    start();
+  };
+  FK.onShow(function () {
+    if (!$("menu").hidden) paintMenu(); if (!$("lobby").hidden) paintLobby();
+    try { fitHome(); setTimeout(fitHome, 120); } catch (e) {}
+  });
+  // Settings: instant switching (the shell) on / off, for testing on a phone
+  (function () {
+    var box = document.createElement("section"); box.className = "card"; box.id = "sShell";
+    var on = function () { try { return localStorage.getItem("fieldkit.shell") !== "off"; } catch (e) { return true; } };
+    var paint = function () {
+      box.innerHTML = '<div class="gs-line"><h3 style="flex:1">Instant switching</h3><span class="pill">' + (on() ? "On" : "Off") + '</span></div>' +
+        '<p class="help" style="margin:4px 0 10px">Keeps Field Kit\'s pages loaded so moving between them is instant. Turn it off if something misbehaves.</p>' +
+        '<button class="btn block" type="button" id="shellTog">' + (on() ? "Turn Off" : "Turn On") + '</button>';
+    };
+    paint();
+    var gs = $("backup"); if (gs && gs.parentNode) gs.parentNode.insertBefore(box, gs.nextSibling);
+    box.addEventListener("click", function (e) {
+      if (!e.target.closest("#shellTog")) return;
+      // a real reload either way (a link to this same page would only change the #): ?shell= sets the switch (fieldkit.js)
+      (FK.inShell ? top : window).location.replace("index.html?shell=" + (on() ? "off" : "on") + "#settings");
+    });
+  })();
   addEventListener("pageshow", function () { if (!$("menu").hidden) paintMenu(); if (!$("lobby").hidden) paintLobby(); });
   // Scan buttons here: Field Cam opens straight into the scanner and comes back here afterwards
   // ("one": after one serial; "many", Scan More: when the tech taps Done)

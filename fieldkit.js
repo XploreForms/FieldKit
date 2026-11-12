@@ -11,17 +11,40 @@
    match; neither does a page already inside a frame (frame.html itself, or the preview). Add ?fkframe=off to skip it. */
 (function () {
   try {
-    if (window.top !== window || !window.matchMedia || !matchMedia("(min-width:600px) and (min-height:700px)").matches) return;
-    // 1.20.66: the device itself must be bigger than a phone. A page that runs this before its viewport tag (Comments)
-    // briefly reports a desktop width on a phone; without this it bounced between itself and the frame (white screen).
-    if (Math.min(screen.width || 0, screen.height || 0) < 600) return;
+    /* 1.20.81, one-app rebuild step 3: every page opens inside frame.html (the shell), which keeps Field Kit's pages
+       loaded and switches between them instantly. Off switch: Settings > Instant switching (fieldkit.shell = "off"),
+       or ?shell=off / ?shell=on in the address. Off: only big screens use frame.html, as before (1.20.61).
+       Automated tests (navigator.webdriver) get the plain pages unless fieldkit.shell = "test". */
+    var m = /[?&]shell=(on|off)\b/.exec(location.search);
+    if (m) { if (m[1] === "off") localStorage.setItem("fieldkit.shell", "off"); else localStorage.removeItem("fieldkit.shell"); }
+    if (window.top !== window) return;
     if (/[?&]fkframe=off\b/.test(location.search)) return;
+    var mode = localStorage.getItem("fieldkit.shell") || "";
+    if (navigator.webdriver && mode !== "test") return;
+    var big = !!window.matchMedia && matchMedia("(min-width:600px) and (min-height:700px)").matches && Math.min(screen.width || 0, screen.height || 0) >= 600;
+    if (mode === "off" && !big) return;
     try { if (+sessionStorage.getItem("fieldkit.noFrameUntil") > Date.now()) return; } catch (e) {}   // the frame just sent us back: don't go again
     var page = location.pathname.split("/").pop() || "index.html";
-    location.replace("frame.html?u=" + encodeURIComponent(page + location.search + location.hash));
+    location.replace("frame.html?u=" + encodeURIComponent(page + location.search.replace(/[?&]shell=(on|off)\b/, "") + location.hash));
     document.write('<plaintext style="display:none">');   // stop the rest of this page (its scripts, the camera) while the frame opens
     window.__fkFraming = true;
   } catch (e) {}
+})();
+/* Inside the shell: page changes, links and the Back button's first tap go through the shell (1.20.81) */
+(function () {
+  if (window.__fkFraming) return;
+  var sh = null; try { sh = window.parent !== window && window.parent.__fkShell; } catch (e) {}
+  if (!sh) return;
+  window.__fkInShell = true;
+  window.__fkNav = function (u, replace) { sh.nav(String(u || ""), !!replace, window); };
+  var PAGE = /^(index|fieldcam|fieldnotes|fieldstock)\.html(#.*)?$/;
+  addEventListener("click", function (e) {
+    if (e.defaultPrevented || e.button) return;
+    var a = e.target && e.target.closest && e.target.closest("a[href]"); if (!a || a.target === "_blank") return;
+    var h = a.getAttribute("href") || "";
+    if (PAGE.test(h)) { e.preventDefault(); window.__fkNav(h); }
+  }, false);
+  document.addEventListener("pointerdown", function () { try { sh.touched(window); } catch (e) {} }, true);
 })();
 /* Show each page only when it's ready (1.20.78). Chrome/Android: the page's <link rel="expect" blocking="render"> keeps the
    browser from drawing until the page is fully parsed and its scripts have built it. Browsers without that (iPhone Safari):
@@ -29,7 +52,7 @@
 if (!window.__fkFraming) (function () {
   try {
     var canBlock = false; try { canBlock = document.createElement("link").relList.supports("expect"); } catch (e) {}
-    if (canBlock) return;
+    if (canBlock || window.__fkInShell) return;   // the shell only shows a page once it's ready
     var de = document.documentElement; de.classList.add("fk-wait");
     var shown = false, show = function () { if (shown) return; shown = true; de.classList.remove("fk-wait"); };
     var cap = setTimeout(show, 350);
@@ -227,13 +250,13 @@ if (!window.__fkFraming) (function () {
       "box-shadow:0 6px 24px rgba(0,0,0,.25);font:500 14px/1.3 var(--fk-body,system-ui,sans-serif)";
     bar.innerHTML = '<span style="flex:1;min-width:0"><b style="display:block;font-weight:700">Field Kit has an update</b>Your work is saved. Takes a few seconds.</span>' +
       '<button type="button" style="flex:none;border:0;border-radius:8px;min-height:44px;padding:0 14px;background:var(--fk-accent,#58C774);color:var(--fk-accent-ink,#06301A);font:600 15px var(--fk-body,system-ui,sans-serif);cursor:pointer">Update Now</button>';
-    bar.querySelector("button").addEventListener("click", function () { this.textContent = "Updating…"; this.disabled = true; applyUpdate(reg); setTimeout(function () { location.reload(); }, 4000); });
+    bar.querySelector("button").addEventListener("click", function () { this.textContent = "Updating…"; this.disabled = true; applyUpdate(reg); setTimeout(function () { (window.__fkInShell ? top.location : location).reload(); }, 4000); });
     (document.body || document.documentElement).appendChild(bar);
   }
   function applyUpdate(reg) { if (reg && reg.waiting) reg.waiting.postMessage("update"); }
   if ("serviceWorker" in navigator && !IN_CLAUDE && (location.protocol === "https:" || location.hostname === "localhost")) {
     var hadController = !!navigator.serviceWorker.controller;
-    navigator.serviceWorker.addEventListener("controllerchange", function () { if (hadController) location.reload(); hadController = true; });
+    navigator.serviceWorker.addEventListener("controllerchange", function () { if (hadController && !window.__fkInShell) location.reload(); hadController = true; });   // in the shell, the shell reloads the whole app
     navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(function (reg) {
       function onWaiting() {
         if (!reg.waiting || !navigator.serviceWorker.controller) return;
@@ -292,11 +315,11 @@ if (!window.__fkFraming) (function () {
       var h = a.getAttribute("href") || "";
       if (/^(fieldcam|fieldnotes)\.html(#.*)?$/.test(h)) {
         e.preventDefault();
-        if (typeof window.__fkNav === "function") window.__fkNav(h); else location.replace(h);
+        go(h, true);
       }
     }, true);
   }
-  if (APP === "notes") {
+  if (APP === "notes" && !window.__fkInShell) {
     // Back button: keep one extra history entry above the page (added on the first tap, which Chrome requires),
     // so Back lands here and can go to the right place. Field Cam has its own version that closes open panels first.
     var guard = false;
@@ -306,7 +329,7 @@ if (!window.__fkFraming) (function () {
   }
 
   window.FieldKit = {
-    version: VERSION, app: APP, fields: FIELDS, goHome: goHome,
+    version: VERSION, app: APP, fields: FIELDS, goHome: goHome, inShell: !!window.__fkInShell,
     shown: shown, whenShown: whenShown, onShow: onShow, onLeave: onLeave, go: go, _host: hostSet,
     profile: profile, setProfile: setProfile,
     prefs: prefs, setPrefs: setPrefs,

@@ -3412,7 +3412,7 @@ window.addEventListener("resize", applyRot);
    also what Chrome requires before it lets a page handle back). iPhone has no back button. */
 let backGuard = false;
 function armBack() { if (backGuard) return; try { history.pushState({ fieldcam:1 }, ""); backGuard = true; } catch {} }
-document.addEventListener("pointerdown", armBack, true);
+if (!FieldKit.inShell) document.addEventListener("pointerdown", armBack, true);   // in the shell, the shell owns Back (1.20.81)
 function closeTopLayer() {
   if (FS) { exitFs(); return true; }
   if (SC.on) { stopScan(); return true; }
@@ -3423,7 +3423,8 @@ function closeTopLayer() {
   if ($("snack").classList.contains("show")) { hideSnack(); return true; }
   return false;
 }
-window.addEventListener("popstate", () => {
+window.__fkBack = closeTopLayer;   // the shell asks first: close what's open
+if (!FieldKit.inShell) window.addEventListener("popstate", () => {
   backGuard = false;
   if (closeTopLayer()) { armBack(); return; }
   FieldKit.goHome();   // nothing open: straight back to the menu, or the job summary in a job

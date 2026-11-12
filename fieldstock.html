@@ -994,7 +994,7 @@ function setTab(t){
   ["stock","log","history","count","order"].forEach(p=>$("p-"+p).hidden = p!==t);
   if(t==="order") renderOrder();
   try{ sessionStorage.setItem("techstock.tab",t); }catch(e){}
-  if(t==="log") refreshLocation(false);
+  if(t==="log") FieldKit.whenShown(()=>refreshLocation(false));   // a copy loaded in the background doesn't ask for GPS (1.20.81)
   stopLiveScan();
   window.scrollTo(0,0);
 }
@@ -3073,6 +3073,7 @@ function draftSave(){
   }catch(e){}
 }
 FieldKit.onLeave(draftSave);
+FieldKit.onShow(()=>{ if(tab==="log") refreshLocation(false); });
 (function draftRestore(){
   if(/^#order/.test(location.hash)) return;
   let d=null; try{ d=JSON.parse(localStorage.getItem(DRAFT_KEY)||"null"); }catch(e){}
