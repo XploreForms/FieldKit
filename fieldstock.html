@@ -556,7 +556,7 @@ header.top.fk-row .who{display:none}
           <button type="button" class="btn" id="dAddSerial">Add</button>
         </div>
         <select id="dItemSel" aria-label="Pick an item without a serial"></select>
-        <button type="button" class="btn ghost center" id="dPhotoBtn">Camera won't open? Scan from a photo</button>
+        <button type="button" class="btn ghost center" id="dPhotoBtn" hidden>Camera won't open? Scan from a photo</button><!-- 1.20.50: hidden (Curtis); kept so its script still finds it -->
         <div id="jobList"></div>
       </div>
       <div class="field" id="itemBlock">
@@ -574,7 +574,7 @@ header.top.fk-row .who{display:none}
         <button type="button" class="btn brand block" id="scanBtn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M20 16v3a1 1 0 01-1 1h-3M8 20H5a1 1 0 01-1-1v-3"/><path d="M8 8v8M11 8v8M14 8v8M17 8v8"/></svg>
           Scan Barcode</button>
-        <button type="button" class="btn ghost center" id="photoScanBtn">Camera won't open? Scan from a photo</button>
+        <button type="button" class="btn ghost center" id="photoScanBtn" hidden>Camera won't open? Scan from a photo</button><!-- 1.20.50: hidden (Curtis); kept so its script still finds it -->
         <div class="serials" id="serialList"></div>
         <div id="serialWarn"></div>
       </div>
@@ -646,7 +646,7 @@ header.top.fk-row .who{display:none}
         <input type="text" id="countIn" placeholder="Or type a serial" autocomplete="off" autocapitalize="characters" spellcheck="false" class="mono">
         <button type="button" class="btn" id="countAddBtn">Add</button>
       </div>
-      <button type="button" class="btn ghost center" id="countPhotoBtn">Camera won't open? Scan from a photo</button>
+      <button type="button" class="btn ghost center" id="countPhotoBtn" hidden>Camera won't open? Scan from a photo</button><!-- 1.20.50: hidden (Curtis); kept so its script still finds it -->
       <div class="seg two-col" id="cmpSeg" role="group" aria-label="Compare against">
         <button class="t-count" data-cmp="records" aria-pressed="true">My records</button>
         <button class="t-count" data-cmp="list" aria-pressed="false">Inventory list</button>
@@ -2634,11 +2634,11 @@ async function makeDetector(){
 }
 async function startLiveScan(mode){
   LIVE.mode=mode||"count";
-  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ toast("Live scanning isn't available here. Scan from a photo instead."); return; }
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ toast("Live scanning isn't available here. Type the serial instead."); return; }
   try{ LIVE.audio = LIVE.audio || new (window.AudioContext||window.webkitAudioContext)(); LIVE.audio.resume(); }catch(e){}
   try{
     LIVE.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}, width:{ideal:1920}, height:{ideal:1080}}, audio:false});
-  }catch(e){ toast(e&&e.name==="NotAllowedError" ? HELP.cam : "Couldn't start the camera. Scan from a photo instead."); return; }
+  }catch(e){ toast(e&&e.name==="NotAllowedError" ? HELP.cam : "Couldn't start the camera. Type the serial instead."); return; }
   LIVE.bd = LIVE.bd || await makeDetector();
   if(!LIVE.bd && !window.ZXing){ stopLiveScan(); toast("Scanner didn't load. Connect to the internet and reopen Field Stock."); return; }
   if(!LIVE.bd){
