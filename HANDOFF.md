@@ -120,7 +120,7 @@ The home screen (1.20.27) **fills the screen with no scrolling** on any phone: h
 - (1.20.39) **No pop-up after each picture**; only the too blurry / too dark warning (with Retake) still shows.
 - (1.20.39) **"To label (n)" is the first tile in the label grid** (orange), not a row of its own.
 - (1.20.39) **Gallery shows only the current job/SA** (no Previous jobs). Unsaved pictures from an earlier set stay on the phone until auto-clean, but aren't listed.
-- (1.20.39) **No sideways/landscape mode** outside full screen: turning the phone doesn't reshape the frame (`frameTurn` is 0 unless `fc-fs`); saved pictures are still turned upright.
+- (1.20.39, 1.20.60) **No sideways/landscape mode** outside full screen: turning the phone doesn't reshape the frame (`frameTurn` is 0 unless `fc-fs`) and nothing on screen turns (buttons, zoom, tilt readout: `xt` is 0 in `fastTick` unless `fc-fs`); saved pictures are still turned upright.
 - (1.20.39) Without an SA: **no start/end cards**, and once every picture is saved a sheet offers **Finish & Go Home** (ends the set, back to the menu) or Keep shooting.
 - (1.20.40) SA start/end divider cards say **"Divider · Do Not Upload"**.
 - (1.20.39) Barcode scanner: **no white box**; a dark vignette fading to a clear middle; the red line turns green/orange on hit/miss.

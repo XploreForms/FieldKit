@@ -1614,7 +1614,8 @@ function fastTick() {
     if (!lvl) S.lvlOffAt = t;
     S.wasLvl = lvl;
   }
-  const xt = extraTurn(); E.hud.classList.toggle("r90", xt === 90); E.hud.classList.toggle("r270", xt === 270);
+  // 1.20.60: no sideways mode outside full screen: nothing on screen turns with the phone (photos are still saved upright)
+  const xt = document.documentElement.classList.contains("fc-fs") ? extraTurn() : 0; E.hud.classList.toggle("r90", xt === 90); E.hud.classList.toggle("r270", xt === 270);
   // sideways for more than ~0.4 s (ignores a quick wobble) -> ask the tech to turn the phone upright
   const sw = xt % 180 === 90, now = Date.now();
   if (sw !== sideRaw) { sideRaw = sw; sideAt = now; }
