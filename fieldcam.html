@@ -1219,7 +1219,11 @@ const hwUltra = () => !!(S.caps.zoom && S.caps.zoom.min && S.caps.zoom.min < 0.9
 // tries a candidate; tapping .5× again tries the next. The one a photo is taken with is remembered for this phone.
 const ALT_KEY = "fieldcam.ultraLens";
 const altPick = () => { try { const id = localStorage.getItem(ALT_KEY); return id && S.lenses && S.lenses.alts && S.lenses.alts.includes(id) ? id : null; } catch { return null; } };
-const canUltra = () => S.lens === "ultra" || hwUltra() || !!(S.lenses && (S.lenses.ultra || (S.lenses.alts && S.lenses.alts.length)));
+const canUltraNow = () => S.lens === "ultra" || hwUltra() || !!(S.lenses && (S.lenses.ultra || (S.lenses.alts && S.lenses.alts.length)));
+/* 1.20.58: remember whether this phone has a .5× lens, so the zoom buttons are drawn right from the start and
+   don't change (".5×" popping in and shifting the others) once the lens check finishes */
+const UW_KEY = "fieldcam.hasUltra";
+const canUltra = () => S.lensesScanned ? canUltraNow() : (() => { try { return localStorage.getItem(UW_KEY) === "1"; } catch { return false; } })();
 const isUltra = () => S.lens === "ultra" || (S.ultra && S.caps.zoom && S.zoom < 0.95);
 const zoomRange = () => S.caps.zoom ? [Math.max(S.ultra ? S.caps.zoom.min : 1, S.caps.zoom.min || 1), Math.max(1, Math.min(S.caps.zoom.max || 1, 10))] : [1, MAX_DIGITAL];
 async function goUltra() {
@@ -1279,7 +1283,9 @@ function applyZoomUI() {
   $("zoomBar").innerHTML = btns.map(b => `<button data-z="${b.k}" aria-pressed="${b.on}">${b.t}</button>`).join("");
   $("zoomRead").textContent = zoomLabel();
   $("zoomBar").classList.toggle("ultra", isUltra());
+  if (S.lensesScanned) try { localStorage.setItem(UW_KEY, canUltraNow() ? "1" : "0"); } catch {}
 }
+try { applyZoomUI(); } catch {}   // draw the zoom buttons before the camera starts (from what this phone had last time)
 $("zoomBar").addEventListener("click", e => {
   const b = e.target.closest("[data-z]"); if (!b) return;
   const k = b.dataset.z, z = k === "w2" ? 2 : k === "w3" ? 3 : 1;
