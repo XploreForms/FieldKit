@@ -493,7 +493,7 @@ header.top.fk-row .who{display:none}
 
   <!-- LOG -->
   <section class="panel" id="p-log" hidden>
-    <h2 id="logTitle">Deploy to a customer</h2>
+    <h2 id="logTitle" hidden>Deploy to a customer</h2><!-- 1.20.51: no title above the action picker (Curtis); kept for its script -->
     <div class="seg" id="typeSeg" role="group" aria-label="Action">
       <button class="t-receive" data-type="receive"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 4v12M6 10l6 6 6-6M5 20h14"/></svg></i>Receive</button>
       <button class="t-deploy" data-type="deploy"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9H3z"/><path d="M9 20v-6h6v6"/></svg></i>Deploy</button>
@@ -550,9 +550,9 @@ header.top.fk-row .who{display:none}
         <span class="lbl" id="dLbl">Item</span>
         <div class="list" id="lineList"></div>
         <button type="button" class="btn brand block" id="dScanBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M20 16v3a1 1 0 01-1 1h-3M8 20H5a1 1 0 01-1-1v-3"/><path d="M8 8v8M11 8v8M14 8v8M17 8v8"/></svg>
-          <span id="dScanLbl">Scan Barcode</span></button>
+          <span id="dScanLbl">Scan Serial Number</span></button>
         <div class="row">
-          <input type="text" id="dSerialIn" placeholder="Or type a serial" autocomplete="off" autocapitalize="characters" spellcheck="false" class="mono">
+          <input type="text" id="dSerialIn" placeholder="Manually Type SN" autocomplete="off" autocapitalize="characters" spellcheck="false" class="mono">
           <button type="button" class="btn" id="dAddSerial">Add</button>
         </div>
         <select id="dItemSel" aria-label="Pick an item without a serial"></select>
@@ -573,7 +573,7 @@ header.top.fk-row .who{display:none}
         </div>
         <button type="button" class="btn brand block" id="scanBtn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M20 16v3a1 1 0 01-1 1h-3M8 20H5a1 1 0 01-1-1v-3"/><path d="M8 8v8M11 8v8M14 8v8M17 8v8"/></svg>
-          Scan Barcode</button>
+          Scan Serial Number</button>
         <button type="button" class="btn ghost center" id="photoScanBtn" hidden>Camera won't open? Scan from a photo</button><!-- 1.20.50: hidden (Curtis); kept so its script still finds it -->
         <div class="serials" id="serialList"></div>
         <div id="serialWarn"></div>
@@ -641,9 +641,9 @@ header.top.fk-row .who{display:none}
       </div>
       <button class="btn brand block" type="button" id="liveScanBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M20 16v3a1 1 0 01-1 1h-3M8 20H5a1 1 0 01-1-1v-3"/><path d="M8 8v8M11 8v8M14 8v8M17 8v8"/></svg>
-        Scan Barcode</button>
+        Scan Serial Number</button>
       <div class="row">
-        <input type="text" id="countIn" placeholder="Or type a serial" autocomplete="off" autocapitalize="characters" spellcheck="false" class="mono">
+        <input type="text" id="countIn" placeholder="Manually Type SN" autocomplete="off" autocapitalize="characters" spellcheck="false" class="mono">
         <button type="button" class="btn" id="countAddBtn">Add</button>
       </div>
       <button type="button" class="btn ghost center" id="countPhotoBtn" hidden>Camera won't open? Scan from a photo</button><!-- 1.20.50: hidden (Curtis); kept so its script still finds it -->
@@ -1042,12 +1042,12 @@ $("skuSel").innerHTML = `<option value="">Choose an item…</option>` + GROUPS.m
 
 /* Deploy is one job: one account, a few different pieces (radio + router, or drop + NID + router) */
 F.lines=[];
-$("dItemSel").innerHTML = `<option value="">Or pick an item without a serial…</option>` + GROUPS.map(g=>{
+$("dItemSel").innerHTML = `<option value="">Non-Serialized</option>` + GROUPS.map(g=>{
   const items=window.FK_CATALOG.firstOfName(SKUS.filter(s=>s.group===g && !s.serial && !s.hidden));
   return items.length ? `<optgroup label="${esc(g)}">`+items.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join("")+`</optgroup>` : "";
 }).join("");
 /* Deploy can pick any item by hand (serialized ones too: the serial is then picked from this phone's stock or typed) */
-const ALL_ITEMS_OPTS = `<option value="">Or pick an item…</option>` + GROUPS.map(g=>{
+const ALL_ITEMS_OPTS = `<option value="">Pick an item…</option>` + GROUPS.map(g=>{
   const items=window.FK_CATALOG.firstOfName(SKUS.filter(s=>s.group===g && !s.hidden));
   return items.length ? `<optgroup label="${esc(g)}">`+items.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join("")+`</optgroup>` : "";
 }).join("");
@@ -1078,7 +1078,7 @@ function deployAddSerial(v, quiet){
 }
 function renderLines(){
   const list=$("lineList");
-  $("dScanLbl").textContent = "Scan Barcode";   // same label in every function
+  $("dScanLbl").textContent = "Scan Serial Number";   // same label in every function
   const LBL={receive:"Items Received", transfer:"Items to Transfer", rma:"Items Going Back on RMA", recycle:"Items to Recycle"}[F.type];
   $("dLbl").textContent = multi() ? (F.lines.length ? `${LBL} (${F.lines.length})` : LBL) : "Item";
   renderJob();
