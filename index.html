@@ -140,11 +140,10 @@ h3{margin:0;font:700 1.1rem/1.2 var(--f-display)}
 .nj .seg button[aria-pressed="true"]{background:var(--btn);color:var(--btn-ink);box-shadow:none}
 .nj .seg button:disabled{opacity:.35;cursor:default}
 .nj .njpts{display:flex;flex-direction:column;gap:6px}
-.nj .njpt{display:grid;grid-template-columns:minmax(84px,30%) minmax(0,1fr);align-items:center;gap:8px}
-.nj .njpl{font-size:.82rem;font-weight:600;color:var(--fg);line-height:1.15}
+.nj .njpt{display:grid;grid-template-columns:52px minmax(0,1fr);align-items:center;gap:8px}
+.nj .njpl{font-size:.86rem;font-weight:700;color:var(--fg);line-height:1.15;letter-spacing:.03em}
 .nj .njpt.off .njpl{color:var(--muted);opacity:.6}
 .nj .njpt .seg button{letter-spacing:.02em}
-.nj .njoff .lbl small{font-weight:400;color:var(--muted)}
 .nj .seg.njhold{opacity:.55}.nj .seg.njhold button{opacity:1;color:var(--muted);font-weight:500;background:var(--surface)}
 .njref{display:flex;gap:8px}.njref input{flex:1;font:500 1.05rem var(--f-mono)}.njref .btn{min-height:46px;padding:0 14px}
 html:not(.fk-slim) .njtitle{font-family:var(--f-display)!important;font-size:1.5rem!important;font-weight:700!important}
@@ -577,7 +576,8 @@ details.grp .btn{margin-bottom:12px}
     var platRows = NJ_FAMS.map(function (f) {
       var off = nj.work && !ps.some(function (p) { return famOf(p) === f[0]; });
       var techs = f[0] === "VAS" ? NJ_VAS : NJ_TECH[f[0]], cur = nj.fam === f[0] ? (f[0] === "VAS" ? nj.vas : nj.tech) : null;
-      return '<div class="njpt' + (off ? " off" : "") + '"><span class="njpl">' + esc(f[1]) + '</span><div class="seg" style="--n:' + techs.length + '" role="group" aria-label="' + esc(f[1]) + '">' +
+      var short = { "Fibre": "FTTP", "Fixed Wireless": "FW", "Satellite": "SAT", "VAS": "VAS" }[f[0]] || f[1];   // 1.20.74 (Curtis)
+      return '<div class="njpt' + (off ? " off" : "") + '"><span class="njpl" title="' + esc(f[1]) + '">' + esc(short) + '</span><div class="seg" style="--n:' + techs.length + '" role="group" aria-label="' + esc(f[1]) + '">' +
         techs.map(function (t) { return '<button type="button" data-nj="pt" data-fam="' + esc(f[0]) + '" data-v="' + esc(t) + '" aria-pressed="' + (cur === t) + '"' + (off ? " disabled" : "") + '>' + esc(t) + '</button>'; }).join("") + '</div></div>';
     }).join("");
     var html = '<div class="field"><span class="lbl">Job type</span>' + njSeg("work", NJ_TYPES, nj.work, 4) + '</div>' +
@@ -585,8 +585,9 @@ details.grp .btn{margin-bottom:12px}
     // greyed placeholders show what's still to come, so the screen doesn't jump as answers are picked
     var njHold = function (lbl, msg) { return '<div class="field"><span class="lbl">' + lbl + '</span><div class="seg njhold" style="--n:1"><button type="button" disabled tabindex="-1">' + esc(msg) + '</button></div></div>'; };
     // 1.20.72 (Curtis): Drop is always shown, greyed until a Fibre technology is picked, so nothing moves when it's needed
+    // 1.20.74: greyed until a platform is picked; gone once a platform other than Fibre is picked
     var dropOn = nj.fam === "Fibre" && njDrops().length > 0;
-    html += '<div class="field' + (dropOn ? "" : " njoff") + '"><span class="lbl">Drop' + (dropOn ? "" : ' <small>(Fibre installs and conversions)</small>') + '</span>' +
+    if (!nj.fam || dropOn) html += '<div class="field' + (dropOn ? "" : " njoff") + '"><span class="lbl">Drop</span>' +
       njSeg("drop", NJ_DROPS.map(function (d) { return [d, d, !dropOn || ps.indexOf("Fibre (" + d + ")") < 0]; }), dropOn ? nj.drop : null, 3) + '</div>';
     $("njPick").innerHTML = html;
   }
