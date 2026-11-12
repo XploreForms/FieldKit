@@ -125,6 +125,16 @@ h3{margin:0;font:700 1.1rem/1.2 var(--f-display)}
 
 /* new job: SA-# and job details, asked the same way as Field Cam and Field Notes */
 .njform{display:flex;flex-direction:column;gap:14px}
+/* 1.20.47: one-handed. The screen is exactly the visible height (sizeNewJob), the questions sit at the bottom right above
+   Start SA, and Start SA is the same size and in the same spot as the home screen's Start New SA (--go-gap / --go-h,
+   measured by fitHome). On a short phone the questions scroll and Start SA stays pinned there. */
+#newjob{padding-bottom:0}
+#newjob .njform{margin-top:auto}
+#newjob .njgo{position:sticky;bottom:env(safe-area-inset-bottom,0px);z-index:20;display:flex;flex-direction:column;gap:10px;background:var(--bg);
+  margin:-10px calc(-1 * max(16px,env(safe-area-inset-right,0px))) 0 calc(-1 * max(16px,env(safe-area-inset-left,0px)));
+  padding:10px max(16px,env(safe-area-inset-right,0px)) var(--go-gap,34px) max(16px,env(safe-area-inset-left,0px))}
+#newjob .njgo #njErr:empty{display:none}
+#newjob #njStart{height:var(--go-h,68px);flex:none}
 .nj .seg{background:none;box-shadow:none;padding:0;gap:6px}   /* 1.20.45: separate tiles, not one joined group */
 .nj .seg button{white-space:nowrap;padding:11px 2px;font-size:min(.86rem,3.6vw);line-height:1.15;min-height:46px;color:var(--fg);background:var(--surface);border-radius:10px;box-shadow:inset 0 0 0 1px var(--line)}
 .nj .seg button[aria-pressed="true"]{background:var(--btn);color:var(--btn-ink);box-shadow:none}
@@ -348,8 +358,8 @@ details.grp .btn{margin-bottom:12px}
       <span class="hint">Type the 7 digits or paste the full SA number.</span></div>
     <div id="njPick" style="display:flex;flex-direction:column;gap:14px"></div>
   </section>
-  <div id="njErr"></div>
-  <button class="btn primary block" type="button" id="njStart">Start SA</button>
+  <div class="njgo"><div id="njErr"></div>
+  <button class="gobig" type="button" id="njStart"><span>Start SA</span></button></div>
 </div>
 
 <!-- ============ JOB SUMMARY ============ -->
@@ -552,7 +562,10 @@ details.grp .btn{margin-bottom:12px}
     var b = e.target.closest("[data-nj]"); if (!b || b.disabled) return;
     var k = b.getAttribute("data-nj"), v = b.getAttribute("data-v");
     nj[k] = v; if (k === "fam") { nj.drop = null; nj.vas = null; nj.tech = null; }
+    var nq = $("njPick").querySelectorAll(".seg").length;
     $("njErr").innerHTML = ""; paintNewJob();
+    // a new question appeared (Drop): on a short phone it would be behind the pinned Start SA, so slide it into view (1.20.47)
+    if ($("njPick").querySelectorAll(".seg").length > nq) { var se = document.scrollingElement; if (se.scrollHeight > se.clientHeight + 2) se.scrollTo({ top: se.scrollHeight, behavior: "smooth" }); }
   });
   function normRef(v) { v = String(v || "").trim().toUpperCase().replace(/\s+/g, ""); var m = v.match(/^(?:SA[-#:]?)?(\d+)$/); return m ? "SA-" + m[1] : v.replace(/[^A-Z0-9-]/g, ""); }
   function refFromText(t) {
@@ -574,7 +587,7 @@ details.grp .btn{margin-bottom:12px}
     nj = { work: null, fam: null, drop: null, vas: null, tech: null }; $("njRef").value = ""; $("njErr").innerHTML = "";
     paintNewJob();
     if (!/^#new-job/.test(location.hash)) history.pushState(null, "", "#new-job");
-    showView("newjob");
+    showView("newjob"); sizeNewJob();
   }
   $("njBack").addEventListener("click", function (e) { e.preventDefault(); history.replaceState(null, "", location.pathname + location.search); openMenu(); });
   $("njStart").addEventListener("click", function () {
@@ -795,7 +808,7 @@ details.grp .btn{margin-bottom:12px}
   $("lbBack").addEventListener("click", function (e) { e.preventDefault(); leaveLobby(); });
   addEventListener("popstate", function () {
     if (/^#job/.test(location.hash) && J.active()) { paintLobby(); showView("lobby"); }
-    else if (/^#new-job/.test(location.hash)) { paintNewJob(); showView("newjob"); }
+    else if (/^#new-job/.test(location.hash)) { paintNewJob(); showView("newjob"); sizeNewJob(); }
     else if (/^#history/.test(location.hash)) { paintJobs(); showView("histView"); }
     else if (!$("lobby").hidden || !$("newjob").hidden || !$("histView").hidden) openMenu();
   });
@@ -889,7 +902,21 @@ details.grp .btn{margin-bottom:12px}
       li.style.setProperty("--tnew", Math.round(r.width) + "px");
     });
   }
-  function fitHome() { fitPick(); placeNew(); }
+  function fitHome() { fitPick(); placeNew(); goSpot(); }
+  // where the home screen's Start New SA sits (gap below it and its height): New SA puts Start SA in the same spot (1.20.47)
+  function goSpot() {
+    var m = $("menu"), g = $("jobArea") && $("jobArea").querySelector(".gobig"); if (!m || m.hidden || !g) return;
+    var mr = m.getBoundingClientRect(), gr = g.getBoundingClientRect(), de = document.documentElement.style;
+    de.setProperty("--go-gap", Math.max(0, Math.round(mr.bottom - gr.bottom)) + "px"); de.setProperty("--go-h", Math.round(gr.height) + "px");
+  }
+  // New SA fills exactly the visible screen (same measure as the home screen; CSS vh is wrong with page zoom/text size)
+  function sizeNewJob() {
+    var v = $("newjob"); if (!v || v.hidden) return;
+    var cs = getComputedStyle(document.documentElement), vv = window.visualViewport;
+    var h = Math.min(window.innerHeight, vv ? vv.height : window.innerHeight) - (parseFloat(cs.paddingTop) || 0) - (parseFloat(cs.paddingBottom) || 0);
+    v.style.minHeight = Math.max(320, Math.floor(h)) + "px";
+  }
+  ["resize", "orientationchange", "pageshow"].forEach(function (ev) { addEventListener(ev, sizeNewJob); });
   function fitPick() {
     var m = $("menu"); if (!m || m.hidden) return;
     var cs = getComputedStyle(document.documentElement), vv = window.visualViewport;
