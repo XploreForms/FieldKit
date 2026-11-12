@@ -56,15 +56,23 @@
   /* Every page that isn't a tool inside a job puts the one-time-use work back first, so the menu and the
      tools on their own always see their own work and never the job's. */
   var camInJob = jobMode && APP === "cam", notesInJob = jobMode && APP === "notes";
-  var camOwner = raw(K.camOwner);
-  if (camOwner && (!camInJob || camOwner !== active().id)) {
-    set("fieldcam.current", get(K.camSolo, null)); del(K.camSolo); setRaw(K.camOwner, ""); camOwner = "";
-  }
-  if (camInJob && !camOwner) {
-    var cj = active(), camJobs = get("fieldcam.jobs", {}) || {};
-    set(K.camSolo, get("fieldcam.current", null));   // one-time-use Field Cam work, put back later
-    set("fieldcam.current", cj.camJobId && camJobs[cj.camJobId] ? { id: cj.camJobId, sel: [] } : null);
-    setRaw(K.camOwner, cj.id);
+  /* 1.20.79 (step 1 of the one-app rebuild): pages no longer swap shared work in and out as they load, so more than one
+     page can be loaded at once. Field Cam inside an SA keeps "which Field Cam job is open" under its own key
+     (fieldkit.camInJob = { owner: SA job id, cur }); Field Cam on its own keeps using fieldcam.current. */
+  var KC = "fieldkit.camInJob";
+  (function migrateCam() {   // a phone updated mid-swap: move the SA's work to its own key and put the one-time work back, once
+    var o = raw(K.camOwner); if (!o) return;
+    set(KC, { owner: o, cur: get("fieldcam.current", null) });
+    set("fieldcam.current", get(K.camSolo, null)); del(K.camSolo); del(K.camOwner);
+  })();
+  function camCur() { var j = active(), w = get(KC, null); return j && w && w.owner === j.id ? (w.cur || null) : null; }
+  function setCamCur(cur) { var j = active(); if (j) set(KC, { owner: j.id, cur: cur || null }); }
+  if (camInJob) {
+    var cj = active(), cw = get(KC, null);
+    if (!(cw && cw.owner === cj.id && cw.cur)) {
+      var camJobs = get("fieldcam.jobs", {}) || {};
+      set(KC, { owner: cj.id, cur: cj.camJobId && camJobs[cj.camJobId] ? { id: cj.camJobId, sel: [] } : null });
+    }
   }
 
   /* ---------- equipment slots: what each install usually deploys ----------
@@ -320,32 +328,38 @@
     job.notes = Object.assign({ state: null, comment: "", copiedAt: 0 }, job.notes || {}, { ticked: done });
     return st;
   }
-  function wipState() { var w = get(WIP, null); return w && w.state ? w.state : null; }
+  /* The SA's comment form while Comments is open lives under its own key (fieldkit.notesInJob = { owner, at, state }),
+     not in Field Notes' own slot (1.20.79, same reason as Field Cam above). */
+  var KN = "fieldkit.notesInJob";
+  (function migrateNotes() {
+    var o = raw(K.notesOwner); if (!o) return;
+    var live = get(WIP, null); if (live && live.state) set(KN, { owner: o, at: live.at || Date.now(), state: live.state });
+    var back = get(K.notesSolo, null); if (back) set(WIP, back); else del(WIP);
+    del(K.notesSolo); del(K.notesOwner);
+  })();
+  function jobWip(id) { var w = get(KN, null); return w && w.owner === id && w.state ? w.state : null; }
   // Field Notes' Drop Route: a buried span ticked "Temp Drop Deployed". Reads the SA's own comment form (the live one while it's open).
   function tempDrop() {
     var j = active(); if (!j) return false;
-    var st = (raw(K.notesOwner) === j.id ? wipState() : null) || (j.notes && j.notes.state); if (!st) return false;
+    var st = jobWip(j.id) || (j.notes && j.notes.state); if (!st) return false;
     for (var i = 1; i <= 20; i++) if (st["span" + i + "_type"] === "Buried" && st["span" + i + "_temp"] === true) return true;
     return false;
   }
-  var notesOwner = raw(K.notesOwner);
-  if (notesOwner && (!notesInJob || notesOwner !== active().id)) {
-    var oj = byId(notesOwner), ows = wipState();
-    if (oj && ows) { oj.notes.state = ows; save(oj); }                 // the job's comment form goes back into the job
-    var back = get(K.notesSolo, null); if (back) set(WIP, back); else del(WIP);
-    del(K.notesSolo); setRaw(K.notesOwner, ""); notesOwner = "";
-  }
+  // any other page: make sure the SA has the latest of its comment form (only writes when it differs)
+  if (!notesInJob) (function () {
+    var w = get(KN, null), oj = w && w.state && byId(w.owner);
+    if (oj && JSON.stringify((oj.notes || {}).state || null) !== JSON.stringify(w.state)) { oj.notes = oj.notes || {}; oj.notes.state = w.state; save(oj); }
+  })();
   if (APP === "notes") {
     if (notesInJob) {
       var nj = active(), st;
-      if (notesOwner === nj.id) st = wipState() || (nj.notes && nj.notes.state);   // page reloaded inside the job
-      else { var solo = get(WIP, null); if (solo) set(K.notesSolo, solo); else del(K.notesSolo); setRaw(K.notesOwner, nj.id); st = nj.notes && nj.notes.state; }
+      st = jobWip(nj.id) || (nj.notes && nj.notes.state);
       st = notesFill(nj, st ? JSON.parse(JSON.stringify(st)) : null);
       nj.notes.state = st; if (nj.step === "cam") nj.step = "notes"; save(nj);
-      set(WIP, { at: Date.now(), state: st });
+      set(KN, { owner: nj.id, at: Date.now(), state: st });
     }
     if (notesInJob) {
-      var keepNotes = function () { var j = active(), s = wipState(); if (j && s) { j.notes.state = s; save(j); notesToSlots(j, s); } };
+      var keepNotes = function () { var j = active(), s = j && jobWip(j.id); if (j && s) { j.notes.state = s; save(j); notesToSlots(j, s); } };
       addEventListener("pagehide", keepNotes);
       document.addEventListener("visibilitychange", function () { if (document.hidden) keepNotes(); });
     }
@@ -623,7 +637,7 @@
   function setStep(step) { var j = active(); if (j && j.step !== step) { j.step = step; save(j); } }
 
   FK.job = {
-    inMode: function () { return jobMode; }, active: active, get: byId, list: list, start: start, complete: complete, open: open, save: save, setActive: setActive,
+    inMode: function () { return jobMode; }, camCur: camCur, setCamCur: setCamCur, notesKey: KN, active: active, get: byId, list: list, start: start, complete: complete, open: open, save: save, setActive: setActive,
     fromCam: fromCam, modelsFor: modelsFor, modelName: function (id) { return SKU[id] ? SKU[id].name : ""; }, pickModel: pickModel, stockNote: stockNote,
     deployed: deployed, recoveredEvents: recoveredEvents, canRecover: canRecover, removeSerial: removeSerial, slotModel: slotModel, slotsHTML: slotsHTML, tempDrop: tempDrop, openSlot: openSlot, devicePhoto: devicePhoto, withTech: withTech, setSlot: setSlot, setOutcome: setOutcome, slotEntry: slotEntry, addSerial: addSerial, pasteInto: pasteInto, hasSlots: function (src) { return slotIds(src).length > 0; }, syncDeploys: syncDeploys, notesCopied: notesCopied, setStep: setStep, keepDays: 7
   };

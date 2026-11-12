@@ -20,7 +20,7 @@
 <script src="fieldkit-jobs.js"></script>
 <script>
 /* Field Kit: a job in progress reopens straight into the camera; keep the job screen hidden meanwhile */
-try { var _c = JSON.parse(localStorage.getItem("fieldcam.current") || "null"), _j = JSON.parse(localStorage.getItem("fieldcam.jobs") || "{}");
+try { var _inSA = !!(window.FieldKit && FieldKit.job && FieldKit.job.inMode()), _c = _inSA ? FieldKit.job.camCur() : JSON.parse(localStorage.getItem("fieldcam.current") || "null"), _j = JSON.parse(localStorage.getItem("fieldcam.jobs") || "{}");
   if (_c && _j[_c.id] && !/^#new/.test(location.hash)) document.documentElement.classList.add("fk-resuming"); } catch (e) {}
 </script>
 <style>html.fk-resuming #start{visibility:hidden}</style>
@@ -1067,7 +1067,9 @@ function applyTheme() {
 }
 applyTheme();
 let jobs = load("fieldcam.jobs", {});          // job id -> { work, outcome, opt, ref, started, custom }
-let current = load("fieldcam.current", null);
+// inside an SA the open job is kept by Field Kit under its own key, so Field Cam on its own never sees it (1.20.79)
+const CUR_IN_SA = !!(window.FieldKit && FieldKit.job && FieldKit.job.inMode());
+let current = CUR_IN_SA ? FieldKit.job.camCur() : load("fieldcam.current", null);
 const OLD_FW_NR = ["Signal Requirements Not Met", "Stop Sell Area", "Not in Coverage Area", "NLOS"];
 for (const j of Object.values(jobs)) {
   if (!j) continue;
@@ -1080,7 +1082,7 @@ for (const j of Object.values(jobs)) {
   else if (j.reason && !reasonsFor(j, j.outcome).includes(j.reason)) j.reason = null;
 }
 
-function save() { store("fieldcam.settings", settings); store("fieldcam.jobs", jobs); store("fieldcam.current", current); try { fkSession(); } catch {} }
+function save() { store("fieldcam.settings", settings); store("fieldcam.jobs", jobs); if (CUR_IN_SA) FieldKit.job.setCamCur(current); else store("fieldcam.current", current); try { fkSession(); } catch {} }
 const curJob = () => current && jobs[current.id] ? jobs[current.id] : null;
 
 /* ================= live state ================= */

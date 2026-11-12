@@ -874,7 +874,9 @@ function calm() { return !!(window.matchMedia && window.matchMedia('(prefers-red
 /* ===================== state ===================== */
 var OLD_DRAFT_KEY = 'xplore_fsl_draft_fibre_existing_v16';   // before 2.6 the job was saved here; it is moved to WIP_KEY once
 var OLD_WIP_KEY = 'xplore_fsl_wip_v1';   // 2.6: one form only, no job saved
-var WIP_KEY = 'xplore_fsl_wip_v2';
+// inside an SA the form is kept under Field Kit's own key, tagged with the SA it belongs to (1.20.79)
+var WIP_IN_SA = !!(window.FieldKit && FieldKit.job && FieldKit.job.inMode());
+var WIP_KEY = WIP_IN_SA ? FieldKit.job.notesKey : 'xplore_fsl_wip_v2';
 var NAME_FIRST_KEY = 'xplore_fsl_tech_first_name';
 var NAME_LAST_KEY = 'xplore_fsl_tech_last_name';
 var NAME_ASKED_KEY = 'xplore_fsl_name_asked';
@@ -2712,7 +2714,7 @@ function showPreviewIfAbove() {
    It is cleared once the comment is copied or a new job is started, and ignored after 12 hours. ===================== */
 var WIP_MAX = 8 * 3600000, WIP_OFFER = false, WIP_T = null;   // Field Kit: work left untouched for 8 hours is cleared
 function wipSave() { if (WIP_OFFER || WIP_T) return; WIP_T = setTimeout(function () { WIP_T = null; wipSaveNow(); }, 300); }
-function wipSaveNow() { if (WIP_OFFER) return; if (hasAnswers(STATE) && !COPIED) store.set(WIP_KEY, JSON.stringify({ at: Date.now(), state: STATE })); }
+function wipSaveNow() { if (WIP_OFFER) return; if (hasAnswers(STATE) && !COPIED) store.set(WIP_KEY, JSON.stringify(WIP_IN_SA ? { owner: FieldKit.job.active().id, at: Date.now(), state: STATE } : { at: Date.now(), state: STATE })); }
 function wipClear() { clearTimeout(WIP_T); WIP_T = null; store.del(WIP_KEY); }
 function wipOffer() {
   // a job saved by an older version moves over once
