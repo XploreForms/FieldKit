@@ -3028,12 +3028,12 @@ const PHOTO_RULES = {
 /* serial number photos (ONT SN, XWR SN…) are always their own photo, and picking one opens the barcode scanner */
 const SN_LABELS = ["ONT SN", "CPE SN", "Modem SN", "TRIA SN", "XWR SN", "XWH SN", "XTV SN"];
 function addLabel(j, sel, l) {
-  if (SN_LABELS.includes(l)) return { sel: [l], note: sel.length ? `${l} is always its own photo` : "" };
-  const sn = sel.find(x => SN_LABELS.includes(x)); if (sn) return { sel: [l], note: `${sn} is always its own photo` };
+  if (SN_LABELS.includes(l)) return { sel: [l] };   /* 1.20.55: no pop-up; the single-layer mark says it */
+  const sn = sel.find(x => SN_LABELS.includes(x)); if (sn) return { sel: [l] };
   const rule = j && (PHOTO_RULES[j.plat] || PHOTO_RULES[platFamily(j.plat || "")]);
   if (!rule) return { sel: [...sel, l] };
   const solo = (rule.solo || []).find(x => x === l || sel.includes(x));
-  if (solo && sel.length) return { sel: [l], note: `${solo} is always its own photo` };
+  if (solo && sel.length) return { sel: [l] };
   const all = [...sel, l];
   for (const g of rule.pairs || []) {
     if (all.some(x => g.includes(x)) && all.some(x => !g.includes(x)))
