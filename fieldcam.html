@@ -1360,6 +1360,7 @@ function syncPause() {
   if (hide && !S.paused) {
     S.paused = true;
     const v = $("video"); try { v.pause(); } catch {}
+    try { if (S.wake) S.wake.release(); } catch {} S.wake = null;
     // let go of the camera completely (1.20.83): no camera light or battery use while Field Cam isn't on screen
     if (S.stream) { try { S.stream.getTracks().forEach(t => t.stop()); } catch {} }
     stopGeo();
@@ -1382,6 +1383,7 @@ document.addEventListener("visibilitychange", () => {
 /* ================= orientation: tilt, heading, skew ================= */
 function onOrient(e) {
   if (e.beta == null || e.gamma == null) return;
+  if (S.paused || !FieldKit.shown()) return;   // off screen: ignore the motion sensors (they fire many times a second)
   const b = rad(e.beta), g = rad(e.gamma), cb = Math.cos(b), sb = Math.sin(b), cg = Math.cos(g), sg = Math.sin(g);
   // World "up" in the device frame. Smoothed as one vector (not as separate angles) so tilt and
   // left/right roll stay steady together, including near upright where the raw angles jump around.
@@ -1650,7 +1652,7 @@ function fastTick() {
   const head = S.heading == null ? "no compass" : `Facing ${Math.round(S.heading)}° ${cardinal(S.heading)}`;
   setText(E.head, head + (S.levelDev == null ? "" : ` · skew ${Math.round(Math.abs(S.levelDev))}°`));
   E.shutter.classList.toggle("locked", povBlocked());
-  if (S.paused) { loopOn = false; loopFast = false; return; }
+  if (S.paused || !FieldKit.shown()) { loopOn = false; loopFast = false; return; }
   // Line-of-sight shots: every screen frame (the 0° line must track smoothly). Everything else: 4 times a second.
   loopFast = strict;
   if (strict) requestAnimationFrame(fastTick); else loopT = setTimeout(fastTick, 250);
@@ -1659,6 +1661,7 @@ let loopOn = false, loopFast = false, loopT = null;
 function startLoop() { if (loopOn) return; loopOn = true; fastTick(); }
 let lastLive = "", slowN = 0;
 function slowTick() {
+  if (S.paused || !FieldKit.shown()) { setTimeout(slowTick, 1000); return; }   // off screen: nothing to update
   const chip = $("gpsChip");
   chip.classList.remove("ok", "meh");
   if (gpsFresh()) { const acc = Math.round(S.pos.accuracy); if (acc <= 15) chip.classList.add("ok"); else if (acc <= 50) chip.classList.add("meh"); setText($("gpsTxt"), "GPS"); }
@@ -3658,7 +3661,7 @@ function fkSession() {
 FieldKit.onLeave(fkSession);
 // the shell hiding or showing this page pauses and resumes the camera, like switching apps does (1.20.80)
 FieldKit.onLeave(() => { try { syncPause(); } catch {} });
-FieldKit.onShow(() => { try { syncPause(); if (S.started && !S.paused) { if (!S.track || S.track.readyState === "ended") startCamera(); keepAwake(); } renderAll(); } catch {} });
+FieldKit.onShow(() => { try { syncPause(); startLoop(); if (S.started && !S.paused) { if (!S.track || S.track.readyState === "ended") startCamera(); keepAwake(); } renderAll(); } catch {} });
 </script>
 
 <div id="fk-end" hidden></div>
