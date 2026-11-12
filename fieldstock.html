@@ -1490,7 +1490,7 @@ function openTransferMail(jobId){
 }
 
 /* ---------- manual order request (replaces the Jotform) ---------- */
-/* Manual order list (1.20.62): laid out exactly as Curtis's "Manual Order Request List" sheet.
+/* Manual order list (1.20.62, updated 1.20.63): laid out exactly as Curtis's "Manual Order Request List" sheet.
    Section (Wi-Fi, TV…) > item (Router, Modem…) > what to order. A line can name the technologies it's for
    (HT2000 for HTJ, HJ2), and an item can group lines under a small heading (Drop Cable for FTX, ATX, CTX).
    oL(label, forCodes, max): one orderable line. oG(heading, lines): lines under a small heading. oI(item, parts). oS(section, items). */
@@ -1498,8 +1498,8 @@ const oL=(label,codes,max)=>({label,codes:codes||"",max:max||20}), oG=(head,line
 const ORDER_LIST=[
   oS("Wi-Fi",[ oI("Router",[oL("XWR")]), oI("Extender (CUBE)",[oL("XWH")]) ]),
   oS("TV",[ oI("TV Box",[oL("XTV"),oL("MTV")]), oI("Leave Behind",[oL("XTV")]) ]),
-  oS("Fibre",[ oI("ONT",[oL("FTX"),oL("ATX")]), oI("NID",[oL("FTX, ATX, CTX")]),
-    oI("Drop Cable",[oG("FTX, ATX, CTX",["100M","200M","300M","500M","750M","1000M"].map(m=>oL(m+" Evolv Dielectric Drop PushLok Tech")))]) ]),
+  oS("Fibre",[ oI("ONT",[oL("FTX, ATX, CTX")]), oI("NID",[oL("FTX, ATX, CTX")]),
+    oI("Drop Cable",[oG("FTX, ATX, CTX",["100M","200M","300M","500M","750M","1000M"].map(m=>oL(m+" Evolv PushLok")))]) ]),
   oS("Fixed Wireless",[ oI("Radio",[oL("FWN"), oG("LTE",[oL("CAT12 2.5GHz"),oL("CAT12 3.5GHz")]), oG("High Gain",[oL("Pro Max","",10)])]),
     oI("Surge",[oL("FWN, LTE")]),
     oI("Mount",[oG("FWN, LTE",[oL("J-Arm","",10),oL("Gable Mount"),oL("Bi-Pod"),oL("10ft Pole")])]) ]),
@@ -1534,7 +1534,8 @@ function renderOrder(){
   const q=$("ordQ").value.trim().toLowerCase();
   let html="", last="";
   const qtyBtns=(key,n,max)=>`<div class="qty sm"><button type="button" data-oq="${esc(key)}" data-d="-1" aria-label="Fewer"${n?"":" disabled"}>−</button><input class="oqn${n?"":" zero"}" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" enterkeyhint="done" data-oqn="${esc(key)}" value="${n}" aria-label="Quantity (max ${max})"><button type="button" data-oq="${esc(key)}" data-d="1" aria-label="More"${n>=max?" disabled":""}>+</button></div>`;
-  const row=(x,sub)=>{ const n=ORD.qty[x.key]||0, name=sub?x.l.label:x.item, small=sub?x.l.codes:x.l.label;
+  // a line with both shows the platform codes big and the SKU small under it (HTJ, HJ2 / HT2000), as Curtis asked (1.20.63)
+  const row=(x,sub)=>{ const n=ORD.qty[x.key]||0, name=sub?(x.l.codes||x.l.label):x.item, small=sub?(x.l.codes?x.l.label:""):x.l.label;
     return `<div class="ord-row${sub?" sub":""}${n?" on":""}"><div class="ord-txt"><b>${esc(name)}</b>${small?`<small>${esc(small)}</small>`:""}</div>${qtyBtns(x.key,n,x.max)}</div>`; };
   ORDER_LIST.forEach(sc=>{
     let secHtml="";
