@@ -538,6 +538,7 @@ html:root[data-theme] .start{background:var(--ink)}
   background:rgba(10,18,17,.6);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:#fff;font:600 13.5px/1 var(--fk-body,system-ui);
   max-width:calc(100% - 90px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .vf>.outbtn[hidden]{display:none}
+.vf.tiltup>.outbtn{display:none}   /* hidden while the Line of Sight tilt readout is up (it sat on top of it) */
 .vf>.outbtn .oc{flex:none;width:8px;height:8px;border-radius:50%;background:var(--oc)}
 .vf>.outbtn .ochev{opacity:.6;font-size:.8em}
 .vf>.outbtn.need{background:var(--warn);color:var(--ink)}
@@ -1600,7 +1601,7 @@ function horizonOffset(p) {
 function fastTick() {
   const E = hudEls, p = S.pitch, strict = selStrict();
   const lvl = strict && p != null && Math.abs(p) <= LEVEL_TOL, near = strict && p != null && !lvl;
-  E.hud.classList.toggle("free", !strict); E.hud.classList.toggle("lvl", lvl); E.hud.classList.toggle("near", near);
+  E.hud.classList.toggle("free", !strict); vfEl.classList.toggle("tiltup", strict && !E.hud.classList.contains("scan"));   /* 1.20.56: the tilt readout takes the top; the outcome chip steps aside */ E.hud.classList.toggle("lvl", lvl); E.hud.classList.toggle("near", near);
   if (lvl !== S.wasLvl) {                                  // short buzz when a line-of-sight shot becomes level (Android)
     const t = Date.now();
     if (lvl && t - (S.lvlOffAt || 0) > 600 && navigator.vibrate) { try { navigator.vibrate(35); } catch {} }
