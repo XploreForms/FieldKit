@@ -318,6 +318,9 @@ button.link-row{font:inherit;text-align:left;width:100%;cursor:pointer}
 .ord-row .ord-txt small{font-size:.75rem;color:var(--muted);letter-spacing:.02em}
 .ord-row.on .ord-txt b{color:var(--brand-2)}
 .qty.sm span.zero{color:var(--void)}
+.qty.sm input.oqn{width:44px;height:34px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--fg);font:600 1rem var(--f-body,inherit);text-align:center;font-variant-numeric:tabular-nums;box-shadow:none;min-height:0}
+.qty.sm input.oqn.zero{color:var(--void)}
+.qty.sm input.oqn:focus{outline:none;background:var(--surface);color:var(--fg);box-shadow:inset 0 0 0 2px var(--accent,var(--brand))}
 .back{align-self:flex-start;padding-left:0}
 a.link-row:active{background:var(--surface-2)}
 .help{margin:0;font-size:.9rem;line-height:1.45;color:var(--muted)}
@@ -1534,7 +1537,7 @@ $("ordReason").value=ORD.reason; $("ordNotes").value=ORD.notes;
 function renderOrder(){
   const q=$("ordQ").value.trim().toLowerCase();
   let html="", last="";
-  const qtyBtns=(key,n,max)=>`<div class="qty sm"><button type="button" data-oq="${esc(key)}" data-d="-1" aria-label="Fewer"${n?"":" disabled"}>−</button><span class="${n?"":"zero"}">${n}</span><button type="button" data-oq="${esc(key)}" data-d="1" aria-label="More"${n>=max?" disabled":""}>+</button></div>`;
+  const qtyBtns=(key,n,max)=>`<div class="qty sm"><button type="button" data-oq="${esc(key)}" data-d="-1" aria-label="Fewer"${n?"":" disabled"}>−</button><input class="oqn${n?"":" zero"}" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" enterkeyhint="done" data-oqn="${esc(key)}" value="${n}" aria-label="Quantity (max ${max})"><button type="button" data-oq="${esc(key)}" data-d="1" aria-label="More"${n>=max?" disabled":""}>+</button></div>`;
   ORDER_FAMS.forEach(f=>{
     const hay=(f.title+" "+f.fam+" "+f.opts.map(o=>o.name).join(" ")+" "+f.plats.join(" ")).toLowerCase();
     if(q && !hay.includes(q)) return;
@@ -1561,6 +1564,15 @@ function renderOrder(){
 $("ordList").addEventListener("click",e=>{
   const b=e.target.closest("[data-oq]"); if(!b) return; const k=b.dataset.oq, it=ordLines().find(x=>x.key===k); if(!it) return;
   ORD.qty[k]=Math.max(0,Math.min(it.max,(ORD.qty[k]||0)+Number(b.dataset.d))); if(!ORD.qty[k]) delete ORD.qty[k]; saveOrd(); $("ordErr").innerHTML=""; renderOrder(); });
+/* 1.20.48: the quantity can be typed too (tap the number). Digits only; kept to the line's max; saved when the box is left or Done is tapped. */
+$("ordList").addEventListener("focusin",e=>{ const i=e.target.closest("[data-oqn]"); if(i) setTimeout(()=>i.select(),0); });
+$("ordList").addEventListener("input",e=>{ const i=e.target.closest("[data-oqn]"); if(i) i.value=i.value.replace(/\D/g,"").replace(/^0+(?=\d)/,"").slice(0,2); });
+$("ordList").addEventListener("keydown",e=>{ const i=e.target.closest("[data-oqn]"); if(i && e.key==="Enter"){ e.preventDefault(); i.blur(); } });
+$("ordList").addEventListener("change",e=>{
+  const i=e.target.closest("[data-oqn]"); if(!i) return; const k=i.dataset.oqn, it=ordLines().find(x=>x.key===k); if(!it) return;
+  let n=parseInt(i.value,10); if(!(n>0)) n=0;
+  if(n>it.max){ n=it.max; toast("The most you can order on one line is "+it.max+"."); }
+  if(n) ORD.qty[k]=n; else delete ORD.qty[k]; saveOrd(); $("ordErr").innerHTML=""; renderOrder(); });
 $("ordQ").addEventListener("input",renderOrder);
 $("ordReason").addEventListener("input",()=>{ ORD.reason=$("ordReason").value; saveOrd(); $("ordErr").innerHTML=""; });
 $("ordNotes").addEventListener("input",()=>{ ORD.notes=$("ordNotes").value; saveOrd(); });

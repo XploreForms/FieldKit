@@ -198,6 +198,16 @@ html:not(.fk-slim) .lhead.fk-row .njtitle{font-size:1.2rem!important}
 .btn.sm{min-height:40px;padding:8px 12px;font-size:.88rem}
 .btn.sure{background:var(--warn-bg);color:var(--warn)}
 .lfoot{display:flex;flex-direction:column;gap:8px}
+/* 1.20.48: Complete SA pinned in the same spot and size as the home screen's Start New SA; a warning grows the bar upward,
+   so the button never moves and the page never jumps. The cards sit at the bottom, right above it (one-handed). */
+#lobby{padding-bottom:0}
+#lobby #lbOut{margin-top:auto}
+#lobby .lfoot{position:sticky;bottom:env(safe-area-inset-bottom,0px);z-index:20;gap:10px;background:var(--bg);
+  margin:-10px calc(-1 * max(16px,env(safe-area-inset-right,0px))) 0 calc(-1 * max(16px,env(safe-area-inset-left,0px)));
+  padding:10px max(16px,env(safe-area-inset-right,0px)) var(--go-gap,34px) max(16px,env(safe-area-inset-left,0px))}
+#lobby .lfoot #lbWarn:empty{display:none}
+#lobby .lfoot .err{margin:0}
+#lobby #lbDone{height:var(--go-h,68px);flex:none}
 .lfoot .help{text-align:center}
 .soon{font:600 .7rem/1 var(--f-body);letter-spacing:.07em;text-transform:uppercase;padding:4px 7px;border-radius:99px;background:var(--surface-2);color:var(--muted)}
 
@@ -377,8 +387,8 @@ details.grp .btn{margin-bottom:12px}
   <section class="card lcard" id="lbGear" aria-label="Equipment Deployed"></section>
   <div class="lfoot">
     <div id="lbWarn"></div>
-    <button class="btn primary block" type="button" id="lbDone">Complete SA</button>
     <p class="help" id="lbHelp" hidden></p>
+    <button class="gobig" type="button" id="lbDone">Complete SA</button>
   </div>
 </div>
 
@@ -454,7 +464,8 @@ details.grp .btn{margin-bottom:12px}
     { name: "Inventory", desc: "Xplore Dealer Portal", href: "https://dealerportal.xplore.ca/", out: true, icon: '<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.3a1 1 0 0 0 1 .7h9.6a1 1 0 0 0 1-.8L21 8H6"/>' },
     { name: "Manual Order Request", desc: "When you can't order through Salesforce", href: "fieldstock.html#order", icon: '<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/>' },
     { name: "RMA Request", desc: "Request an RMA number", href: "https://form.jotform.com/72404477841257", out: true, icon: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>' },
-    { name: "Compass", desc: "eCoverage Intelligence", href: "https://ecoverage-intelligence-29408448304181.1.azure.databricksapps.com/", out: true, app: true, icon: '<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>' }
+    { name: "Compass", desc: "eCoverage Intelligence", href: "https://ecoverage-intelligence-29408448304181.1.azure.databricksapps.com/", out: true, app: true, icon: '<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>' },
+    { name: "Percipio", desc: "Xplore University", href: "https://xploreuniversity.percipio.com/", out: true, icon: '<path d="M2 9l10-5 10 5-10 5-10-5z"/><path d="M6 11v5c2 2 10 2 12 0v-5"/><path d="M22 9v6"/>' },   /* learning platform (1.20.48) */
   ];
   /* What's unfinished in each tool. Field Cam and Field Stock note it when the tech leaves them;
      Field Notes keeps its form as it goes (dropped after 12 hours or once the comment is copied). */
@@ -482,13 +493,21 @@ details.grp .btn{margin-bottom:12px}
     // tile order, 2 across (Curtis, 1.20.45): Compass · Inventory / RMA · Manual Order / Field Cam · Field Stock (bottom, nearest the thumb)
     var ORDER = ["Compass", "Inventory", "RMA Request", "Manual Order Request", "Field Cam", "Field Stock"];
     var items = all.slice().sort(function (a, b) { var i = ORDER.indexOf(a.name), j = ORDER.indexOf(b.name); return (i < 0 ? 99 : i) - (j < 0 ? 99 : j); });
-    $("links").innerHTML = items.map(function (l) {
+    // Compass's spot is split in two: Compass on top, Percipio (Xplore University) under it (1.20.48)
+    var PAIR = { "Compass": "Percipio" }, paired = { "Percipio": 1 };
+    function tileA(l) {
       var t = TILE[l.id] || TILE[l.name] || [l.name, l.desc], busy = l.id && prog[l.id], viaApp = l.app && ANDROID;
       var desc = t[1], restart = "";
       if (l.id === "cam" && busy) { desc = "In progress" + (busy.detail ? " · " + busy.detail : ""); restart = '<button class="tnew" type="button" data-new="cam" aria-label="Start new Field Cam pictures (the current ones stay saved)">' + RESTART + '</button>'; }
-      return '<li class="tile' + (l.quiet ? " quiet" : "") + (busy ? " busy" : "") + '"><a href="' + esc(viaApp ? appHref(l.href) : l.href) + '"' + (l.out && !viaApp ? ' target="_blank" rel="noopener"' : '') + '>' +
+      return { busy: busy, restart: restart, html: '<a href="' + esc(viaApp ? appHref(l.href) : l.href) + '"' + (l.out && !viaApp ? ' target="_blank" rel="noopener"' : '') + '>' +
         '<i aria-hidden="true">' + svg(l.icon) + '</i><b>' + esc(t[0]) + (l.out ? '<span class="out" aria-hidden="true">' + OUT + '</span><span class="sr-only"> (opens in a new tab)</span>' : '') + '</b>' +
-        '<small>' + esc(desc) + '</small>' + (busy && !restart ? '<em class="live">In progress</em>' : '') + '</a>' + restart + '</li>';
+        '<small>' + esc(desc) + '</small>' + (busy && !restart ? '<em class="live">In progress</em>' : '') + '</a>' };
+    }
+    var byName = {}; items.forEach(function (l) { byName[l.name] = l; });
+    $("links").innerHTML = items.filter(function (l) { return !paired[l.name]; }).map(function (l) {
+      var x = tileA(l), mate = PAIR[l.name] && byName[PAIR[l.name]];
+      if (mate) return '<li class="tile split">' + x.html + tileA(mate).html + '</li>';
+      return '<li class="tile' + (l.quiet ? " quiet" : "") + (x.busy ? " busy" : "") + '">' + x.html + x.restart + '</li>';
     }).join("");    placeNew();   // every repaint (including the 4 s reset after one tap) puts New back over the camera icon's mirror spot
   }
   /* Compass is installed on the phone as its own web app. On Android the link goes out as a "view this address" request to the
@@ -911,10 +930,9 @@ details.grp .btn{margin-bottom:12px}
   }
   // New SA fills exactly the visible screen (same measure as the home screen; CSS vh is wrong with page zoom/text size)
   function sizeNewJob() {
-    var v = $("newjob"); if (!v || v.hidden) return;
     var cs = getComputedStyle(document.documentElement), vv = window.visualViewport;
     var h = Math.min(window.innerHeight, vv ? vv.height : window.innerHeight) - (parseFloat(cs.paddingTop) || 0) - (parseFloat(cs.paddingBottom) || 0);
-    v.style.minHeight = Math.max(320, Math.floor(h)) + "px";
+    ["newjob", "lobby"].forEach(function (id) { var v = $(id); if (v && !v.hidden) v.style.minHeight = Math.max(320, Math.floor(h)) + "px"; });   // New SA and the SA summary (1.20.48)
   }
   ["resize", "orientationchange", "pageshow"].forEach(function (ev) { addEventListener(ev, sizeNewJob); });
   function fitPick() {
@@ -1190,7 +1208,7 @@ details.grp .btn{margin-bottom:12px}
     { h: "Back up with Google Sheets", sub: "So your stock history is never lost. You can skip this for now and connect later in Settings." }
   ];
   var step = 0;
-  function showView(id) { ["menu", "setup", "settings", "lobby", "newjob", "histView"].forEach(function (v) { $(v).hidden = v !== id; }); scrollTo(0, 0); }
+  function showView(id) { ["menu", "setup", "settings", "lobby", "newjob", "histView"].forEach(function (v) { $(v).hidden = v !== id; }); if (typeof sizeNewJob === "function") sizeNewJob(); scrollTo(0, 0); }
   function renderStep() {
     var info = STEP_INFO[step], form = $("stepForm");
     $("stepBar").querySelectorAll("i").forEach(function (b, i) { b.classList.toggle("on", i <= step); });
@@ -1398,6 +1416,15 @@ details.grp .btn{margin-bottom:12px}
 .tiles .tnew svg{width:55%;height:55%}
 .tiles .tnew.sure{background:var(--warn-bg);color:var(--warn);box-shadow:inset 0 0 0 1.5px currentColor}
 .tiles .tile:has(.tnew) b{margin-right:calc(var(--tnew,36px) + 6px)}
+/* 1.20.48: a split tile (Compass + Percipio): two half-height links, icon + name on one line, no description */
+.tiles .tile.split{display:grid;grid-template-rows:minmax(0,1fr) minmax(0,1fr);gap:8px;overflow:visible;border-radius:0;container-type:size}
+html body #menu .tiles .tile.split a{height:auto;min-height:0;grid-template-columns:auto minmax(0,1fr);justify-content:stretch;text-align:left;grid-template-rows:auto;row-gap:0;column-gap:8px;align-content:center;justify-items:stretch;padding:4px 10px}
+html body #menu .tiles .tile.split i,html body #menu .tiles .tile.split b{grid-row:1}
+html body #menu .tiles .tile.split i{width:min(36px,calc(50cqh - 14px));height:min(36px,calc(50cqh - 14px));border-radius:9px}
+html body #menu .tiles .tile.split i svg{width:58%;height:58%}
+html body #menu .tiles .tile.split b{font-size:1rem}
+html body #menu .tiles .tile.split small{display:none}
+@container (max-height:76px) or (max-width:150px){html body #menu .tiles .tile.split i{display:none}html body #menu .tiles .tile.split a{grid-template-columns:minmax(0,1fr)}}   /* too small for the icon: name only */
 .tiles a{position:relative;height:100%;display:grid;grid-template-columns:36px minmax(0,1fr);grid-template-rows:auto auto;column-gap:10px;row-gap:5px;align-content:center;padding:10px 12px;border-radius:16px;background:var(--surface);box-shadow:var(--shadow);text-decoration:none;color:var(--fg);overflow:hidden}
 .tiles a:active{background:var(--surface-2)}
 .tiles i{grid-row:1;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;align-self:center;background:color-mix(in srgb,var(--btn) 16%,transparent);color:var(--accent)}
