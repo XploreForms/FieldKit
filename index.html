@@ -797,7 +797,7 @@ details.grp .btn{margin-bottom:12px}
         }
       });
       var g = get("techstock.gs", null);
-      if (dep.length && g && g.connected && g.rev > (g.synced || 0)) html += '<p class="help">Goes to your Google Sheet next time Field Stock is open.</p>';
+      if (dep.length) html += '<p class="help">Deployed inventory is synced with Field Stock.</p>';   // 1.20.65: Curtis's wording; shown whenever something was deployed
     } else html += '<p class="help">Scan each serial number. They\'re logged in Field Stock as deployed on this SA-#.</p>';
     html += '<a class="btn" href="fieldcam.html#job" data-scanret="many">' + (m.has || m.extras.length || m.recovered.length ? "Scan More" : "Scan Serials") + '</a>';
     $("lbGear").innerHTML = html;
