@@ -114,3 +114,5 @@ html.fc-quick #app>.top .qtile{margin:0 8px 0 0!important}
 html{scrollbar-gutter:stable}
 /* Field Stock's full-width header: arrow 10px inside the page column, like every other page */
 html header.top.fk-row{padding-left:max(10px,env(safe-area-inset-left,0px),calc((100% - var(--fk-max)) / 2 + 10px))!important}
+/* 1.20.46: the arrow sits halfway between the screen edge and the tile (Curtis); only the drawing moves, the tap box stays */
+.fk-chev svg{transform:translateX(-3px)}
