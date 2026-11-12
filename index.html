@@ -476,7 +476,7 @@ details.grp .btn{margin-bottom:12px}
       return '<li class="tile' + (l.quiet ? " quiet" : "") + (busy ? " busy" : "") + '"><a href="' + esc(viaApp ? appHref(l.href) : l.href) + '"' + (l.out && !viaApp ? ' target="_blank" rel="noopener"' : '') + '>' +
         '<i aria-hidden="true">' + svg(l.icon) + '</i><b>' + esc(t[0]) + (l.out ? '<span class="out" aria-hidden="true">' + OUT + '</span><span class="sr-only"> (opens in a new tab)</span>' : '') + '</b>' +
         '<small>' + esc(desc) + '</small>' + (busy && !restart ? '<em class="live">In progress</em>' : '') + '</a>' + restart + '</li>';
-    }).join("");
+    }).join("");    placeNew();   // every repaint (including the 4 s reset after one tap) puts New back over the camera icon's mirror spot
   }
   /* Compass is installed on the phone as its own web app. On Android the link goes out as a "view this address" request to the
      phone itself (not an in-app browser tab): the installed Compass app takes it if it's there, otherwise the phone's normal

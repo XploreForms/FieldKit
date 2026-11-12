@@ -585,6 +585,10 @@ html.fc-fs .fsctl::after{content:"";width:44px;height:44px}
 .start{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .start .inner{max-width:calc(var(--fk-max) - 32px)}
 #app,.sheet{max-width:var(--fk-max);margin-left:auto;margin-right:auto}
+/* 1.20.44: wider than the column (desktop, tablet, preview): the viewfinder and the controls under it sit 16px in from the
+   column's edges, like the cards on every other page, so the header lines up with the content the same way.
+   Phones keep the edge-to-edge camera. */
+@media (min-width:592px){html:not(.fc-fs) #app>.vf,html:not(.fc-fs) #app>.deck{margin-left:16px;margin-right:16px}}
 </style>
 <div id="app">
   <div class="top">

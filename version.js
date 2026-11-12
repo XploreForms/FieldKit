@@ -1,4 +1,4 @@
 /* Field Kit version. Change BOTH lines on every release you push.
    Phones check for a new version every time Field Kit opens, comes back on screen, and every 5 minutes,
    and update themselves (or show an Update Now bar if the tech is in the middle of something). */
-var FIELDKIT_VERSION = { version: "1.20.43", updated: "2026-11-11T23:42:37-05:00" };
+var FIELDKIT_VERSION = { version: "1.20.44", updated: "2026-11-11T23:47:26-05:00" };
