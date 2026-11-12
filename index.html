@@ -125,11 +125,11 @@ h3{margin:0;font:700 1.1rem/1.2 var(--f-display)}
 
 /* new job: SA-# and job details, asked the same way as Field Cam and Field Notes */
 .njform{display:flex;flex-direction:column;gap:14px}
-.nj .seg{background:var(--surface);box-shadow:inset 0 0 0 1px var(--line)}
-.nj .seg button{white-space:nowrap;padding:11px 2px;font-size:.86rem;line-height:1.15;min-height:44px;color:var(--fg)}
+.nj .seg{background:none;box-shadow:none;padding:0;gap:6px}   /* 1.20.45: separate tiles, not one joined group */
+.nj .seg button{white-space:nowrap;padding:11px 2px;font-size:min(.86rem,3.6vw);line-height:1.15;min-height:46px;color:var(--fg);background:var(--surface);border-radius:10px;box-shadow:inset 0 0 0 1px var(--line)}
 .nj .seg button[aria-pressed="true"]{background:var(--btn);color:var(--btn-ink);box-shadow:none}
 .nj .seg button:disabled{opacity:.35;cursor:default}
-.nj .seg.njhold{opacity:.55}.nj .seg.njhold button{opacity:1;color:var(--muted);font-weight:500}
+.nj .seg.njhold{opacity:.55}.nj .seg.njhold button{opacity:1;color:var(--muted);font-weight:500;background:var(--surface)}
 .njref{display:flex;gap:8px}.njref input{flex:1;font:500 1.05rem var(--f-mono)}.njref .btn{min-height:46px;padding:0 14px}
 html:not(.fk-slim) .njtitle{font-family:var(--f-display)!important;font-size:1.5rem!important;font-weight:700!important}
 
@@ -468,7 +468,10 @@ details.grp .btn{margin-bottom:12px}
     "Inventory": ["Inventory", "Xplore Dealer Portal"], "RMA Request": ["RMA", "Request an RMA number"], "Compass": ["Compass", "eCoverage Intelligence"] };
   function paintTools() {
     var prog = inProgress(), OUT = svg('<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>');
-    var items = LINKS.concat([{ id: "cam", name: "Field Cam", desc: "Only for photos that aren't for an SA", href: TOOLS[0].href, icon: TOOLS[0].icon, quiet: true }]);
+    var all = LINKS.concat([{ id: "cam", name: "Field Cam", desc: "Only for photos that aren't for an SA", href: TOOLS[0].href, icon: TOOLS[0].icon, quiet: true }]);
+    // tile order, 2 across (Curtis, 1.20.45): Compass · Inventory / RMA · Manual Order / Field Cam · Field Stock (bottom, nearest the thumb)
+    var ORDER = ["Compass", "Inventory", "RMA Request", "Manual Order Request", "Field Cam", "Field Stock"];
+    var items = all.slice().sort(function (a, b) { var i = ORDER.indexOf(a.name), j = ORDER.indexOf(b.name); return (i < 0 ? 99 : i) - (j < 0 ? 99 : j); });
     $("links").innerHTML = items.map(function (l) {
       var t = TILE[l.id] || TILE[l.name] || [l.name, l.desc], busy = l.id && prog[l.id], viaApp = l.app && ANDROID;
       var desc = t[1], restart = "";
