@@ -546,7 +546,7 @@ details.grp .btn{margin-bottom:12px}
     return d.toLocaleDateString("en-CA", { weekday: "short", month: "short", day: "numeric" }) + " " + time;
   }
   function jobName(j) { return j.title || "SA details not set yet"; }
-  function goStep(j) { if (STEP_URL[j.step]) location.href = STEP_URL[j.step]; else openLobby(); }
+  function goStep(j) { if (STEP_URL[j.step]) FK.go(STEP_URL[j.step]); else openLobby(); }
   /* ---- new job: SA-# and job details here, then Field Cam opens straight into the camera ---- */
   // same lists as Field Cam (PLATFORMS there); the job stores Field Cam's platform value, e.g. "Fibre (Drop Required)"
   var NJ_TYPES = [["INS", "Install"], ["CON", "Conversion"], ["REP", "Repair"], ["REC", "Recovery"]];
@@ -925,7 +925,7 @@ details.grp .btn{margin-bottom:12px}
       return;
     }
     var tool = TOOLS.filter(function (t) { return t.id === app; })[0];
-    FK.clearTool(app); location.href = tool.href;
+    FK.clearTool(app); FK.go(tool.href);
   });
   /* Home screen fit (1.20.33). CSS screen units (vh/dvh) come out wrong after a refresh when the phone's page zoom / text size
      is above 100%, so the height comes from the real visible window, and the layout steps down only as far as it must. */
@@ -948,7 +948,7 @@ details.grp .btn{margin-bottom:12px}
     if (!a || typeof DeviceOrientationEvent === "undefined" || typeof DeviceOrientationEvent.requestPermission !== "function") return;
     try { if (sessionStorage.getItem("fieldkit.motionAsked")) return; sessionStorage.setItem("fieldkit.motionAsked", "1"); } catch (x) {}
     e.preventDefault();
-    var go = function () { location.href = a.href; };
+    var go = function () { FK.go(a.getAttribute("href")); };
     DeviceOrientationEvent.requestPermission().then(go, go);
   }, true);
   // where the home screen's Start New SA sits (gap below it and its height): New SA puts Start SA in the same spot (1.20.47)
@@ -1299,7 +1299,7 @@ details.grp .btn{margin-bottom:12px}
         catch (err) { errBox.innerHTML = '<div class="err">Google sign-in didn\'t finish. Tap Sync Now and try again.</div>'; gsBusy = false; b.disabled = false; return; }
         gsBusy = false;
       }
-      location.href = "fieldstock.html#sync"; return;
+      FK.go("fieldstock.html#sync"); return;
     }
     if (what === "connect" && !gsBusy) {
       gsBusy = true; b.disabled = true; errBox.innerHTML = "";
@@ -1423,7 +1423,7 @@ details.grp .btn{margin-bottom:12px}
     try { sessionStorage.setItem("fieldkit.scanReturn", JSON.stringify({ mode: a.getAttribute("data-scanret"), rec: a.hasAttribute("data-rec"), at: Date.now() })); } catch (x) {}
   }, true);
   // leaving for a tool: note which screen this was, so the tool's Back can return here (FieldKit.goHome)
-  addEventListener("pagehide", function () { try { sessionStorage.setItem("fieldkit.cameFrom", /^#job/.test(location.hash) ? "#job" : ""); } catch (e) {} });
+  FK.onLeave(function () { try { sessionStorage.setItem("fieldkit.cameFrom", /^#job/.test(location.hash) ? "#job" : ""); } catch (e) {} });
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible" && !$("menu").hidden) paintMenu(); if (document.visibilityState === "visible" && !$("lobby").hidden) paintLobby(); if (document.visibilityState === "visible" && !$("settings").hidden) paintSettingsGoogle(); });
 })();
 </script>

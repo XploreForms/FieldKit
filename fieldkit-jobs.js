@@ -355,13 +355,14 @@
       var nj = active(), st;
       st = jobWip(nj.id) || (nj.notes && nj.notes.state);
       st = notesFill(nj, st ? JSON.parse(JSON.stringify(st)) : null);
-      nj.notes.state = st; if (nj.step === "cam") nj.step = "notes"; save(nj);
+      nj.notes.state = st; save(nj);
+      // "the tech has reached Comments" is marked when the page is actually on screen, not just loaded (1.20.80)
+      FK.whenShown(function () { var j = active(); if (j && j.id === nj.id && j.step === "cam") { j.step = "notes"; save(j); } });
       set(KN, { owner: nj.id, at: Date.now(), state: st });
     }
     if (notesInJob) {
       var keepNotes = function () { var j = active(), s = j && jobWip(j.id); if (j && s) { j.notes.state = s; save(j); notesToSlots(j, s); } };
-      addEventListener("pagehide", keepNotes);
-      document.addEventListener("visibilitychange", function () { if (document.hidden) keepNotes(); });
+      FK.onLeave(keepNotes, true);   // after Field Notes has saved its form
     }
   }
 

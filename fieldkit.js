@@ -46,6 +46,37 @@ if (!window.__fkFraming) (function () {
   var VERSION = (window.FIELDKIT_VERSION && window.FIELDKIT_VERSION.version) || "0";   // set in version.js
   var me = document.currentScript, APP = (me && me.getAttribute("data-app")) || "home";
 
+  /* ---- shown / hidden, and moving between pages (step 2 of the one-app rebuild, 1.20.80) ----
+     Today a page is "shown" from the moment it loads until it's left. Later, an outer shell will keep pages loaded and
+     show / hide them; it marks a frame it loads in the background with data-fk-hidden="1" and calls FieldKit._host(true|false).
+       FieldKit.shown()       is this page the one on screen?
+       FieldKit.whenShown(fn) run once: now if shown, otherwise the first time it is (camera start, "the tech got here" marks)
+       FieldKit.onShow(fn)    every time the shell brings the page back (not the first time)
+       FieldKit.onLeave(fn)   leaving: page unload, app sent to the background, or the shell hiding it (save work here)
+       FieldKit.go(url, replace)  every script-made page change goes through here */
+  var hostHidden = false; try { hostHidden = !!(window.frameElement && window.frameElement.getAttribute("data-fk-hidden") === "1"); } catch (e) {}
+  var onceFns = [], showFns = [], leaveFns = [];
+  function safe(fn, a) { try { fn(a); } catch (e) { try { console.error(e); } catch (x) {} } }
+  function shown() { return !hostHidden; }
+  function whenShown(fn) { if (hostHidden) onceFns.push(fn); else safe(fn); }
+  function onShow(fn) { showFns.push(fn); }
+  var lateLeave = [];
+  function onLeave(fn, last) { (last ? lateLeave : leaveFns).push(fn); }   // last: runs after the page's own saving (e.g. copying saved work into the SA)
+  function fireLeave() { leaveFns.concat(lateLeave).forEach(function (fn) { safe(fn); }); }
+  addEventListener("pagehide", fireLeave);
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden" && !hostHidden) fireLeave(); });
+  function hostSet(show) {
+    show = !!show; if (show === !hostHidden) return;
+    if (!show) { hostHidden = true; fireLeave(); return; }
+    hostHidden = false;
+    var q = onceFns; onceFns = []; q.forEach(function (fn) { safe(fn); });
+    showFns.forEach(function (fn) { safe(fn); });
+  }
+  function go(url, replace) {
+    if (typeof window.__fkNav === "function") { window.__fkNav(url, !!replace); return; }
+    if (replace) location.replace(url); else location.href = url;
+  }
+
   function get(k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
   function set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
   function raw(k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } }
@@ -133,8 +164,7 @@ if (!window.__fkFraming) (function () {
     if (APP === "stock") { var m = str(get("techstock.manager", "")), pm = profile(); if (m && m !== pm.manager) setProfile({ manager: m }); return; }
     // name and dealer are only changed in Field Kit settings, so nothing comes back from Field Cam
   }
-  addEventListener("pagehide", pullBack);
-  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") pullBack(); });
+  onLeave(pullBack);
 
   // Going back with the Back button can show an old copy of a page: reload it so it shows the latest data
   addEventListener("pageshow", function (e) { if (e.persisted) location.reload(); });
@@ -172,8 +202,7 @@ if (!window.__fkFraming) (function () {
   /* Coming back to a tool returns to the same spot on the page */
   var SCROLL = "fieldkit.scroll." + APP;
   function keepScroll() { try { sessionStorage.setItem(SCROLL, String(window.scrollY || 0)); } catch (e) {} }
-  addEventListener("pagehide", keepScroll);
-  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") keepScroll(); });
+  onLeave(keepScroll);
   addEventListener("load", function () {
     var y = 0; try { y = Number(sessionStorage.getItem(SCROLL)) || 0; } catch (e) {}
     if (y > 0 && APP !== "home") setTimeout(function () { window.scrollTo(0, y); }, 250);
@@ -278,6 +307,7 @@ if (!window.__fkFraming) (function () {
 
   window.FieldKit = {
     version: VERSION, app: APP, fields: FIELDS, goHome: goHome,
+    shown: shown, whenShown: whenShown, onShow: onShow, onLeave: onLeave, go: go, _host: hostSet,
     profile: profile, setProfile: setProfile,
     prefs: prefs, setPrefs: setPrefs,
     sessions: sessions, setSession: setSession, clearTool: clearTool, staleAfter: STALE,

@@ -2793,7 +2793,7 @@ function stopLiveScan(){
   if(LIVE.stream){ LIVE.stream.getTracks().forEach(t=>t.stop()); LIVE.stream=null; }
   $("liveVideo").srcObject=null; $("liveVideo").style.transform=""; LIVE.hw=null; LIVE.pinch=null; $("liveScanner").hidden=true;
 }
-document.addEventListener("visibilitychange",()=>{ if(document.hidden) stopLiveScan(); });
+FieldKit.onLeave(()=>stopLiveScan());
 
 
 /* ---------- Google Sheets sync (optional) ----------
@@ -2949,7 +2949,7 @@ async function gsSyncNow(){
   if(!gsErr) toast("Google Sheet is up to date");
 }
 document.addEventListener("click", async e=>{
-  if(e.target.closest("#mode")){ location.href="index.html#backup"; return; }   // Sign in / Waiting / Not backed up: on to settings, where Sync Now is
+  if(e.target.closest("#mode")){ FieldKit.go("index.html#backup"); return; }   // Sign in / Waiting / Not backed up: on to settings, where Sync Now is
   if(e.target.closest("[data-gssync]")){ gsSyncNow(); return; }
   if(e.target.closest("#gsConnect, #gsConnectSetup, #gsSwitchSetup")){
     $("setupGErr").innerHTML="";
@@ -3048,7 +3048,7 @@ async function fkSyncAndReturn(){
     res = !gsErr ? "ok" : "Couldn't sync: " + (gsErr==="offline" ? "no signal. Try again when you're back online." : gsErr==="auth" ? "Google sign-in expired. Tap Sync Now and sign in again." : gsErr);
   }
   try{ sessionStorage.setItem("fieldkit.syncResult", res); }catch(e){}
-  location.replace("index.html#backup");
+  FieldKit.go("index.html#backup", true);
 }
 if(/^#sync/.test(location.hash)) fkSyncAndReturn();
 /* Field Kit: items in the Logs form that aren't saved yet stay there when the tech leaves for another tool,
@@ -3072,8 +3072,7 @@ function draftSave(){
     }
   }catch(e){}
 }
-addEventListener("pagehide", draftSave);
-document.addEventListener("visibilitychange", ()=>{ if(document.hidden) draftSave(); });
+FieldKit.onLeave(draftSave);
 (function draftRestore(){
   if(/^#order/.test(location.hash)) return;
   let d=null; try{ d=JSON.parse(localStorage.getItem(DRAFT_KEY)||"null"); }catch(e){}

@@ -1350,7 +1350,7 @@ async function keepAwake() { try { if ("wakeLock" in navigator && document.visib
    the moment it is. Soft pause: the camera stays connected (just not shown), so iPhones don't
    ask for camera permission again on the way back. */
 function cameraHidden() {
-  return document.visibilityState !== "visible" || !$("start").hidden || !!document.querySelector(".sheet.open")
+  return document.visibilityState !== "visible" || !FieldKit.shown() || !$("start").hidden || !!document.querySelector(".sheet.open")
     || $("viewer").classList.contains("open") || $("sorter").classList.contains("open");
 }
 function syncPause() {
@@ -3492,12 +3492,16 @@ $("updGo").addEventListener("click", async () => {
   showStart();
   // Field Kit: coming back from the menu (or another tool) goes straight back into the job in progress.
   // Opening fieldcam.html#new always shows the job screen instead (for a future "Start New Job").
-  if (curJob() && !/^#new/.test(location.hash)) $("resumeBtn").click();
-  // without an SA: straight into the camera, iPhone included (1.20.77; motion access is asked on a tap, see beginSession)
-  else if (!fkJob() && settings.name.trim() && (settings.dealer || "").trim()) $("startBtn").click();
+  // Starting the camera (and a new set of photos) waits until this page is actually on screen (1.20.80): a page the
+  // shell loads in the background must not turn the camera on.
+  FieldKit.whenShown(() => {
+    if (curJob() && !/^#new/.test(location.hash)) $("resumeBtn").click();
+    // without an SA: straight into the camera, iPhone included (1.20.77; motion access is asked on a tap, see beginSession)
+    else if (!fkJob() && settings.name.trim() && (settings.dealer || "").trim()) $("startBtn").click();
+    document.documentElement.classList.remove("fk-resuming");
+  });
   // outcome changed on the job summary: redraw the info band on photos not saved yet
   if (curJob() && curJob().fkRestamp) { delete curJob().fkRestamp; jobChanged(); }
-  document.documentElement.classList.remove("fk-resuming");
   fixSnPhotos().catch(e => console.error(e));
 })();
 /* Photos taken before the device photos were renamed (labelled ONT, XWR, XWH, XTV…), and scan photos that got a label of
@@ -3530,7 +3534,7 @@ if (fkJob()) document.title = "Pictures";   // inside an SA, Field Cam is just "
       fkSession(); closeSheets();
       FieldKit.job.setStep("notes");
       toast("Pictures saved. Opening Comments…", 1600);
-      setTimeout(() => { location.replace("fieldnotes.html#job"); }, 1300);   // replace: Back from Field Notes goes to the job, not here
+      setTimeout(() => { FieldKit.go("fieldnotes.html#job", true); }, 1300);   // replace: Back from Field Notes goes to the job, not here
     }
     return ok;
   };
@@ -3648,8 +3652,10 @@ function fkSession() {
     FieldKit.setSession("cam", j && curPhotos().length ? {   /* 1.20.49: an empty set (e.g. New, then straight back out) isn't "in progress" */ title: j.ref || "Job in progress", sub: jobTitle(j), detail: curPhotos().length ? plural(curPhotos().length, "photo") : "No photos yet" } : null);
   } catch {}
 }
-addEventListener("pagehide", fkSession);
-document.addEventListener("visibilitychange", () => { if (document.hidden) fkSession(); });
+FieldKit.onLeave(fkSession);
+// the shell hiding or showing this page pauses and resumes the camera, like switching apps does (1.20.80)
+FieldKit.onLeave(() => { try { syncPause(); } catch {} });
+FieldKit.onShow(() => { try { syncPause(); if (S.started && !S.paused) { if (!S.track || S.track.readyState === "ended") startCamera(); keepAwake(); } renderAll(); } catch {} });
 </script>
 
 <div id="fk-end" hidden></div>

@@ -3351,8 +3351,7 @@ function initRetro() {
   initName();
   initThanks();
   initIdleAndCredits();
-  window.addEventListener('pagehide', wipSaveNow);
-  document.addEventListener('visibilitychange', function () { if (document.hidden) wipSaveNow(); });
+  FieldKit.onLeave(wipSaveNow);
   setTimeout(wipOffer, 900);
   window.addEventListener('resize', function () { updatePreview(); });
   setTimeout(skipAnswered, 1150);
