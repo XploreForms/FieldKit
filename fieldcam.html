@@ -131,6 +131,7 @@ html[data-grid="on"] .grid3{display:block}
 .grid3 i:nth-child(3){top:33.333%}.grid3 i:nth-child(4){top:66.667%}
 .zclip{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);overflow:hidden;width:100%;height:100%}
 .aim{position:absolute;left:8%;right:8%;top:50%;height:22%;transform:translateY(-50%);border:0;border-radius:10px;pointer-events:none}
+#torchBtn:disabled{opacity:.35;cursor:default;pointer-events:none}
 .aim::before{content:none}   /* 1.20.52: no dark fade around the scan area (Curtis); just the red line */
 .aim i{position:absolute;left:4%;right:4%;top:50%;height:2px;margin-top:-1px;background:#FF4B3E;box-shadow:0 0 6px #FF4B3E}
 .aim.hit i{background:var(--signal);box-shadow:0 0 6px var(--signal)}
@@ -617,7 +618,7 @@ html.fc-fs .fsctl::after{content:"";width:44px;height:44px}
     </div>
     <div class="vfctl">
       <button class="hq" id="hqBtn" aria-pressed="false" aria-label="Full quality">HQ</button>
-      <button id="torchBtn" aria-label="Flashlight" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></button>
+      <button id="torchBtn" aria-label="Flashlight" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></button>
       <button id="snBtn" aria-label="Scan a serial number barcode" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2M8 8v8M11 8v8M14 8v8M17 8v8"/></svg></button>
       <button id="fsBtn" type="button" aria-label="Full screen, landscape"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
     </div>
@@ -1159,7 +1160,7 @@ async function startCamera(deviceId) {
     S.caps = (S.track.getCapabilities && S.track.getCapabilities()) || {};
     if (S.caps.zoom && !(S.caps.zoom.max > S.caps.zoom.min)) S.caps.zoom = null;
     if ((S.caps.focusMode || []).includes("continuous")) S.track.applyConstraints({ advanced:[{ focusMode:"continuous" }] }).catch(() => {});
-    $("torchBtn").hidden = !S.caps.torch;
+    $("torchBtn").disabled = !S.caps.torch;   /* 1.20.53: always shown; greyed out until the camera says it has a flash */
     S.zoom = 1; S.digitalZoom = 1; S.torch = false;
     if (S.caps.zoom) pushHwZoom();   // always start at exactly 1×, even on a camera that could go wider
     $("torchBtn").classList.remove("on");
