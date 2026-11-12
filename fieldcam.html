@@ -2339,7 +2339,7 @@ async function makeDivider(sid, kind) {
   x.fillStyle = col; fit(time, 800, 120, W); x.fillText(time, Z / 2, 838);
   const short = [j.work ? byId(JOB_TYPES, j.work).name : "", j.plat ? platShort(j.plat, j) : ""].filter(Boolean).join(" · ");
   x.fillStyle = "#E8EFEC"; fit(short, 700, 64, W); x.fillText(short, Z / 2, 953);
-  x.fillStyle = "#8FA59D"; fit("Divider · don’t upload", 600, 44, W); x.fillText("Divider · don’t upload", Z / 2, 1035);
+  x.fillStyle = "#8FA59D"; fit("Divider · Do Not Upload", 600, 44, W); x.fillText("Divider · Do Not Upload", Z / 2, 1035);
   let blob = await toBlob(c, 0.45);   // flat colours + big text stay crisp even at low quality (~11 KB)
   try { blob = await addExif(blob, { when, tech:settings.name.trim(), dealer:(settings.dealer || "").trim(), labels:[start ? "SA start divider" : "SA end divider"], unlabelled:false, job:jobMeta(j.work ? j : null) }, Z, Z); } catch {}
   const d = when, head = [`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}${pad(d.getMinutes())}`, j.ref].filter(Boolean).join(" ");

@@ -116,6 +116,7 @@ The home screen (1.20.27) **fills the screen with no scrolling** on any phone: h
 - (1.20.39) **Gallery shows only the current job/SA** (no Previous jobs). Unsaved pictures from an earlier set stay on the phone until auto-clean, but aren't listed.
 - (1.20.39) **No sideways/landscape mode** outside full screen: turning the phone doesn't reshape the frame (`frameTurn` is 0 unless `fc-fs`); saved pictures are still turned upright.
 - (1.20.39) Without an SA: **no start/end cards**, and once every picture is saved a sheet offers **Finish & Go Home** (ends the set, back to the menu) or Keep shooting.
+- (1.20.40) SA start/end divider cards say **"Divider · Do Not Upload"**.
 - (1.20.39) Barcode scanner: **no white box**; a dark vignette fading to a clear middle; the red line turns green/orange on hit/miss.
 - (1.20.35) **Labels sit at the bottom**, right above the shutter (deck `justify-content:flex-end`).
 - Field Cam settings no longer have a Text size option (1.20.38; always normal).
