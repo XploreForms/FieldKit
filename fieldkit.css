@@ -109,3 +109,8 @@ html header.top.fk-row{padding-top:4px!important;padding-bottom:4px!important}
 html header.top.fk-row .top-in{padding-top:0!important;padding-bottom:0!important}
 html header.top.fk-row .fk-bar{margin:0!important}
 html.fc-quick #app>.top .qtile{margin:0 8px 0 0!important}
+/* wide screens (desktop, tablets, the preview): always keep room for the scroll bar, so the centred column, and with it
+   the header, sits in the same place on pages that scroll (Settings) and pages that don't (Field Cam) (1.20.43) */
+html{scrollbar-gutter:stable}
+/* Field Stock's full-width header: arrow 10px inside the page column, like every other page */
+html header.top.fk-row{padding-left:max(10px,env(safe-area-inset-left,0px),calc((100% - var(--fk-max)) / 2 + 10px))!important}
