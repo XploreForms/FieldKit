@@ -497,11 +497,12 @@ details.grp .btn{margin-bottom:12px}
     var PAIR = { "Compass": "Percipio" }, paired = { "Percipio": 1 };
     function tileA(l) {
       var t = TILE[l.id] || TILE[l.name] || [l.name, l.desc], busy = l.id && prog[l.id], viaApp = l.app && ANDROID;
-      var desc = t[1], restart = "";
-      if (l.id === "cam" && busy) { desc = "In progress" + (busy.detail ? " · " + busy.detail : ""); restart = '<button class="tnew" type="button" data-new="cam" aria-label="Start new Field Cam pictures (the current ones stay saved)">' + RESTART + '</button>'; }
+      var desc = t[1], restart = "", pill = "";
+      // in progress: same green pill as the SA card (1.20.49), then the photo count
+      if (l.id === "cam" && busy) { desc = busy.detail || "No photos yet"; pill = '<em class="live">In progress</em> '; restart = '<button class="tnew" type="button" data-new="cam" aria-label="Start new Field Cam pictures (the current ones stay saved)">' + RESTART + '</button>'; }
       return { busy: busy, restart: restart, html: '<a href="' + esc(viaApp ? appHref(l.href) : l.href) + '"' + (l.out && !viaApp ? ' target="_blank" rel="noopener"' : '') + '>' +
         '<i aria-hidden="true">' + svg(l.icon) + '</i><b>' + esc(t[0]) + (l.out ? '<span class="out" aria-hidden="true">' + OUT + '</span><span class="sr-only"> (opens in a new tab)</span>' : '') + '</b>' +
-        '<small>' + esc(desc) + '</small>' + (busy && !restart ? '<em class="live">In progress</em>' : '') + '</a>' };
+        '<small>' + pill + esc(desc) + '</small>' + (busy && !restart ? '<em class="live">In progress</em>' : '') + '</a>' };
     }
     var byName = {}; items.forEach(function (l) { byName[l.name] = l; });
     $("links").innerHTML = items.filter(function (l) { return !paired[l.name]; }).map(function (l) {
@@ -681,7 +682,7 @@ details.grp .btn{margin-bottom:12px}
     var nb = e.target.closest("#jobNew");
     if (nb) {
       if (!nb.classList.contains("sure")) { nb.classList.add("sure"); nb.innerHTML = RESTART + "<span>Tap again</span>"; nb.setAttribute("aria-label", "Tap again to replace it with a new SA. This one stays in SA history."); clearTimeout(jobSureT); jobSureT = setTimeout(paintJobs, 4000); return; }
-      newJob(); return;
+      J.setActive(null); paintJobs(); newJob(); return;   // 1.20.49: cleared now, even if New SA is backed out of (it stays in SA history)
     }
     var h = e.target.closest("[data-job]");
     if (h) { J.open(h.getAttribute("data-job")); openLobby(); }
@@ -900,7 +901,7 @@ details.grp .btn{margin-bottom:12px}
     var app = b.getAttribute("data-new");
     if (!b.classList.contains("sure")) {
       // first tap: ask, without changing the card's size
-      b.classList.add("sure"); if (b.classList.contains("tnew")) toast("Tap again to start new pictures"); else b.innerHTML = "Tap to clear";   /* the Field Cam tile's button stays just the icon (1.20.42) */
+      b.classList.add("sure"); if (!b.classList.contains("tnew")) b.innerHTML = "Tap to clear";   /* the Field Cam tile's button stays just the icon and turns orange; no pop-up (1.20.49) */
       b.setAttribute("aria-label", { cam: "Tap again to end the Field Cam job (photos stay saved)", stock: "Tap again to clear the unsaved Field Stock items", notes: "Tap again to clear the Field Notes comments" }[app]);
       clearTimeout(sureT); sureT = setTimeout(paintTools, 4000);
       return;
@@ -1416,6 +1417,9 @@ details.grp .btn{margin-bottom:12px}
 .tiles .tnew svg{width:55%;height:55%}
 .tiles .tnew.sure{background:var(--warn-bg);color:var(--warn);box-shadow:inset 0 0 0 1.5px currentColor}
 .tiles .tile:has(.tnew) b{margin-right:calc(var(--tnew,36px) + 6px)}
+/* 1.20.49: a tool in progress looks like the SA card: green outline, green IN PROGRESS pill */
+.tiles .tile.busy a{box-shadow:inset 0 0 0 2px var(--btn),var(--shadow)}
+.tiles small .live{position:static;display:inline-block;margin:0 4px 0 0;vertical-align:1px;font-size:.6rem}
 /* 1.20.48: a split tile (Compass + Percipio): two half-height links, icon + name on one line, no description */
 .tiles .tile.split{display:grid;grid-template-rows:minmax(0,1fr) minmax(0,1fr);gap:8px;overflow:visible;border-radius:0;container-type:size}
 html body #menu .tiles .tile.split a{height:auto;min-height:0;grid-template-columns:auto minmax(0,1fr);justify-content:stretch;text-align:left;grid-template-rows:auto;row-gap:0;column-gap:8px;align-content:center;justify-items:stretch;padding:4px 10px}

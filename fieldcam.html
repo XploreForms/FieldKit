@@ -3611,7 +3611,7 @@ function fkSession() {
         photos: ps.length, unsaved: ps.filter(p => !p.downloaded).length, need: baseShots(j).length, missing: missingShots().length, labels: countLabels(), serials: (j.serials || []).map(x => ({ code: x.code, item: x.item || "", sku: x.sku || "", ...(x.rec ? { rec: true } : {}) })), slots: j.slots || {} });
       return;
     }
-    FieldKit.setSession("cam", j ? { title: j.ref || "Job in progress", sub: jobTitle(j), detail: curPhotos().length ? plural(curPhotos().length, "photo") : "No photos yet" } : null);
+    FieldKit.setSession("cam", j && curPhotos().length ? {   /* 1.20.49: an empty set (e.g. New, then straight back out) isn't "in progress" */ title: j.ref || "Job in progress", sub: jobTitle(j), detail: curPhotos().length ? plural(curPhotos().length, "photo") : "No photos yet" } : null);
   } catch {}
 }
 addEventListener("pagehide", fkSession);
