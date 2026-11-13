@@ -230,6 +230,7 @@ html:not(.fk-slim) .lhead.fk-row .njtitle{font-size:1.2rem!important}
 #lobby .lfoot #lbWarn:empty{display:none}
 #lobby .lfoot .err{margin:0}
 #lobby #lbDone{height:var(--go-h,68px);flex:none}
+#lobby #lbDone.idle{background:var(--surface-2);color:var(--fg);box-shadow:none}   /* 1.20.102: grey until every step is done */
 .lfoot .help{text-align:center}
 .soon{font:600 .7rem/1 var(--f-body);letter-spacing:.07em;text-transform:uppercase;padding:4px 7px;border-radius:99px;background:var(--surface-2);color:var(--muted)}
 
@@ -747,7 +748,7 @@ details.grp .btn{margin-bottom:12px}
     camPhotos(j.camJobIds || []).then(function (ps) {
       thumbUrls.forEach(function (u) { try { URL.revokeObjectURL(u); } catch (e) {} }); thumbUrls = [];
       var list = ps || [], n = ps ? list.length : (j.photos || 0), uns = ps ? list.filter(function (p) { return !p.downloaded; }).length : (j.unsaved || 0);
-      lobbyState.photosOk = n > 0 && !uns;
+      lobbyState.photosOk = n > 0 && !uns; lobbyState.photosReady = true;
       var pill = !n ? "None yet" : uns ? "Not saved" : "Saved to phone";
       var html = stepHead(1, "Pictures", lobbyState.photosOk, pill, !n ? "" : uns ? "warn" : "good");
       // 1.20.98 (Curtis): once started, x of y required taken and how many aren't saved
@@ -763,7 +764,7 @@ details.grp .btn{margin-bottom:12px}
           return '<span>' + (u ? '<img alt="' + esc(labelOf(p)) + '" src="' + u + '">' : "") + '<em>' + esc(labelOf(p)) + '</em></span>';
         }).join("") + (list.length > show.length ? '<span class="more">+' + (list.length - show.length) + '</span>' : "") + '</div>';
       } else if (n) html += '<p class="help">' + n + ' photo' + (n === 1 ? "" : "s") + ' taken. They\'ve been cleared from this phone since.</p>';
-      html += '<a class="btn' + (lobbyState.photosOk ? "" : " primary") + '" href="fieldcam.html#job">' + (!n || (j.need && (j.missing || 0) > 0) ? "Take Pictures" : uns ? "Save Pictures" : "Open Pictures") + '</a>';
+      html += '<a class="btn" data-next="1" href="fieldcam.html#job">' + (!n || (j.need && (j.missing || 0) > 0) ? "Take Pictures" : uns ? "Save Pictures" : "Open Pictures") + '</a>';
       box.innerHTML = html;
       paintLobbyWarn(j);
     });
@@ -797,9 +798,9 @@ details.grp .btn{margin-bottom:12px}
     lobbyState.notesOk = !!c && !stale;
     var html = stepHead(2, "Comments", !!c && !stale, stale ? "Needs update" : c ? "Copied " + when(j.notes.copiedAt).replace(/^Today /, "") : "Not written", c && !stale ? "good" : "warn");
     if (stale) html += '<p class="help" style="color:var(--warn)">The outcome changed after this was copied. Edit the comments and copy them again.</p>';
-    if (c) html += '<pre class="cmt" id="lbCmt">' + esc(c) + '</pre><div class="row"><button class="btn" type="button" id="lbCopy">Copy Again</button><a class="btn' + (stale ? " primary" : "") + '" href="fieldnotes.html#job">Edit Comments</a></div>';
-    else html += '<p class="help">Comments opens with the job type, platform and the pictures you took already filled in.</p><a class="btn' + (lobbyState.photosOk ? " primary" : "") + '" href="fieldnotes.html#job">Write Comments</a>';
-    $("lbNotes").innerHTML = html;
+    if (c) html += '<pre class="cmt" id="lbCmt">' + esc(c) + '</pre><div class="row"><button class="btn" type="button" id="lbCopy">Copy Again</button><a class="btn"' + (stale ? ' data-next="2"' : "") + ' href="fieldnotes.html#job">Edit Comments</a></div>';
+    else html += '<a class="btn" data-next="2" href="fieldnotes.html#job">Write Comments</a>';   // 1.20.102: no caption (Curtis)
+    $("lbNotes").innerHTML = html; paintNext(j);
   }
   function gearWhy(j) {
     if (!/^SA-\d{7}$/.test(j.sa || "")) return "Not logged: no SA-# yet";
@@ -811,7 +812,7 @@ details.grp .btn{margin-bottom:12px}
     if (m.off) {
       lobbyState.gearLeft = 0;
       $("lbGear").innerHTML = stepHead(3, "Equipment Deployed", true, "None", "") + '<p class="help">None. The SA is ' + esc(j.outcome === "CC" ? "Cannot Complete" : "Not Required") + ', so no equipment is deployed or logged in Field Stock.</p>';
-      return;
+      paintNext(j); return;
     }
     var keyOf = function (c) { return String(c).replace(/\s+/g, "").toUpperCase(); };
     var rec = J.recoveredEvents(j), extrasOk = m.extras.every(function (s) { return s.sku; });
@@ -834,15 +835,24 @@ details.grp .btn{margin-bottom:12px}
       var g = get("techstock.gs", null);
       if (dep.length) html += '<p class="help">Deployed inventory is synced with Field Stock.</p>';   // 1.20.65: Curtis's wording; shown whenever something was deployed
     } else html += '<p class="help">Scan each serial number. They\'re logged in Field Stock as deployed on this SA-#.</p>';
-    html += '<a class="btn" href="fieldcam.html#job" data-scanret="many">' + (m.has || m.extras.length || m.recovered.length ? "Scan More" : "Scan Serials") + '</a>';
-    $("lbGear").innerHTML = html;
+    html += '<a class="btn" data-next="3" href="fieldcam.html#job" data-scanret="many">' + (m.has || m.extras.length || m.recovered.length ? "Scan More" : "Scan Serials") + '</a>';
+    $("lbGear").innerHTML = html; paintNext(j);
   }
   function paintLobbyWarn(j) {
     var miss = [];
     if (!lobbyState.photosOk) miss.push("the pictures aren't all saved to your phone");
     if (!lobbyState.notesOk) miss.push(j.notes && j.notes.stale ? "the comments need updating for the new outcome" : "the comments aren't copied");
     if (lobbyState.gearLeft) miss.push(lobbyState.gearLeft + " equipment slot" + (lobbyState.gearLeft === 1 ? " is" : "s are") + " empty");
+    paintNext(j);
     $("lbWarn").innerHTML = lobbySure && miss.length ? '<div class="err">' + esc(miss.join(", ").replace(/, ([^,]*)$/, " and $1").replace(/^./, function (m) { return m.toUpperCase(); })) + '. Tap Complete SA again to finish anyway.</div>' : "";
+  }
+  /* 1.20.102 (Curtis, option A): one green button at a time, the next step: Pictures, then Comments, then Equipment, then
+     Complete SA (grey but still tappable until every step is done; the second-tap warning stays) */
+  function paintNext(j) {
+    var st = lobbyState, step = !st.photosReady ? 0 : !st.photosOk ? 1 : !st.notesOk ? 2 : st.gearLeft ? 3 : 4;
+    if (j.status === "complete") step = 4;
+    document.querySelectorAll("#lobby [data-next]").forEach(function (b) { b.classList.toggle("primary", +b.getAttribute("data-next") === step); });
+    $("lbDone").classList.toggle("idle", step !== 4);
   }
   var lobbySure = false;
   function paintLobby() {
@@ -851,9 +861,9 @@ details.grp .btn{margin-bottom:12px}
     $("lbSub").textContent = (j.base || jobName(j)) + (j.status === "complete" ? " · Completed " + when(j.completedAt) : "");
     $("lbDone").textContent = j.status === "complete" ? "Close SA" : "Complete SA";
     $("lbHelp").textContent = j.status === "complete" ? "This SA is in SA history for 7 days from its last change." : ""; $("lbHelp").hidden = j.status !== "complete";
-    lobbySure = false; $("lbWarn").innerHTML = "";
+    lobbySure = false; $("lbWarn").innerHTML = ""; lobbyState.photosReady = false;
     $("lbStart").innerHTML = svg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', 2) + '<span class="lsl">Started</span><span class="lst">' + esc(when(j.created)) + '</span>'; $("lbStart").innerHTML = '<div class="lout">' + $("lbStart").innerHTML + '</div>';
-    paintLobbyOut(j); paintLobbyPhotos(j); paintLobbyNotes(j); paintLobbyGear(j);
+    paintLobbyOut(j); paintLobbyPhotos(j); paintLobbyNotes(j); paintLobbyGear(j); paintNext(j);
   }
   function openLobby() {
     if (!J.active()) { openMenu(); return; }
