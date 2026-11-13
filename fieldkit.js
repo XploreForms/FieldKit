@@ -36,6 +36,9 @@
   var sh = null; try { sh = window.parent !== window && window.parent.__fkShell; } catch (e) {}
   if (!sh) return;
   window.__fkInShell = true;
+  // the shell already keeps the page clear of the notch and the home bar; an iPhone still tells a frame about them,
+  // which added them twice (the gap above and below the home screen, 1.20.87)
+  ["top", "right", "bottom", "left"].forEach(function (k) { document.documentElement.style.setProperty("--fk-sa-" + k, "0px"); });
   window.__fkNav = function (u, replace) { sh.nav(String(u || ""), !!replace, window); };
   var PAGE = /^(index|fieldcam|fieldnotes|fieldstock)\.html(#.*)?$/;
   addEventListener("click", function (e) {
@@ -251,7 +254,7 @@ if (!window.__fkFraming) (function () {
     if (document.getElementById("fkUpd")) return;
     var bar = document.createElement("div");
     bar.id = "fkUpd"; bar.setAttribute("role", "status");
-    bar.style.cssText = "position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 8px);z-index:9999;width:calc(100% - 24px);max-width:536px;" +
+    bar.style.cssText = "position:fixed;left:50%;transform:translateX(-50%);top:calc(var(--fk-sa-top,env(safe-area-inset-top,0px)) + 8px);z-index:9999;width:calc(100% - 24px);max-width:536px;" +
       "display:flex;align-items:center;gap:10px;padding:10px 10px 10px 14px;border-radius:12px;background:var(--fk-ink,#0E2A27);color:var(--fk-bg,#F2F5F3);" +
       "box-shadow:0 6px 24px rgba(0,0,0,.25);font:500 14px/1.3 var(--fk-body,system-ui,sans-serif)";
     bar.innerHTML = '<span style="flex:1;min-width:0"><b style="display:block;font-weight:700">Field Kit has an update</b>Your work is saved. Takes a few seconds.</span>' +

@@ -56,7 +56,7 @@
 /* Approved pairings only: on North Shore or Carmanah use Superior, Solar Wind or White text;
    on Superior or Solar Wind use North Shore text. */
 
-html { font-size: 16px; -webkit-text-size-adjust: 100%; scroll-padding-top: env(safe-area-inset-top, 0px); color-scheme: dark; background: var(--xp-dark); }
+html { font-size: 16px; -webkit-text-size-adjust: 100%; scroll-padding-top: var(--fk-sa-top,env(safe-area-inset-top,0px)); color-scheme: dark; background: var(--xp-dark); }
 
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -83,7 +83,7 @@ h2 { font-weight: 600; font-size: 1.05rem; }
 /* header: North Shore Green with the Superior Green logo, a quiet Carmanah rule underneath */
 header.app-header {
   background: var(--xp-dark); color: var(--xp-white);
-  padding: calc(1rem + env(safe-area-inset-top, 0px)) 0 1.1rem;
+  padding: calc(1rem + var(--fk-sa-top,env(safe-area-inset-top,0px))) 0 1.1rem;
   border-bottom: 2px solid var(--xp-carmanah);
 }
 .app-header-inner { max-width: 44rem; margin: 0 auto; padding: 0 0.9rem; }   /* same box as .wrap, so the left edges match at any width */
@@ -321,7 +321,7 @@ button.btn.done { background: var(--xp-green); color: var(--xp-dark); }
 .sticky-bar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; background: var(--xp-dark);
   box-shadow: 0 -10px 18px 4px var(--xp-dark);
-  padding: 0.5rem 0 calc(0.5rem + env(safe-area-inset-bottom, 0px));
+  padding: 0.5rem 0 calc(0.5rem + var(--fk-sa-bottom,env(safe-area-inset-bottom,0px)));
 }
 /* compact on purpose: it is always on screen */
 .sticky-inner { max-width: 44rem; margin: 0 auto; padding: 0 0.9rem; display: grid; gap: 0.5rem; }
@@ -728,11 +728,11 @@ h1,h2,.form-section-title,.preview-card h2{font-family:var(--fk-display);letter-
 .form-section-title{font-size:1.2rem;font-weight:700}
 html:root[data-fn-theme] .form-section-title{color:var(--fk-accent-text)}
 /* header: on the page like the menu and the other tools */
-html:root[data-fn-theme] header.app-header{position:sticky;top:0;z-index:40;background:var(--fk-bg);border-bottom:0;padding:calc(env(safe-area-inset-top,0px) + 4px) 0 12px;box-shadow:0 1px 0 var(--fk-line)}
+html:root[data-fn-theme] header.app-header{position:sticky;top:0;z-index:40;background:var(--fk-bg);border-bottom:0;padding:calc(var(--fk-sa-top,env(safe-area-inset-top,0px)) + 4px) 0 12px;box-shadow:0 1px 0 var(--fk-line)}
 html:root[data-fn-theme] header.app-header h1.fk-title{color:var(--fk-ink);font-size:1.5rem;margin:0;line-height:1.05}
 html:root[data-fn-theme] header.app-header p.fk-sub{color:var(--fk-muted);margin:3px 0 0;font-size:.88rem;white-space:normal}
-.app-header-inner{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.wrap,.sticky-inner{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.app-header-inner{padding-left:max(16px,var(--fk-sa-left,env(safe-area-inset-left,0px)));padding-right:max(16px,var(--fk-sa-right,env(safe-area-inset-right,0px)))}
+.wrap,.sticky-inner{padding-left:max(16px,var(--fk-sa-left,env(safe-area-inset-left,0px)));padding-right:max(16px,var(--fk-sa-right,env(safe-area-inset-right,0px)))}
 /* main button: Superior Green with dark text, as in the other tools */
 html:root[data-fn-theme] button.btn.primary,html:root[data-fn-theme] button.btn.primary.ready,html:root[data-fn-theme] button.btn.done{background:var(--fk-accent);color:var(--fk-accent-ink)}
 html:root[data-fn-theme] button.btn{border-radius:var(--fk-r-sm)}
@@ -741,7 +741,7 @@ html:root[data-fn-theme] .sticky-bar{background:var(--fk-bg);box-shadow:0 -1px 0
 .wrap,.app-header-inner,.sticky-inner{max-width:var(--fk-max)}
 
 /* typing boxes: the focus ring stays inside the box, so it never runs over the dBm / dB next to it */
-html.fk-slim:root[data-fn-theme] header.app-header{padding-top:calc(env(safe-area-inset-top,0px) + 4px);padding-bottom:4px}
+html.fk-slim:root[data-fn-theme] header.app-header{padding-top:calc(var(--fk-sa-top,env(safe-area-inset-top,0px)) + 4px);padding-bottom:4px}
 html.fk-slim:root[data-fn-theme] header.app-header .app-header-inner{display:flex;align-items:center;gap:6px}
 html.fk-slim:root[data-fn-theme] header.app-header .app-header-inner{position:relative}
 html.fk-slim:root[data-fn-theme] header.app-header .fk-head{position:absolute;left:96px;right:96px;top:50%;transform:translateY(-50%);justify-content:center;min-width:0;pointer-events:none}
@@ -776,8 +776,8 @@ html:root[data-fn-theme] .check .box{border-color:currentColor;border-radius:6px
 html:root[data-fn-theme] .check[aria-checked="true"]{background:var(--fk-accent);color:var(--fk-accent-ink);box-shadow:none}
 html:root[data-fn-theme] .check[aria-checked="true"] .box{background:var(--fk-accent-ink);border-color:var(--fk-accent-ink);color:var(--fk-accent)}
 /* one-row header (1.20.20): back arrow, small tile, title */
-html:root[data-fn-theme] header.app-header{padding-top:calc(env(safe-area-inset-top,0px) + 2px);padding-bottom:2px}
-.app-header-inner.fk-row{display:flex;align-items:center;gap:2px;padding-left:max(10px,env(safe-area-inset-left,0px))}
+html:root[data-fn-theme] header.app-header{padding-top:calc(var(--fk-sa-top,env(safe-area-inset-top,0px)) + 2px);padding-bottom:2px}
+.app-header-inner.fk-row{display:flex;align-items:center;gap:2px;padding-left:max(10px,var(--fk-sa-left,env(safe-area-inset-left,0px)))}
 .app-header-inner.fk-row .fk-head{flex:1;min-width:0;gap:10px}
 html:root[data-fn-theme] header.app-header .fk-row h1.fk-title{font-size:1.2rem}
 </style>

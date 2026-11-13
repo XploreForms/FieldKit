@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
+<style>:root{box-sizing:border-box;padding-top:var(--fk-sa-top,env(safe-area-inset-top,0px));padding-bottom:var(--fk-sa-bottom,env(safe-area-inset-bottom,0px))}body{margin:0}[hidden]{display:none!important}</style>
 
 <title>Field Kit</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -50,7 +50,7 @@ body{color:var(--fg);font:16px/1.45 var(--f-body);-webkit-text-size-adjust:100%}
 a{color:inherit}
 button,input,select{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.view{max-width:var(--fk-max);margin:0 auto;padding-block:18px 36px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:20px}
+.view{max-width:var(--fk-max);margin:0 auto;padding-block:18px 36px;padding-left:max(16px,var(--fk-sa-left,env(safe-area-inset-left,0px)));padding-right:max(16px,var(--fk-sa-right,env(safe-area-inset-right,0px)));display:flex;flex-direction:column;gap:20px}
 h2{margin:0;font:700 1.45rem/1.15 var(--f-display);text-wrap:balance}
 h3{margin:0;font:700 1.1rem/1.2 var(--f-display)}
 .eyebrow{margin:0;font-size:.75rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
@@ -130,10 +130,16 @@ h3{margin:0;font:700 1.1rem/1.2 var(--f-display)}
    Start SA, and Start SA is the same size and in the same spot as the home screen's Start New SA (--go-gap / --go-h,
    measured by fitHome). On a short phone the questions scroll and Start SA stays pinned there. */
 #newjob{padding-bottom:0}
-#newjob .njform{margin-top:auto}
-#newjob .njgo{position:sticky;bottom:env(safe-area-inset-bottom,0px);z-index:20;display:flex;flex-direction:column;gap:10px;background:var(--bg);
-  margin:-10px calc(-1 * max(16px,env(safe-area-inset-right,0px))) 0 calc(-1 * max(16px,env(safe-area-inset-left,0px)));
-  padding:10px max(16px,env(safe-area-inset-right,0px)) var(--go-gap,34px) max(16px,env(safe-area-inset-left,0px))}
+/* 1.20.87 (Curtis): laid out like Comments' Job section: from the top, a small JOB heading, the same labels and spacing.
+   Start SA stays pinned at the bottom in the home screen's spot. */
+#newjob .njform{padding-top:0}
+#newjob .njgo{margin-top:auto !important}
+#newjob .njsec{margin:0 0 13px;font:600 .78rem/1.2 var(--f-body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+#newjob .field{gap:6px}
+#newjob .lbl{font-size:.88rem;font-weight:600;color:var(--muted)}
+#newjob .njgo{position:sticky;bottom:var(--fk-sa-bottom,env(safe-area-inset-bottom,0px));z-index:20;display:flex;flex-direction:column;gap:10px;background:var(--bg);
+  margin:-10px calc(-1 * max(16px,var(--fk-sa-right,env(safe-area-inset-right,0px)))) 0 calc(-1 * max(16px,var(--fk-sa-left,env(safe-area-inset-left,0px))));
+  padding:10px max(16px,var(--fk-sa-right,env(safe-area-inset-right,0px))) var(--go-gap,34px) max(16px,var(--fk-sa-left,env(safe-area-inset-left,0px)))}
 #newjob .njgo #njErr:empty{display:none}
 #newjob .njgo .sabar{height:var(--go-h,68px);flex:none}
 .nj .seg{background:var(--surface);box-shadow:inset 0 0 0 1px var(--line)}   /* 1.20.71: joined groups again, matching Comments (Curtis) */
@@ -170,16 +176,16 @@ html:not(.fk-slim) .njtitle{font-family:var(--f-display)!important;font-size:1.5
 /* job summary */
 .lhead{display:flex;flex-direction:column;gap:4px}
 /* job summary and new job: the way back and the title stay at the top while scrolling, like Field Stock and Field Notes */
-.lhead{position:sticky;top:0;z-index:30;background:var(--bg);margin:calc(-18px - env(safe-area-inset-top,0px)) calc(-1 * max(16px,env(safe-area-inset-right,0px))) 0 calc(-1 * max(16px,env(safe-area-inset-left,0px)));
-  padding:calc(10px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px));box-shadow:0 1px 0 var(--line)}
+.lhead{position:sticky;top:0;z-index:30;background:var(--bg);margin:calc(-18px - var(--fk-sa-top,env(safe-area-inset-top,0px))) calc(-1 * max(16px,var(--fk-sa-right,env(safe-area-inset-right,0px)))) 0 calc(-1 * max(16px,var(--fk-sa-left,env(safe-area-inset-left,0px))));
+  padding:calc(10px + var(--fk-sa-top,env(safe-area-inset-top,0px))) max(16px,var(--fk-sa-right,env(safe-area-inset-right,0px))) 12px max(16px,var(--fk-sa-left,env(safe-area-inset-left,0px)));box-shadow:0 1px 0 var(--line)}
 #lobby .lhead .fk-title{font-family:var(--f-mono);font-size:1.3rem;font-weight:600}
-html.fk-slim .lhead{flex-direction:row;align-items:center;gap:6px;padding-top:calc(4px + env(safe-area-inset-top,0px));padding-bottom:4px}
-html.fk-slim .lhead .fk-head{position:absolute;left:96px;right:96px;top:calc(50% + env(safe-area-inset-top,0px) / 2);transform:translateY(-50%);justify-content:center;min-width:0;pointer-events:none}
+html.fk-slim .lhead{flex-direction:row;align-items:center;gap:6px;padding-top:calc(4px + var(--fk-sa-top,env(safe-area-inset-top,0px)));padding-bottom:4px}
+html.fk-slim .lhead .fk-head{position:absolute;left:96px;right:96px;top:calc(50% + var(--fk-sa-top,env(safe-area-inset-top,0px)) / 2);transform:translateY(-50%);justify-content:center;min-width:0;pointer-events:none}
 html.fk-slim .lhead .fk-head-txt{flex:0 1 auto;justify-content:center}
 html.fk-slim .lhead .fk-head-txt{display:flex;align-items:baseline;gap:8px;min-width:0}
 html.fk-slim .lhead .fk-title{font:650 15px/1.2 var(--fk-body);flex:none}
 /* one-row header (1.20.20): back arrow, small tile, title (the SA summary keeps its job line under the SA-#) */
-.lhead.fk-row{flex-direction:row;align-items:center;gap:2px;padding-top:calc(4px + env(safe-area-inset-top,0px));padding-bottom:4px;padding-left:max(10px,env(safe-area-inset-left,0px))}
+.lhead.fk-row{flex-direction:row;align-items:center;gap:2px;padding-top:calc(4px + var(--fk-sa-top,env(safe-area-inset-top,0px)));padding-bottom:4px;padding-left:max(10px,var(--fk-sa-left,env(safe-area-inset-left,0px)))}
 .lhead.fk-row .fk-head{flex:1;min-width:0;gap:10px}
 .lhead.fk-row .fk-title{font-size:1.2rem}
 .lhead.fk-row .fk-sub{font-size:.8rem;margin-top:1px}
@@ -209,9 +215,9 @@ html:not(.fk-slim) .lhead.fk-row .njtitle{font-size:1.2rem!important}
    so the button never moves and the page never jumps. The cards sit at the bottom, right above it (one-handed). */
 #lobby{padding-bottom:0}
 #lobby #lbOut{margin-top:auto}
-#lobby .lfoot{position:sticky;bottom:env(safe-area-inset-bottom,0px);z-index:20;gap:10px;background:var(--bg);
-  margin:-10px calc(-1 * max(16px,env(safe-area-inset-right,0px))) 0 calc(-1 * max(16px,env(safe-area-inset-left,0px)));
-  padding:10px max(16px,env(safe-area-inset-right,0px)) var(--go-gap,34px) max(16px,env(safe-area-inset-left,0px))}
+#lobby .lfoot{position:sticky;bottom:var(--fk-sa-bottom,env(safe-area-inset-bottom,0px));z-index:20;gap:10px;background:var(--bg);
+  margin:-10px calc(-1 * max(16px,var(--fk-sa-right,env(safe-area-inset-right,0px)))) 0 calc(-1 * max(16px,var(--fk-sa-left,env(safe-area-inset-left,0px))));
+  padding:10px max(16px,var(--fk-sa-right,env(safe-area-inset-right,0px))) var(--go-gap,34px) max(16px,var(--fk-sa-left,env(safe-area-inset-left,0px)))}
 #lobby .lfoot #lbWarn:empty{display:none}
 #lobby .lfoot .err{margin:0}
 #lobby #lbDone{height:var(--go-h,68px);flex:none}
@@ -326,7 +332,7 @@ details.grp .btn{margin-bottom:12px}
 .pill{font:600 .72rem/1 var(--f-body);letter-spacing:.06em;text-transform:uppercase;padding:5px 8px;border-radius:99px;background:var(--surface-2);color:var(--muted)}
 .pill.good{background:var(--btn);color:var(--btn-ink)}
 .pill.warn{background:var(--warn-bg);color:var(--warn)}
-.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:99px;font-weight:600;font-size:.9rem;z-index:20;max-width:calc(100% - 32px)}
+.toast{position:fixed;left:50%;bottom:calc(20px + var(--fk-sa-bottom,env(safe-area-inset-bottom,0px)));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:99px;font-weight:600;font-size:.9rem;z-index:20;max-width:calc(100% - 32px)}
 </style>
 
 <!-- ============ MENU ============ -->
@@ -370,6 +376,7 @@ details.grp .btn{margin-bottom:12px}
     </header>
   </div>
   <section class="njform">
+    <h2 class="njsec">Job</h2>
     <div id="njPick" style="display:flex;flex-direction:column;gap:14px"></div>
   </section>
   <div class="njgo"><div id="njErr"></div>
@@ -582,7 +589,7 @@ details.grp .btn{margin-bottom:12px}
       return '<div class="njpt' + (off ? " off" : "") + '"><span class="njpl" title="' + esc(f[1]) + '">' + esc(short) + '</span><div class="seg" style="--n:' + techs.length + '" role="group" aria-label="' + esc(f[1]) + '">' +
         techs.map(function (t) { return '<button type="button" data-nj="pt" data-fam="' + esc(f[0]) + '" data-v="' + esc(t) + '" aria-pressed="' + (cur === t) + '"' + (off ? " disabled" : "") + '>' + esc(t) + '</button>'; }).join("") + '</div></div>';
     }).join("");
-    var html = '<div class="field"><span class="lbl">Job type</span>' + njSeg("work", NJ_TYPES, nj.work, 4) + '</div>' +
+    var html = '<div class="field"><span class="lbl">Job Type</span>' + njSeg("work", NJ_TYPES, nj.work, 4) + '</div>' +
       '<div class="field"><span class="lbl">Platform</span><div class="njpts">' + platRows + '</div></div>';
     // greyed placeholders show what's still to come, so the screen doesn't jump as answers are picked
     var njHold = function (lbl, msg) { return '<div class="field"><span class="lbl">' + lbl + '</span><div class="seg njhold" style="--n:1"><button type="button" disabled tabindex="-1">' + esc(msg) + '</button></div></div>'; };
@@ -1466,7 +1473,7 @@ details.grp .btn{margin-bottom:12px}
 </script>
 <style>
 /* ===== home screen (1.20.27): fills the screen, no scrolling; tiles share the height; the SA is at the bottom ===== */
-#menu.home{height:calc(100vh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));padding-block:14px 10px;gap:12px;overflow:hidden}
+#menu.home{height:calc(100vh - var(--fk-sa-top,env(safe-area-inset-top,0px)) - var(--fk-sa-bottom,env(safe-area-inset-bottom,0px)));padding-block:14px 10px;gap:12px;overflow:hidden}
 #menu.home .head{gap:14px;padding:4px 0 2px}
 #menu.home .logo{width:58px;height:58px;border-radius:15px}
 #menu.home .logo svg{width:44px;height:44px}

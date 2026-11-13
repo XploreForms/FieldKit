@@ -12,6 +12,7 @@ async def main():
     h=await cur(pg)
     m=await h.evaluate("[document.getElementById('menu').getBoundingClientRect().bottom, document.documentElement.clientHeight]")
     check('home menu reaches the bottom of its frame', abs(m[0]-m[1])<=2, m)
+    check('pages add no notch/home-bar space of their own in the shell (1.20.87)', await h.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--fk-sa-bottom').trim()")=='0px')
     check('no zoom on the pages', await h.evaluate("document.documentElement.style.touchAction")=='pan-x pan-y')
     # sideways
     await pg.set_viewport_size({'width':844,'height':390}); await pg.evaluate("window.__forceAngle=90; __fkUpright()"); await pg.wait_for_timeout(500)

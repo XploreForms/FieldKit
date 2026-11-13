@@ -114,8 +114,8 @@ html.fk-slim .fk-head{gap:0}
 .fk-row .fk-title:not(#lbRef),header.top.fk-row h1,html.fc-quick #app>.top #jobTxt{font:700 20px/1.2 var(--fk-display)!important;letter-spacing:.01em!important;margin:0!important}
 html #lobby .lhead .fk-title{font:600 20px/1.2 var(--f-mono,ui-monospace,monospace)!important}   /* SA summary keeps its SA-# look, same size */
 /* the same 4px above and below the 48px back button everywhere */
-html .lhead.fk-row,html #app>.top,html .start .camhead{padding-top:calc(4px + env(safe-area-inset-top,0px))!important;padding-bottom:4px!important}
-html header.app-header:has(.fk-row){padding:env(safe-area-inset-top,0px) 0 0!important}
+html .lhead.fk-row,html #app>.top,html .start .camhead{padding-top:calc(4px + var(--fk-sa-top,env(safe-area-inset-top,0px)))!important;padding-bottom:4px!important}
+html header.app-header:has(.fk-row){padding:var(--fk-sa-top,env(safe-area-inset-top,0px)) 0 0!important}
 html header.app-header .app-header-inner.fk-row{padding-top:4px!important;padding-bottom:4px!important}
 html header.top.fk-row{padding-top:4px!important;padding-bottom:4px!important}
 html header.top.fk-row .top-in{padding-top:0!important;padding-bottom:0!important}
@@ -125,6 +125,6 @@ html.fc-quick #app>.top .qtile{margin:0 8px 0 0!important}
    the header, sits in the same place on pages that scroll (Settings) and pages that don't (Field Cam) (1.20.43) */
 html{scrollbar-gutter:stable}
 /* Field Stock's full-width header: arrow 10px inside the page column, like every other page */
-html header.top.fk-row{padding-left:max(10px,env(safe-area-inset-left,0px),calc((100% - var(--fk-max)) / 2 + 10px))!important}
+html header.top.fk-row{padding-left:max(10px,var(--fk-sa-left,env(safe-area-inset-left,0px)),calc((100% - var(--fk-max)) / 2 + 10px))!important}
 /* 1.20.46: the arrow sits halfway between the screen edge and the tile (Curtis); only the drawing moves, the tap box stays */
 .fk-chev svg{transform:translateX(-3px)}
