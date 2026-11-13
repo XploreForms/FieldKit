@@ -1,0 +1,23 @@
+import asyncio, json
+exec(open('dev/tests/tshell2.py').read().split('async def main')[0])
+async def main():
+  async with async_playwright() as p:
+    b=await p.chromium.launch(args=['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream'])
+    ctx=await b.new_context(viewport={'width':390,'height':844},is_mobile=True,has_touch=True,permissions=['camera'])
+    await ctx.add_init_script("(s=>{for(const k in s) if(!localStorage.getItem(k)) localStorage.setItem(k,s[k]);})(%s)"%json.dumps(SEED)); await ctx.add_init_script(CAM)
+    pg=await ctx.new_page(); await pg.goto(U+'index.html'); await pg.wait_for_timeout(2500)
+    h=await cur(pg); await h.locator('.tiles a',has_text='Field Cam').first.click(); await until(pg,'fieldcam.html'); await pg.wait_for_timeout(1500)
+    c=await cur(pg); check('solo: no tilt box', not await c.locator('.tiltbox').is_visible())
+    check('solo: HUD loop running', await c.evaluate("loopOn"), await c.evaluate("[loopOn, S.paused, S.started, FieldKit.shown()]"))
+    await c.locator('.fk-back').first.click(); await until(pg,'index.html'); await pg.wait_for_timeout(300)
+    h=await cur(pg); await h.locator('#jobStart').click(); await pg.wait_for_timeout(300)
+    await h.get_by_role('button',name='Install',exact=True).click(); await h.locator('[data-nj=pt][data-v=FWN]').click(); await h.locator('#njRef').fill('1234567'); await h.locator('#njStart').click(); await pg.wait_for_timeout(500)
+    await h.locator('#lobby button, #lobby a').filter(has_text='Pictures').first.click(); await until(pg,'fieldcam.html#job'); await pg.wait_for_timeout(2000)
+    c=await cur(pg); check('SA Pictures, no label picked: no tilt box', not await c.locator('.tiltbox').is_visible())
+    check('SA: HUD loop running', await c.evaluate("loopOn"), await c.evaluate("[loopOn, S.paused, S.started, FieldKit.shown()]"))
+    await c.locator('.chip, button').filter(has_text='Line of Sight').first.click(); await pg.wait_for_timeout(600)
+    check('Line of Sight picked: tilt box shown', await c.locator('.tiltbox').is_visible(), await c.evaluate("selStrict()"))
+    await c.locator('.chip, button').filter(has_text='CPE & Mount').first.click(); await pg.wait_for_timeout(600)
+    check('another label: tilt box hidden', not await c.locator('.tiltbox').is_visible())
+    print('ALL PASS' if ok else 'SOME FAILED'); await b.close()
+asyncio.run(main())

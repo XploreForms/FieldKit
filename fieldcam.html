@@ -21,9 +21,12 @@
 <script>
 /* Field Kit: a job in progress reopens straight into the camera; keep the job screen hidden meanwhile */
 try { var _inSA = !!(window.FieldKit && FieldKit.job && FieldKit.job.inMode()), _c = _inSA ? FieldKit.job.camCur() : JSON.parse(localStorage.getItem("fieldcam.current") || "null"), _j = JSON.parse(localStorage.getItem("fieldcam.jobs") || "{}");
-  if (_c && _j[_c.id] && !/^#new/.test(location.hash)) document.documentElement.classList.add("fk-resuming"); } catch (e) {}
+  if (_c && _j[_c.id] && !/^#new/.test(location.hash)) document.documentElement.classList.add("fk-resuming");
+  if (!_inSA) document.documentElement.classList.add("fk-solo"); } catch (e) {}
 </script>
-<style>html.fk-resuming #start{visibility:hidden}</style>
+<style>html.fk-resuming #start{visibility:hidden}
+/* Field Cam on its own: no tilt readout (it's for aiming in an SA, 1.20.86); the level line stays */
+html.fk-solo .tiltbox{display:none}</style>
 <link rel="stylesheet" href="fieldkit.css">
 <style>
 /* Layout: full-screen camera. Top bar (job + GPS), viewfinder with tilt-first HUD, bottom deck (shot labels, zoom, shutter, download). Sheets slide up over it. */
@@ -613,7 +616,7 @@ html.fc-fs .fsctl::after{content:"";width:44px;height:44px}
     <button class="outbtn" id="outBtn" type="button" hidden></button>
     <div class="fsctl" id="fsCtl"><button type="button" class="fsx" id="fsExit" aria-label="Leave full screen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><button type="button" class="fsshut" id="fsShut" aria-label="Take picture"><i></i></button></div>
     <div class="fshint" id="fsHint">Turn your phone sideways</div>
-    <div class="hud" id="hud">
+    <div class="hud free" id="hud">
       <div class="zclip" id="zclip"><div class="grid3" id="grid3" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="zeroline" id="zeroLine"><i></i><span>0°</span></div>
       <div class="reticle"></div><div class="aim" id="aim" hidden><i></i></div></div>
       <div class="tiltbox"><div class="tiltval"><span id="hTilt">—</span><em id="hLevel">TILT</em></div><div class="sub" id="hHead">—</div></div>
@@ -1370,6 +1373,7 @@ function syncPause() {
     stopGeo();
   } else if (!hide && S.paused) {
     S.paused = false;
+    startLoop();   // the readouts' loop stops while paused
     if (!S.track || S.track.readyState === "ended") startCamera();
     else { S.track.enabled = true; $("video").play().catch(() => {}); }
     startGeo(); startLoop(); keepAwake();
