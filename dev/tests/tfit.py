@@ -13,7 +13,7 @@ async def main():
             pg = await ctx.new_page()
             await pg.goto('http://localhost:8765/index.html'); await pg.wait_for_timeout(500)
             await pg.locator('#jobStart').click(); await pg.wait_for_timeout(200)
-            await pg.locator('#njRef').fill('1234567'); await pg.get_by_role('button', name='Install').click(); await pg.locator('[data-nj=pt][data-fam="Fixed Wireless"][data-v="FWN"]').click()
+            await pg.locator('#njRef').fill('1234567'); await pg.get_by_role('button', name='Install').click(); await pg.locator('[data-nj=fam][data-v="Fixed Wireless"]').click(); await pg.locator('[data-nj=tech][data-v=FWN]').click()
             await pg.locator('#njStart').click(); await pg.wait_for_timeout(400)
             res=[]
             for k in range(3):

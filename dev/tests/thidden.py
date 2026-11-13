@@ -15,7 +15,7 @@ async def main():
     await ctx.add_init_script("(s=>{for(const k in s) if(!localStorage.getItem(k)) localStorage.setItem(k,s[k]);})(%s)"%json.dumps(SEED)); await ctx.add_init_script(CAM)
     pg=await ctx.new_page(); errs=[]; pg.on('pageerror',lambda e:errs.append(str(e)))
     await pg.goto(U+'index.html'); await pg.wait_for_timeout(600); await pg.locator('#jobStart').click(); await pg.wait_for_timeout(300)
-    await pg.get_by_role('button',name='Install',exact=True).click(); await pg.locator('[data-nj=pt][data-v=FWN]').click(); await pg.locator('#njRef').fill('1234567'); await pg.locator('#njStart').click(); await pg.wait_for_timeout(600)
+    await pg.get_by_role('button',name='Install',exact=True).click(); await pg.locator('[data-nj=fam][data-v="Fixed Wireless"]').click(); await pg.locator('[data-nj=tech][data-v=FWN]').click(); await pg.locator('#njRef').fill('1234567'); await pg.locator('#njStart').click(); await pg.wait_for_timeout(600)
     before=await pg.evaluate("[localStorage.getItem('fieldcam.jobs'),localStorage.getItem('fieldcam.current')]")
     # Field Cam on its own, in the background
     fid=await pg.evaluate(ADD,'fieldcam.html'); await pg.wait_for_timeout(3000)

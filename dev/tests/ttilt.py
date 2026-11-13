@@ -11,7 +11,7 @@ async def main():
     check('solo: HUD loop running', await c.evaluate("loopOn"), await c.evaluate("[loopOn, S.paused, S.started, FieldKit.shown()]"))
     await c.locator('.fk-back').first.click(); await until(pg,'index.html'); await pg.wait_for_timeout(300)
     h=await cur(pg); await h.locator('#jobStart').click(); await pg.wait_for_timeout(300)
-    await h.get_by_role('button',name='Install',exact=True).click(); await h.locator('[data-nj=pt][data-v=FWN]').click(); await h.locator('#njRef').fill('1234567'); await h.locator('#njStart').click(); await pg.wait_for_timeout(500)
+    await h.get_by_role('button',name='Install',exact=True).click(); await h.locator('[data-nj=fam][data-v="Fixed Wireless"]').click(); await h.locator('[data-nj=tech][data-v=FWN]').click(); await h.locator('#njRef').fill('1234567'); await h.locator('#njStart').click(); await pg.wait_for_timeout(500)
     await h.locator('#lobby button, #lobby a').filter(has_text='Pictures').first.click(); await until(pg,'fieldcam.html#job'); await pg.wait_for_timeout(2000)
     c=await cur(pg); check('SA Pictures, no label picked: no tilt box', not await c.locator('.tiltbox').is_visible())
     check('SA: HUD loop running', await c.evaluate("loopOn"), await c.evaluate("[loopOn, S.paused, S.started, FieldKit.shown()]"))

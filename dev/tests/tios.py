@@ -25,7 +25,7 @@ async def main():
     check('‹ in Settings -> menu without growing history', await view()=='menu' and await pg.evaluate("history.length")==L0+1, [await view(), await pg.evaluate("history.length")])
     # SA: New SA -> Start SA replaces it
     await h.locator('#jobStart').click(); await pg.wait_for_timeout(300)
-    await h.get_by_role('button',name='Install',exact=True).click(); await h.locator('[data-nj=pt][data-v=FWN]').click(); await h.locator('#njRef').fill('1234567'); await h.locator('#njStart').click(); await pg.wait_for_timeout(500)
+    await h.get_by_role('button',name='Install',exact=True).click(); await h.locator('[data-nj=fam][data-v="Fixed Wireless"]').click(); await h.locator('[data-nj=tech][data-v=FWN]').click(); await h.locator('#njRef').fill('1234567'); await h.locator('#njStart').click(); await pg.wait_for_timeout(500)
     check('SA page shown', await view()=='lobby', await view())
     await h.locator('#lobby button, #lobby a').filter(has_text='Pictures').first.click(); await until(pg,'fieldcam.html#job'); await pg.wait_for_timeout(800)
     await pg.go_back(); t=await until(pg,'index.html#job')

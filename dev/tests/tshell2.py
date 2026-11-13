@@ -32,7 +32,7 @@ async def main():
     async def startSA(ref, pt):
       h=await cur(pg)
       await h.locator('#jobStart').click(); await pg.wait_for_timeout(200)
-      await h.get_by_role('button',name='Install',exact=True).click(); await h.locator('[data-nj=pt][data-v=%s]'%pt).click()
+      await h.get_by_role('button',name='Install',exact=True).click(); await h.locator('[data-nj=fam][data-v="%s"]'%{'ATX':'Fibre','FWN':'Fixed Wireless'}[pt]).click(); await h.locator('[data-nj=tech][data-v=%s]'%pt).click()
       if pt=='ATX': await h.get_by_role('button',name='Existing Drop',exact=True).click()
       await h.locator('#njRef').fill(ref); await h.locator('#njStart').click(); await pg.wait_for_timeout(300)
     async def open_(txt, want):

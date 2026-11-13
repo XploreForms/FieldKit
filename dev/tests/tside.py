@@ -20,7 +20,7 @@ async def main():
     solo=await pg.evaluate(LS('fieldcam.current')); check('A solo set started', solo and solo.get('id'))
     # B. SA pictures
     await pg.goto(U+'index.html'); await pg.wait_for_timeout(600); await pg.locator('#jobStart').click(); await pg.wait_for_timeout(300)
-    await pg.get_by_role('button',name='Install',exact=True).click(); await pg.locator('[data-nj=pt][data-v=FWN]').click(); await pg.locator('#njRef').fill('1234567'); await pg.locator('#njStart').click(); await pg.wait_for_timeout(600)
+    await pg.get_by_role('button',name='Install',exact=True).click(); await pg.locator('[data-nj=fam][data-v="Fixed Wireless"]').click(); await pg.locator('[data-nj=tech][data-v=FWN]').click(); await pg.locator('#njRef').fill('1234567'); await pg.locator('#njStart').click(); await pg.wait_for_timeout(600)
     await pg.goto(U+'fieldcam.html#job'); await pg.wait_for_timeout(3500); await pg.locator('#shutter').click(); await pg.wait_for_timeout(2500)
     kc=await pg.evaluate(LS('fieldkit.camInJob')); job=await pg.evaluate("localStorage.getItem('fieldkit.activeJob')")
     check('B SA pictures under their own key', kc and kc['owner']==job and kc['cur'] and kc['cur']['id']!=solo['id'], kc)

@@ -580,17 +580,13 @@ details.grp .btn{margin-bottom:12px}
   function paintNewJob() {
     var ps = njPlats();
     if (nj.fam && nj.work && !ps.some(function (p) { return famOf(p) === nj.fam; })) nj.fam = null;
-    /* 1.20.67 (Curtis): platform and technology are one pick. Each platform is a row of its technologies
-       (Fibre: FTX ATX CTX, Fixed Wireless: FWN LTE, Satellite: its five, VAS Only: XWR XWH XTV). */
-    var platRows = NJ_FAMS.map(function (f) {
-      var off = nj.work && !ps.some(function (p) { return famOf(p) === f[0]; });
-      var techs = f[0] === "VAS" ? NJ_VAS : NJ_TECH[f[0]], cur = nj.fam === f[0] ? (f[0] === "VAS" ? nj.vas : nj.tech) : null;
-      var short = { "Fibre": "FTTP", "Fixed Wireless": "FW", "Satellite": "SAT", "VAS": "VAS" }[f[0]] || f[1];   // 1.20.74 (Curtis)
-      return '<div class="njpt' + (off ? " off" : "") + '"><span class="njpl" title="' + esc(f[1]) + '">' + esc(short) + '</span><div class="seg" style="--n:' + techs.length + '" role="group" aria-label="' + esc(f[1]) + '">' +
-        techs.map(function (t) { return '<button type="button" data-nj="pt" data-fam="' + esc(f[0]) + '" data-v="' + esc(t) + '" aria-pressed="' + (cur === t) + '"' + (off ? " disabled" : "") + '>' + esc(t) + '</button>'; }).join("") + '</div></div>';
-    }).join("");
     var html = '<div class="field"><span class="lbl">Job Type</span>' + njSeg("work", NJ_TYPES, nj.work, 4) + '</div>' +
-      '<div class="field"><span class="lbl">Platform</span><div class="njpts">' + platRows + '</div></div>';
+      '<div class="field"><span class="lbl">Platform</span>' + njSeg("fam", NJ_FAMS.map(function (f) { return [f[0], f[1], nj.work && !ps.some(function (p) { return famOf(p) === f[0]; })]; }), nj.fam, 2) + '</div>';
+    // 1.20.88 (Curtis): back to platform, then technology (the one-tap rows of 1.20.67 are gone). Technology is always
+    // there, greyed until a platform is picked, so nothing moves.
+    var techs = nj.fam === "VAS" ? NJ_VAS : NJ_TECH[nj.fam];
+    html += techs ? '<div class="field"><span class="lbl">Technology</span>' + njSeg(nj.fam === "VAS" ? "vas" : "tech", techs.map(function (t) { return [t, t]; }), nj.fam === "VAS" ? nj.vas : nj.tech, techs.length) + '</div>'
+      : '<div class="field"><span class="lbl">Technology</span><div class="seg njhold" style="--n:1"><button type="button" disabled tabindex="-1">Pick a platform first</button></div></div>';
     // greyed placeholders show what's still to come, so the screen doesn't jump as answers are picked
     var njHold = function (lbl, msg) { return '<div class="field"><span class="lbl">' + lbl + '</span><div class="seg njhold" style="--n:1"><button type="button" disabled tabindex="-1">' + esc(msg) + '</button></div></div>'; };
     // 1.20.72 (Curtis): Drop is always shown, greyed until a Fibre technology is picked, so nothing moves when it's needed
@@ -606,7 +602,7 @@ details.grp .btn{margin-bottom:12px}
     if (k === "pt") {   // a technology button: sets the platform and its technology together
       var fam = b.getAttribute("data-fam"); if (fam !== nj.fam) { nj.drop = null; nj.vas = null; nj.tech = null; } nj.fam = fam;
       if (fam === "VAS") nj.vas = v; else nj.tech = v;
-    } else nj[k] = v;
+    } else { if (k === "fam" && v !== nj.fam) { nj.drop = null; nj.vas = null; nj.tech = null; } nj[k] = v; }
     var nq = $("njPick").querySelectorAll(".seg").length;
     $("njErr").innerHTML = ""; paintNewJob();
     // a new question appeared (Drop): on a short phone it would be behind the pinned Start SA, so slide it into view (1.20.47)

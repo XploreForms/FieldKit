@@ -60,7 +60,7 @@ async def main():
     # SA flow
     home=await cur(pg)
     await home.locator('#jobStart').click(); await pg.wait_for_timeout(200)
-    await home.get_by_role('button',name='Install',exact=True).click(); await home.locator('[data-nj=pt][data-v=FWN]').click(); await home.locator('#njRef').fill('1234567'); await home.locator('#njStart').click(); await pg.wait_for_timeout(400)
+    await home.get_by_role('button',name='Install',exact=True).click(); await home.locator('[data-nj=fam][data-v="Fixed Wireless"]').click(); await home.locator('[data-nj=tech][data-v=FWN]').click(); await home.locator('#njRef').fill('1234567'); await home.locator('#njStart').click(); await pg.wait_for_timeout(400)
     await home.locator('#lobby button, #lobby a').filter(has_text='Pictures').first.click()
     t=await until(pg, lambda: _is(pg,'fieldcam.html#job'), 8000); check('Pictures opens', t is not None, await curpage(pg)); print('   Pictures on screen after',t,'ms')
     cam=await cur(pg); await pg.wait_for_timeout(2500)
