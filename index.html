@@ -154,6 +154,7 @@ h3{margin:0;font:700 1.1rem/1.2 var(--f-display)}
 .nj .njpt.off .njpl{color:var(--muted);opacity:.6}
 .nj .njpt .seg button{letter-spacing:.02em}
 .nj .njgone{visibility:hidden}
+.nj .seg .njhr{grid-column:1/-1;height:1px;margin:2px 6px;background:var(--line)}
 .nj .seg.njhold{opacity:.55}.nj .seg.njhold button{opacity:1;color:var(--muted);font-weight:500;background:var(--surface)}
 .njref{display:flex;gap:8px}.njref input{flex:1;font:500 1.05rem var(--f-mono)}.njref .btn{min-height:46px;padding:0 14px}
 html:not(.fk-slim) .njtitle{font-family:var(--f-display)!important;font-size:1.5rem!important;font-weight:700!important}
@@ -595,15 +596,14 @@ details.grp .btn{margin-bottom:12px}
     // 1.20.88 (Curtis): back to platform, then technology (the one-tap rows of 1.20.67 are gone). Technology is always
     // there, greyed until a platform is picked, so nothing moves.
     var techs = nj.fam === "VAS" ? NJ_VAS : NJ_TECH[nj.fam];
-    html += techs ? '<div class="field"><span class="lbl">Technology</span>' + njSeg(nj.fam === "VAS" ? "vas" : "tech", techs.map(function (t) { return [t, t]; }), nj.fam === "VAS" ? nj.vas : nj.tech, techs.length) + '</div>'
-      : '<div class="field"><span class="lbl">Technology</span><div class="seg njhold" style="--n:1"><button type="button" disabled tabindex="-1">Pick a platform first</button></div></div>';
-    // greyed placeholders show what's still to come, so the screen doesn't jump as answers are picked
-    var njHold = function (lbl, msg) { return '<div class="field"><span class="lbl">' + lbl + '</span><div class="seg njhold" style="--n:1"><button type="button" disabled tabindex="-1">' + esc(msg) + '</button></div></div>'; };
-    // 1.20.72 (Curtis): Drop is always shown, greyed until a Fibre technology is picked, so nothing moves when it's needed
-    // 1.20.101 (Curtis): invisible until Fibre is picked (Install/Conversion), its space kept so nothing moves when it appears
+    // 1.20.104 (Curtis picked option 1): no Drop field. On a Fibre install/conversion the drop choices are a second row
+    // inside the Technology box, under FTX / ATX / CTX
     var dropOn = nj.fam === "Fibre" && njDrops().length > 0;
-    html += '<div class="field' + (dropOn ? "" : " njoff") + (!dropOn ? " njgone" : "") + '"' + (!dropOn ? ' aria-hidden="true"' : "") + '><span class="lbl">Drop</span>' +
-      njSeg("drop", NJ_DROPS.map(function (d) { return [d, d, !dropOn || ps.indexOf("Fibre (" + d + ")") < 0]; }), dropOn ? nj.drop : null, 3) + '</div>';
+    var tseg = techs ? njSeg(nj.fam === "VAS" ? "vas" : "tech", techs.map(function (t) { return [t, t]; }), nj.fam === "VAS" ? nj.vas : nj.tech, techs.length) : "";
+    if (techs && dropOn) tseg = tseg.replace(/<\/div>$/, '<i class="njhr" aria-hidden="true"></i>' +
+      njSeg("drop", NJ_DROPS.map(function (d) { return [d, d, ps.indexOf("Fibre (" + d + ")") < 0]; }), nj.drop, 3).replace(/^<div[^>]*>/, ""));
+    html += techs ? '<div class="field"><span class="lbl">Technology</span>' + tseg + '</div>'
+      : '<div class="field"><span class="lbl">Technology</span><div class="seg njhold" style="--n:1"><button type="button" disabled tabindex="-1">Pick a platform first</button></div></div>';
     $("njPick").innerHTML = html;
   }
   $("njPick").addEventListener("click", function (e) {
