@@ -133,7 +133,9 @@ h3{margin:0;font:700 1.1rem/1.2 var(--f-display)}
 /* 1.20.87 (Curtis): laid out like Comments' Job section: from the top, a small JOB heading, the same labels and spacing.
    Start SA stays pinned at the bottom in the home screen's spot. */
 #newjob .njform{padding-top:0}
-#newjob .njgo{margin-top:auto !important}
+/* 1.20.96 (Curtis): no JOB heading, questions bottom-aligned right above Start SA for one-handed use */
+#newjob .njform{margin-top:auto}
+#newjob .njgo{margin-top:0 !important}
 #newjob .njsec{margin:0 0 13px;font:600 .78rem/1.2 var(--f-body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
 #newjob .field{gap:6px}
 #newjob .lbl{font-size:.88rem;font-weight:600;color:var(--muted)}
@@ -376,7 +378,6 @@ details.grp .btn{margin-bottom:12px}
     </header>
   </div>
   <section class="njform">
-    <h2 class="njsec">Job</h2>
     <div id="njPick" style="display:flex;flex-direction:column;gap:14px"></div>
   </section>
   <div class="njgo"><div id="njErr"></div>
@@ -580,7 +581,7 @@ details.grp .btn{margin-bottom:12px}
   function paintNewJob() {
     var ps = njPlats();
     if (nj.fam && nj.work && !ps.some(function (p) { return famOf(p) === nj.fam; })) nj.fam = null;
-    var html = '<div class="field"><span class="lbl">Job Type</span>' + njSeg("work", NJ_TYPES, nj.work, 4) + '</div>' +
+    var html = '<div class="field"><span class="lbl">Type</span>' + njSeg("work", NJ_TYPES, nj.work, 4) + '</div>' +
       '<div class="field"><span class="lbl">Platform</span>' + njSeg("fam", NJ_FAMS.map(function (f) { return [f[0], f[1], nj.work && !ps.some(function (p) { return famOf(p) === f[0]; })]; }), nj.fam, 2) + '</div>';
     // 1.20.88 (Curtis): back to platform, then technology (the one-tap rows of 1.20.67 are gone). Technology is always
     // there, greyed until a platform is picked, so nothing moves.
