@@ -22,7 +22,7 @@
   (FieldKit._host) and owns the Back button.
 -->
 <style>
-  html,body{margin:0;height:100%}
+  html,body{margin:0;height:100%;overflow:hidden}
   html{background:#F2F5F3}
   html[data-theme="dark"]{background:#0A1615}
   html[data-theme="black"]{background:#000}
@@ -361,7 +361,18 @@
     var r = !isBig() && touch && !cam && innerWidth > innerHeight && (a === 90 || a === 270) ? a : 0;
     de.classList.toggle("srot", !!r); de.classList.toggle("srot90", r === 90); de.classList.toggle("srot270", r === 270);
     var cs = getComputedStyle(document.getElementById("inset")), t = parseFloat(cs.paddingTop) || 0, rt = parseFloat(cs.paddingRight) || 0, b = parseFloat(cs.paddingBottom) || 0, l = parseFloat(cs.paddingLeft) || 0;
-    var st = de.style; st.setProperty("--rw", innerWidth + "px"); st.setProperty("--rh", innerHeight + "px");
+    // iPhone home-screen app bug: the page can be told the screen is shorter than it is (about a status bar's height),
+    // which left an unused strip at the bottom under everything. The app always covers the whole screen there, so
+    // size the frames to the screen itself (1.20.91).
+    var fullH = innerHeight;
+    if (window.__fkFullH) fullH = window.__fkFullH;   // tests
+    else if (navigator.standalone && !isBig() && screen.width && screen.height) {
+      var want = innerWidth > innerHeight ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height);
+      if (want > fullH && want - fullH <= 120) fullH = want;
+    }
+    var stg = document.getElementById("stage");
+    if (stg) { if (fullH !== innerHeight && !r) { stg.style.bottom = "auto"; stg.style.height = fullH + "px"; } else { stg.style.bottom = ""; stg.style.height = ""; } }
+    var st = de.style; st.setProperty("--rw", innerWidth + "px"); st.setProperty("--rh", fullH + "px");
     // the app's top is the phone's top: the screen's left edge (90) or right edge (270)
     var m = isBig() ? [0, 0, 0, 0] : !r ? [t, rt, b, l] : r === 90 ? [l, t, rt, b] : [rt, b, l, t];   // app top, right, bottom, left
     // the home bar's reserved strip (34 px on iPhone) is much taller than the bar itself; bottom bars only need to clear
