@@ -36,6 +36,13 @@
   var sh = null; try { sh = window.parent !== window && window.parent.__fkShell; } catch (e) {}
   if (!sh) return;
   window.__fkInShell = true;
+  // inside the shell every page is phone-sized (the big-screen box too), so no scroll bar or room kept for one: it showed
+  // as a grey strip down the right of the box (1.20.94). Scrolling still works.
+  try {
+    var ns = document.createElement("style");
+    ns.textContent = "html{scrollbar-gutter:auto!important;scrollbar-width:none}html::-webkit-scrollbar,body::-webkit-scrollbar{display:none}";
+    (document.head || document.documentElement).appendChild(ns);
+  } catch (e) {}
   // the screen's notch / home bar space comes from the shell (a frame's own env() is unreliable on iPhone: it doubled
   // them in 1.20.86), so pages fill the whole screen and keep clear of them exactly as on their own (1.20.89)
   try { var ins = sh.insets ? sh.insets() : null; ["top", "right", "bottom", "left"].forEach(function (k) { document.documentElement.style.setProperty("--fk-sa-" + k, (ins ? ins[k] : 0) + "px"); }); } catch (e) {}
