@@ -364,6 +364,9 @@
     var st = de.style; st.setProperty("--rw", innerWidth + "px"); st.setProperty("--rh", innerHeight + "px");
     // the app's top is the phone's top: the screen's left edge (90) or right edge (270)
     var m = isBig() ? [0, 0, 0, 0] : !r ? [t, rt, b, l] : r === 90 ? [l, t, rt, b] : [rt, b, l, t];   // app top, right, bottom, left
+    // the home bar's reserved strip (34 px on iPhone) is much taller than the bar itself; bottom bars only need to clear
+    // the bar, so they get 18 px instead of the whole strip (1.20.90: Curtis saw it as unused space under the tabs)
+    if (m[2] > 18) m[2] = Math.max(18, m[2] - 16);
     insetsReady = true; INS = { top: m[0], right: m[1], bottom: m[2], left: m[3] }; st.setProperty("--sab", m[2] + "px");
     Object.keys(frames).forEach(function (k) { giveInsets(win(frames[k])); });
   }
