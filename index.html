@@ -200,6 +200,9 @@ html:not(.fk-slim) .lhead.fk-row .njtitle{font-size:1.2rem!important}
 .lcard .gs-line h3{flex:1}
 .lstep{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--surface-2);color:var(--muted);font:700 .8rem/1 var(--f-body);margin-right:8px;vertical-align:1px}
 .lstep.done{background:var(--btn);color:var(--btn-ink)}
+.pcount{margin:0;font-size:.95rem;color:var(--muted)}
+.pcount b{color:var(--fg)}
+.pcount b.w{color:var(--warn)}
 .thumbs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
 .thumbs span{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:var(--surface-2)}
 .thumbs img{width:100%;height:100%;object-fit:cover;display:block}
@@ -745,8 +748,14 @@ details.grp .btn{margin-bottom:12px}
       thumbUrls.forEach(function (u) { try { URL.revokeObjectURL(u); } catch (e) {} }); thumbUrls = [];
       var list = ps || [], n = ps ? list.length : (j.photos || 0), uns = ps ? list.filter(function (p) { return !p.downloaded; }).length : (j.unsaved || 0);
       lobbyState.photosOk = n > 0 && !uns;
-      var pill = !n ? "None yet" : uns ? uns + " not saved" : "Saved to phone";
+      var pill = !n ? "None yet" : uns ? "Not saved" : "Saved to phone";
       var html = stepHead(1, "Pictures", lobbyState.photosOk, pill, !n ? "" : uns ? "warn" : "good");
+      // 1.20.98 (Curtis): once started, x of y required taken and how many aren't saved
+      if (n) {
+        var need = j.need || 0, have = need ? need - Math.min(need, j.missing || 0) : 0;
+        html += '<p class="pcount">' + (need ? '<b' + (have < need ? ' class="w"' : "") + '>' + have + ' of ' + need + '</b> taken' : '<b>' + n + '</b> taken') +
+          (uns ? ' · <b class="w">' + uns + '</b> not saved' : ' · all saved') + '</p>';
+      }
       if (list.length) {
         var max = 11, show = list.length > 12 ? list.slice(0, max) : list;
         html += '<div class="thumbs">' + show.map(function (p) {
@@ -754,7 +763,6 @@ details.grp .btn{margin-bottom:12px}
           return '<span>' + (u ? '<img alt="' + esc(labelOf(p)) + '" src="' + u + '">' : "") + '<em>' + esc(labelOf(p)) + '</em></span>';
         }).join("") + (list.length > show.length ? '<span class="more">+' + (list.length - show.length) + '</span>' : "") + '</div>';
       } else if (n) html += '<p class="help">' + n + ' photo' + (n === 1 ? "" : "s") + ' taken. They\'ve been cleared from this phone since.</p>';
-      else html += '<p class="help">No pictures yet. Pictures lists each picture FSL needs for this job.</p>';
       html += '<a class="btn' + (lobbyState.photosOk ? "" : " primary") + '" href="fieldcam.html#job">' + (!n || (j.need && (j.missing || 0) > 0) ? "Take Pictures" : uns ? "Save Pictures" : "Open Pictures") + '</a>';
       box.innerHTML = html;
       paintLobbyWarn(j);
