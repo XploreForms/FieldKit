@@ -13,6 +13,7 @@ async def main():
     m=await h.evaluate("[document.getElementById('menu').getBoundingClientRect().bottom, document.documentElement.clientHeight]")
     check('home menu reaches the bottom of its frame', abs(m[0]-m[1])<=2, m)
     check('no safe areas here: pages get 0 (1.20.89)', await h.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--fk-sa-bottom').trim()")=='0px')
+    check("shell's screen object isn't hidden by its own code (1.20.92)", await pg.evaluate("typeof screen.width === 'number' && screen.height > 0"))
     check('no zoom on the pages', await h.evaluate("document.documentElement.style.touchAction")=='pan-x pan-y')
     # sideways
     await pg.set_viewport_size({'width':844,'height':390}); await pg.evaluate("window.__forceAngle=90; __fkUpright()"); await pg.wait_for_timeout(500)

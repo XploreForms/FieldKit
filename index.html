@@ -1445,11 +1445,15 @@ details.grp .btn{margin-bottom:12px}
     var paint = function () {
       box.innerHTML = '<div class="gs-line"><h3 style="flex:1">Instant switching</h3><span class="pill">' + (on() ? "On" : "Off") + '</span></div>' +
         '<p class="help" style="margin:4px 0 10px">Keeps Field Kit\'s pages loaded so moving between them is instant. Turn it off if something misbehaves.</p>' +
-        '<button class="btn block" type="button" id="shellTog">' + (on() ? "Turn Off" : "Turn On") + '</button>';
+        '<button class="btn block" type="button" id="shellTog">' + (on() ? "Turn Off" : "Turn On") + '</button>' +
+        // 1.20.92: a readout of the screen sizes the phone reports, to track down the strip at the bottom on iPhone
+        '<button class="btn block" type="button" id="diagTog" style="margin-top:8px">' + (diag() ? "Hide Screen Check" : "Show Screen Check") + '</button>';
     };
+    var diag = function () { try { return localStorage.getItem("fieldkit.diag") === "1"; } catch (e) { return false; } };
     paint();
     var gs = $("backup"); if (gs && gs.parentNode) gs.parentNode.insertBefore(box, gs.nextSibling);
     box.addEventListener("click", function (e) {
+      if (e.target.closest("#diagTog")) { try { localStorage.setItem("fieldkit.diag", diag() ? "0" : "1"); } catch (x) {} paint(); try { top.__fkDiag && top.__fkDiag(); } catch (x) {} return; }
       if (!e.target.closest("#shellTog")) return;
       // a real reload either way (a link to this same page would only change the #): ?shell= sets the switch (fieldkit.js)
       (FK.inShell ? top : window).location.replace("index.html?shell=" + (on() ? "off" : "on") + "#settings");
