@@ -160,6 +160,10 @@ html:not(.fk-slim) .njtitle{font-family:var(--f-display)!important;font-size:1.5
 
 /* job summary: outcome */
 .lout{display:flex;align-items:center;gap:10px}
+.lstart{padding-block:14px}
+.lstart svg{width:20px;height:20px;flex:none;color:var(--muted)}
+.lstart .lsl{color:var(--muted);font-weight:600}
+.lstart .lst{margin-left:auto;font-weight:700}
 .lout .ov{flex:1;min-width:0;font-weight:600}
 .lout .ov small{display:block;font-weight:400;color:var(--muted);font-size:.85rem}
 .odot{flex:none;width:10px;height:10px;border-radius:50%;background:var(--btn)}
@@ -394,6 +398,7 @@ details.grp .btn{margin-bottom:12px}
       <div class="fk-head-txt"><h1 class="fk-title" id="lbRef"></h1><p class="fk-sub" id="lbSub"></p></div>
     </header>
   </div>
+  <section class="card lcard lstart" id="lbStart" aria-label="Started"></section>   <!-- 1.20.97 (Curtis): start time above the outcome -->
   <section class="card lcard" id="lbOut" aria-label="Outcome"></section>
   <section class="card lcard" id="lbPhotos" aria-label="Pictures"></section>
   <section class="card lcard" id="lbNotes" aria-label="Comments"></section>
@@ -839,6 +844,7 @@ details.grp .btn{margin-bottom:12px}
     $("lbDone").textContent = j.status === "complete" ? "Close SA" : "Complete SA";
     $("lbHelp").textContent = j.status === "complete" ? "This SA is in SA history for 7 days from its last change." : ""; $("lbHelp").hidden = j.status !== "complete";
     lobbySure = false; $("lbWarn").innerHTML = "";
+    $("lbStart").innerHTML = svg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', 2) + '<span class="lsl">Started</span><span class="lst">' + esc(when(j.created)) + '</span>'; $("lbStart").innerHTML = '<div class="lout">' + $("lbStart").innerHTML + '</div>';
     paintLobbyOut(j); paintLobbyPhotos(j); paintLobbyNotes(j); paintLobbyGear(j);
   }
   function openLobby() {
