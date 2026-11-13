@@ -223,10 +223,10 @@ html:not(.fk-slim) .lhead.fk-row .njtitle{font-size:1.2rem!important}
 /* 1.20.48: Complete SA pinned in the same spot and size as the home screen's Start New SA; a warning grows the bar upward,
    so the button never moves and the page never jumps. The cards sit at the bottom, right above it (one-handed). */
 #lobby{padding-bottom:0}
-#lobby #lbOut{margin-top:auto}
-#lobby .lfoot{position:sticky;bottom:var(--fk-sa-bottom,env(safe-area-inset-bottom,0px));z-index:20;gap:10px;background:var(--bg);
-  margin:-10px calc(-1 * max(16px,var(--fk-sa-right,env(safe-area-inset-right,0px)))) 0 calc(-1 * max(16px,var(--fk-sa-left,env(safe-area-inset-left,0px))));
-  padding:10px max(16px,var(--fk-sa-right,env(safe-area-inset-right,0px))) var(--go-gap,34px) max(16px,var(--fk-sa-left,env(safe-area-inset-left,0px)))}
+#lobby #lbStart{margin-top:auto}   /* the first card (1.20.97 put Started above the outcome) */
+/* 1.20.103 (Curtis): Complete SA no longer floats; it ends the page, and once scrolled to the bottom it sits in the same
+   spot and size as Start New SA (--go-gap / --go-h) */
+#lobby .lfoot{gap:10px;padding-bottom:var(--go-gap,34px)}
 #lobby .lfoot #lbWarn:empty{display:none}
 #lobby .lfoot .err{margin:0}
 #lobby #lbDone{height:var(--go-h,68px);flex:none}
@@ -1463,27 +1463,6 @@ details.grp .btn{margin-bottom:12px}
     if (!$("menu").hidden) paintMenu(); if (!$("lobby").hidden) paintLobby();
     try { fitHome(); setTimeout(fitHome, 120); } catch (e) {}
   });
-  // Settings: instant switching (the shell) on / off, for testing on a phone
-  (function () {
-    var box = document.createElement("section"); box.className = "card"; box.id = "sShell";
-    var on = function () { try { return localStorage.getItem("fieldkit.shell") !== "off"; } catch (e) { return true; } };
-    var paint = function () {
-      box.innerHTML = '<div class="gs-line"><h3 style="flex:1">Instant switching</h3><span class="pill">' + (on() ? "On" : "Off") + '</span></div>' +
-        '<p class="help" style="margin:4px 0 10px">Keeps Field Kit\'s pages loaded so moving between them is instant. Turn it off if something misbehaves.</p>' +
-        '<button class="btn block" type="button" id="shellTog">' + (on() ? "Turn Off" : "Turn On") + '</button>' +
-        // 1.20.92: a readout of the screen sizes the phone reports, to track down the strip at the bottom on iPhone
-        '<button class="btn block" type="button" id="diagTog" style="margin-top:8px">' + (diag() ? "Hide Screen Check" : "Show Screen Check") + '</button>';
-    };
-    var diag = function () { try { return localStorage.getItem("fieldkit.diag") === "1"; } catch (e) { return false; } };
-    paint();
-    var gs = $("backup"); if (gs && gs.parentNode) gs.parentNode.insertBefore(box, gs.nextSibling);
-    box.addEventListener("click", function (e) {
-      if (e.target.closest("#diagTog")) { try { localStorage.setItem("fieldkit.diag", diag() ? "0" : "1"); } catch (x) {} paint(); try { top.__fkDiag && top.__fkDiag(); } catch (x) {} return; }
-      if (!e.target.closest("#shellTog")) return;
-      // a real reload either way (a link to this same page would only change the #): ?shell= sets the switch (fieldkit.js)
-      (FK.inShell ? top : window).location.replace("index.html?shell=" + (on() ? "off" : "on") + "#settings");
-    });
-  })();
   addEventListener("pageshow", function () { if (!$("menu").hidden) paintMenu(); if (!$("lobby").hidden) paintLobby(); });
   // Scan buttons here: Field Cam opens straight into the scanner and comes back here afterwards
   // ("one": after one serial; "many", Scan More: when the tech taps Done)

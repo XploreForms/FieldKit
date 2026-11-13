@@ -12,14 +12,14 @@
 (function () {
   try {
     /* 1.20.81, one-app rebuild step 3: every page opens inside frame.html (the shell), which keeps Field Kit's pages
-       loaded and switches between them instantly. Off switch: Settings > Instant switching (fieldkit.shell = "off"),
-       or ?shell=off / ?shell=on in the address. Off: only big screens use frame.html, as before (1.20.61).
+       loaded and switches between them instantly. Turned off for good in 1.20.103 (Curtis), setting removed;
+       now only big screens use frame.html, as before (1.20.61).
        Automated tests (navigator.webdriver) get the plain pages unless fieldkit.shell = "test". */
-    var m = /[?&]shell=(on|off)\b/.exec(location.search);
-    if (m) { if (m[1] === "off") localStorage.setItem("fieldkit.shell", "off"); else localStorage.removeItem("fieldkit.shell"); }
+    // 1.20.103 (Curtis): instant switching is off and its setting is gone; only tests ("test") still use the shell on a phone
+    try { if (localStorage.getItem("fieldkit.shell") !== "test") localStorage.removeItem("fieldkit.shell"); localStorage.removeItem("fieldkit.diag"); } catch (e) {}
     if (window.top !== window) return;
     if (/[?&]fkframe=off\b/.test(location.search)) return;
-    var mode = localStorage.getItem("fieldkit.shell") || "";
+    var mode = localStorage.getItem("fieldkit.shell") === "test" ? "test" : "off";
     if (navigator.webdriver && mode !== "test") return;
     var big = !!window.matchMedia && matchMedia("(min-width:600px) and (min-height:700px)").matches && Math.min(screen.width || 0, screen.height || 0) >= 600;
     if (mode === "off" && !big) return;

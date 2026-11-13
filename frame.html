@@ -17,7 +17,7 @@
   The Field Kit shell (1.20.81, step 3 of the one-app rebuild; was the big-screen frame of 1.20.61).
   Every Field Kit page runs in a frame here. Home, Field Stock and Manual Order stay loaded, so moving between them is
   instant; Field Cam and Comments load fresh each time, and the old screen stays up until the new one is ready.
-  Big screens: the same, in a phone-sized box in the middle. Off switch: Settings > Instant switching.
+  Big screens: the same, in a phone-sized box in the middle. Instant switching is off since 1.20.103 (only tests use fieldkit.shell = "test").
   Pages talk to it through window.__fkShell (see fieldkit.js); it tells them when they're shown or hidden
   (FieldKit._host) and owns the Back button.
 -->
@@ -39,10 +39,7 @@
   html.srot #stage{top:0;left:0;right:auto;bottom:auto;width:var(--rh);height:var(--rw);transform-origin:0 0}
   html.srot90 #stage{transform:rotate(-90deg) translateX(-100%)}
   html.srot270 #stage{transform:rotate(90deg) translateY(-100%)}
-  #fkdiag{position:fixed;left:50%;top:40%;transform:translateX(-50%);z-index:99;background:rgba(0,0,0,.82);color:#fff;font:11px/1.35 ui-monospace,Menlo,monospace;white-space:pre;padding:8px 10px;border-radius:8px;pointer-events:none}
   .fkp{position:fixed;left:-10px;top:0;width:1px;visibility:hidden;pointer-events:none}
-  html.fkdiag,html.fkdiag body{background:#d00 !important}
-  html.fkdiag #stage iframe.on{outline:3px solid #06f;outline-offset:-3px}
   #inset{position:fixed;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
   #toast{position:fixed;left:50%;bottom:calc(var(--sab,0px) + 96px);transform:translate(-50%,10px);z-index:5;max-width:calc(100% - 40px);
     padding:10px 16px;border-radius:12px;background:#0E2A27;color:#F2F5F3;font:600 15px/1.3 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
@@ -70,7 +67,7 @@
   var PAGES = /^(index|fieldcam|fieldstock|fieldnotes)\.html$/;
   var stage = document.getElementById("stage"), de = document.documentElement;
   var mode = ""; try { mode = localStorage.getItem("fieldkit.shell") || ""; } catch (e) {}
-  var KEEP = mode !== "off";                             // off: no pages kept loaded (big screens only, as in 1.20.61)
+  var KEEP = mode === "test";                            // 1.20.103 (Curtis): instant switching is off; only tests turn it on
   function isBig() { return matchMedia(BIGQ).matches && Math.min(screen.width || 0, screen.height || 0) >= 600; }
   function theme() { try { var t = localStorage.getItem("techstock.theme"); if (t) de.setAttribute("data-theme", t); } catch (e) {} }
   theme(); de.classList.toggle("big", isBig());
@@ -401,34 +398,6 @@
     addEventListener("scroll", function () { setTimeout(back, 60); }, { passive: true });
     if (window.visualViewport) visualViewport.addEventListener("resize", function () { setTimeout(back, 120); });
   })();
-  /* Screen check (Settings, 1.20.92): the sizes the phone reports, live, over every page. The shell's own background
-     shows red and the page frame gets a blue outline, so a photo shows which layer is short. */
-  function diag() {
-    var on = false; try { on = localStorage.getItem("fieldkit.diag") === "1"; } catch (e) {}
-    var box = document.getElementById("fkdiag");
-    if (!on) { if (box) box.remove(); de.classList.remove("fkdiag"); return; }
-    de.classList.add("fkdiag");
-    if (!box) {
-      box = document.createElement("div"); box.id = "fkdiag"; document.body.appendChild(box);
-      ["svh", "dvh", "lvh"].forEach(function (u) { var p = document.createElement("i"); p.className = "fkp"; p.id = "fkp" + u; p.style.height = "100" + u; document.body.appendChild(p); });
-    }
-    var f = cur && cur.el, fr = f ? f.getBoundingClientRect() : null, sg = document.getElementById("stage").getBoundingClientRect(), w = null;
-    try { w = f && f.contentWindow; } catch (e) {}
-    var cs = getComputedStyle(document.getElementById("inset")), ph = function (u) { var p = document.getElementById("fkp" + u); return p ? Math.round(p.getBoundingClientRect().height) : "?"; };
-    var vv = window.visualViewport;
-    box.textContent = [
-      "v" + ((w && w.FIELDKIT_VERSION && w.FIELDKIT_VERSION.version) || "?") + "  standalone " + !!navigator.standalone,
-      "inner " + innerWidth + "x" + innerHeight + "  screen " + screen.width + "x" + screen.height,
-      "client " + de.clientWidth + "x" + de.clientHeight + "  vv " + (vv ? Math.round(vv.width) + "x" + Math.round(vv.height) + " @" + Math.round(vv.offsetTop) : "-"),
-      "svh " + ph("svh") + " dvh " + ph("dvh") + " lvh " + ph("lvh"),
-      "safe t" + cs.paddingTop + " b" + cs.paddingBottom + " l" + cs.paddingLeft + " r" + cs.paddingRight,
-      "stage " + Math.round(sg.top) + "-" + Math.round(sg.bottom) + "  frame " + (fr ? Math.round(fr.top) + "-" + Math.round(fr.bottom) : "-"),
-      "page inner " + (w ? w.innerHeight : "-") + " client " + (w ? w.document.documentElement.clientHeight : "-") + "  sa-b " + (w ? w.getComputedStyle(w.document.documentElement).getPropertyValue("--fk-sa-bottom") : "-"),
-      "angle " + ((screen.orientation && screen.orientation.angle) || 0) + "  rot " + (de.classList.contains("srot") ? "on" : "off")
-    ].join("\n");
-    clearTimeout(diag.t); diag.t = setTimeout(diag, 700);
-  }
-  window.__fkDiag = diag; setTimeout(diag, 800);
   ["resize", "orientationchange"].forEach(function (ev) { addEventListener(ev, function () { upright(); setTimeout(upright, 300); }); });
   try { if (screen.orientation) screen.orientation.addEventListener("change", function () { setTimeout(upright, 50); }); } catch (e) {}
   addEventListener("storage", function (e) {
