@@ -1,6 +1,6 @@
 # Field Kit — handoff note
 
-Current as of **Field Kit 1.20.54** (Nov 12, 2026). Paste the "First message" into a new Claude chat to pick up where this left off. The rest is reference: what exists, the decisions Curtis already made (keep them), what's still open, and the traps.
+Current as of **Field Kit 1.20.103** (Nov 13, 2026). Paste the "First message" into a new Claude chat to pick up where this left off. The rest is reference: what exists, the decisions Curtis already made (keep them), what's still open, and the traps.
 
 ---
 
@@ -100,6 +100,7 @@ Goal: no page loads between tools (the jank is the ~0.5 s freeze while the next 
    **1.20.87:** every page `env(safe-area-inset-*,0px)` is now `var(--fk-sa-*,env(…))`, and fieldkit.js sets those to 0 inside the shell: an iPhone frame still reports the notch/home bar, so they were added twice (gap above the home screen, Complete SA / Start SA floating). Field Cam: only the newest camera start keeps its camera (`S.camSeq`; two starts on returning to the app left an orphan camera on), and leaving always closes it even when a sheet had paused it. New SA laid out like Comments' Job section (top-aligned, JOB heading, same labels); Start SA stays pinned at the bottom. 1.20.88: New SA back to Platform (Fibre / Fixed Wireless / Satellite / VAS Only) then Technology (always shown, greyed until a platform); the 1.20.67 one-tap rows are gone.
    **1.20.89:** the frames fill the whole screen again (stage `inset:0`); the shell measures the screen's safe areas (its `#inset` probe; turned with the app when sideways, 0 in the big-screen box) and hands them to every page as `--fk-sa-*` (fieldkit.js asks `__fkShell.insets()` on load; `upright()` updates all frames). So bars run to the screen edges with their own padding, exactly like the pages on their own (the strip under Field Stock's tab bar is gone). 1.20.90: the bottom one is trimmed to max(18, inset − 16) px: bars only clear the home bar instead of its whole 34 px strip. 1.20.91: iPhone home-screen apps can report a viewport about a status bar shorter than the screen (the real cause of the strip); `upright()` sizes #stage to screen.height when `navigator.standalone` and the shortfall is ≤ 120 px. 1.20.92: that fix never ran in 1.20.91, because the shell's own `function screen()` (iPhone history) hid the browser's `screen`; renamed `homeScreen`. Settings > Show Screen Check overlays the reported sizes (shell background red, page frame outlined blue) for checking on a phone. 1.20.93 (Screen Check on Curtis's iPhone 11-size: inner 848, screen 896, lvh 896, safe t48 b34): iPhone also doesn't draw fixed elements below the reported 848, so when it's short the stage becomes `position:absolute` in a page made screen-tall (html/body height), scrolling off; the shell snaps back to the top if the keyboard scrolled it. 1.20.94: inside the shell pages have no scroll bar and no `scrollbar-gutter` room (fieldkit.js injects it); the 1.20.43 gutter showed as a grey strip in the big-screen box.
 5. Optional later: merge pages into one document.
+**1.20.103 (Curtis): instant switching turned OFF and the Settings switch removed, Screen Check removed too.** Phones load plain pages again (`fieldkit.js` clears any stored `fieldkit.shell` except `"test"`); big screens still use `frame.html` without kept pages. Don't turn it back on unless he asks.
 An Android-only shortcut (Chrome speculation-rules prerender of Field Stock/Manual Order from home) was offered and not chosen.
 
 ### Profile and setup
@@ -224,3 +225,9 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 - Google sign-in can't run inside the Claude artifact preview; test Sheets on the real site. The preview wrapper (`dev/build_preview.py`) stubs `window.claude` so setup shows "Website only", routes links between pages through the shell (`__fkNav`), and tolerates browsers that refuse history changes in a frame.
 - Field Stock's data lives on each phone (plus the tech's own Google Sheet). Nothing you do from here can read or change a tech's stock.
 - Curtis's voice-dictated messages can have transcription oddities ("gable mount and bipod and tripod").
+
+## Nov 13, 2026 (1.20.95–1.20.103)
+- Manual Order intro: "through the portal" (was Salesforce).
+- New SA: no JOB heading; "Type" (was Job Type); questions bottom-aligned above Start SA; Drop invisible until Fibre (space kept so nothing moves).
+- SA summary: Started row above the outcome; Pictures shows "x of y taken · n not saved" once started, no captions on Pictures/Comments; **one green button at a time** = the next step (Pictures → Comments → Equipment → Complete SA, `paintNext`); Complete SA grey (`.idle`) until all done but still tappable (second-tap warning); Complete SA no longer floats: it ends the page, at the Start New SA spot/size when scrolled down.
+- Home SA card: chips equal width (grid); Open SA spans Pictures+Comments, New sits under Equip.
