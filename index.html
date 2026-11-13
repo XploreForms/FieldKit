@@ -95,7 +95,7 @@ h3{margin:0;font:700 1.1rem/1.2 var(--f-display)}
 .jobwrap.busy .job .chev{display:none}
 .jobwrap.busy .job span{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.3}
 /* the SA card's progress: photos, comments, equipment */
-.jprog{grid-column:1/-1;display:flex;gap:6px;margin-top:2px}
+.jprog{grid-column:1/-1;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:6px;margin-top:2px}   /* 1.20.99: equal widths whatever the text (Curtis) */
 .jprog small{flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;justify-content:center;gap:4px;height:32px;padding:0 6px;border-radius:10px;background:var(--surface-2);color:var(--muted);font:600 .8rem/1 var(--f-body);white-space:nowrap}
 .jprog small.ok{background:color-mix(in srgb,var(--btn) 18%,transparent);color:var(--accent)}
 .jprog small.warn{background:var(--warn-bg);color:var(--warn)}
