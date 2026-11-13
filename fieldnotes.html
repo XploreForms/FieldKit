@@ -3354,7 +3354,7 @@ function initRetro() {
   FieldKit.onLeave(wipSaveNow);
   setTimeout(wipOffer, 900);
   window.addEventListener('resize', function () { updatePreview(); });
-  setTimeout(skipAnswered, 1150);
+  // 1.20.105 (Curtis): no auto-scroll on arrival any more (it made opening Comments jarring); skipAnswered is unused
   setTimeout(function () { WAS_DONE = notesDone(); }, 1200);   // where things stand on arrival (prefilled from the SA)
 })();
 
