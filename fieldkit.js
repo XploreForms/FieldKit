@@ -36,9 +36,9 @@
   var sh = null; try { sh = window.parent !== window && window.parent.__fkShell; } catch (e) {}
   if (!sh) return;
   window.__fkInShell = true;
-  // the shell already keeps the page clear of the notch and the home bar; an iPhone still tells a frame about them,
-  // which added them twice (the gap above and below the home screen, 1.20.87)
-  ["top", "right", "bottom", "left"].forEach(function (k) { document.documentElement.style.setProperty("--fk-sa-" + k, "0px"); });
+  // the screen's notch / home bar space comes from the shell (a frame's own env() is unreliable on iPhone: it doubled
+  // them in 1.20.86), so pages fill the whole screen and keep clear of them exactly as on their own (1.20.89)
+  try { var ins = sh.insets ? sh.insets() : null; ["top", "right", "bottom", "left"].forEach(function (k) { document.documentElement.style.setProperty("--fk-sa-" + k, (ins ? ins[k] : 0) + "px"); }); } catch (e) {}
   window.__fkNav = function (u, replace) { sh.nav(String(u || ""), !!replace, window); };
   var PAGE = /^(index|fieldcam|fieldnotes|fieldstock)\.html(#.*)?$/;
   addEventListener("click", function (e) {
