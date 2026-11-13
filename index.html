@@ -1563,9 +1563,11 @@ html body #menu .tiles .tile.split small{display:none}
 .sabar .sago{flex:1 1 54%;min-width:0;border:0;background:transparent;color:var(--btn-ink);font:700 clamp(1rem,4.6vw,1.25rem) var(--f-display);cursor:pointer;white-space:nowrap;padding:0 4px;border-radius:12px}
 .gobig:active{filter:brightness(.95)}
 #menu.home .jobwrap.busy .job{min-height:0;padding:12px 14px 4px}
-#menu.home .jacts{display:flex;gap:8px;padding:8px 14px 14px}
-#menu.home .jacts .btn{flex:1;min-height:50px;font-size:1.05rem}
-#menu.home .jacts .newbtn{width:128px;margin:0;height:50px;padding:0 10px;flex:none;justify-content:center}
+/* 1.20.100 (Curtis): lined up with the chips above: Open SA spans Pictures + Comments, New sits under Equip. */
+#menu.home .jacts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:8px 14px 14px}
+#menu.home .jacts .btn{grid-column:span 2;min-width:0;min-height:50px;font-size:1.05rem}
+#menu.home .jacts .newbtn{width:auto;min-width:0;margin:0;height:50px;padding:0 6px;gap:6px;justify-content:center;white-space:nowrap}
+#menu.home .jacts .newbtn.sure{font-size:.85rem}
 #menu.home .foot{margin:-4px 0 0;font-size:.7rem}
 #histView .hist{margin:0}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}</style>
