@@ -45,6 +45,7 @@ async def main():
     await pg.set_viewport_size({'width':390,'height':800}); await pg.evaluate("window.__fkFullH=844; __fkUpright()"); await pg.wait_for_timeout(300)
     fr=await pg.evaluate("document.getElementById('stage').getBoundingClientRect().height")
     check('frames sized to the real screen height', fr==844, fr)
+    check('…drawn in the page, not fixed (iPhone clips fixed at the reported height)', await pg.evaluate("getComputedStyle(document.getElementById('stage')).position==='absolute' && document.documentElement.getBoundingClientRect().height===844 && scrollY===0"))
     await h.locator('.tiles a',has_text='Field Stock').click(); await until(pg,'fieldstock.html'); await pg.wait_for_timeout(500)
     s=await cur(pg)
     tb=await s.evaluate("(()=>{const e=[...document.querySelectorAll('nav, .tabbar, .tabs, #tabs')].find(x=>getComputedStyle(x).position==='fixed'); if(!e) return null; const r=e.getBoundingClientRect(); const cs=getComputedStyle(e); return [Math.round(r.bottom), innerHeight, cs.paddingBottom]})()")

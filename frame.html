@@ -22,7 +22,7 @@
   (FieldKit._host) and owns the Back button.
 -->
 <style>
-  html,body{margin:0;height:100%;overflow:hidden}
+  html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none}
   html{background:#F2F5F3}
   html[data-theme="dark"]{background:#0A1615}
   html[data-theme="black"]{background:#000}
@@ -375,7 +375,11 @@
       if (want > fullH && want - fullH <= 120) fullH = want;
     }
     var stg = document.getElementById("stage");
-    if (stg) { if (fullH !== innerHeight && !r) { stg.style.bottom = "auto"; stg.style.height = fullH + "px"; } else { stg.style.bottom = ""; stg.style.height = ""; } }
+    // iPhone draws nothing fixed below the height it reports (the screen check showed the frame 0-896 but the bottom 48
+    // red), so the frames sit in the page itself instead, made as tall as the screen; scrolling stays off (1.20.93)
+    var tall = fullH !== innerHeight && !r;
+    if (stg) { stg.style.position = tall ? "absolute" : ""; stg.style.bottom = tall ? "auto" : ""; stg.style.height = tall ? fullH + "px" : ""; }
+    de.style.height = document.body.style.height = tall ? fullH + "px" : "";
     var st = de.style; st.setProperty("--rw", innerWidth + "px"); st.setProperty("--rh", fullH + "px");
     // the app's top is the phone's top: the screen's left edge (90) or right edge (270)
     var m = isBig() ? [0, 0, 0, 0] : !r ? [t, rt, b, l] : r === 90 ? [l, t, rt, b] : [rt, b, l, t];   // app top, right, bottom, left
@@ -391,6 +395,12 @@
     try { var s = w.document.documentElement.style; ["top", "right", "bottom", "left"].forEach(function (k) { if (s.getPropertyValue("--fk-sa-" + k) !== INS[k] + "px") s.setProperty("--fk-sa-" + k, INS[k] + "px"); }); } catch (e) {}
   }
   window.__fkUpright = upright;
+  // the screen-tall page (iPhone) must never stay scrolled: the keyboard can nudge it, so once it closes, back to the top
+  (function () {
+    var back = function () { var vv = window.visualViewport; if ((window.scrollY || 0) !== 0 && (!vv || vv.height >= innerHeight - 1)) scrollTo(0, 0); };
+    addEventListener("scroll", function () { setTimeout(back, 60); }, { passive: true });
+    if (window.visualViewport) visualViewport.addEventListener("resize", function () { setTimeout(back, 120); });
+  })();
   /* Screen check (Settings, 1.20.92): the sizes the phone reports, live, over every page. The shell's own background
      shows red and the page frame gets a blue outline, so a photo shows which layer is short. */
   function diag() {
