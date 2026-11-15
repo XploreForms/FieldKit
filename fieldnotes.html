@@ -2079,50 +2079,60 @@ function ackPopup(title, text, onYes, onOther) {
   document.addEventListener('keydown', onKey, true);
   document.body.appendChild(ov); yes.focus();
 }
-var CAB_NEW = 'Installed New Xplore Cabling', CAB_REUSE = 'Reused Existing Cabling';
-function convCablingC() {
-  function set(v, ack) { STATE.cabling = v; STATE.cabling_ack = ack; if (ack !== 'other') delete STATE.cabling_other; else PENDING_FOCUS = 'cabling'; changed('cabling', true); }
+var CAB_NEW = 'Installed New Xplore Cabling', CAB_REUSE = 'Reused Existing Cabling';   // the 1.20.166-1.20.170 single question (mapped below)
+/* 1.20.171 (Curtis): a conversion's cabling is two runs: outdoor (messenger) cable from the radio to the surge, and indoor
+   cable from the surge into the home. Each is New or Reused; reusing a run asks the tech to confirm it's Xplore-supplied
+   and inspected (or Other: type why). */
+var SEGS = { cab_out: { label: 'Outdoor Cable (Radio to Surge)', out: 'Outdoor Cable', name: 'outdoor cable' },
+             cab_in: { label: 'Indoor Cable (Surge to Power Supply)', out: 'Indoor Cable', name: 'indoor cable' } };
+function segC(key) {
+  var sg = SEGS[key];
+  function set(v, ack) { STATE[key] = v; STATE[key + '_ack'] = ack; if (ack !== 'other') delete STATE[key + '_other']; else PENDING_FOCUS = key; changed(key, true); }
   return {
-    id: 'cabling',
+    id: key,
     render: function () {
-      var g = el('div', { class: 'choices cols-2', role: 'radiogroup', 'aria-label': 'Cabling' });
-      [CAB_NEW, CAB_REUSE].forEach(function (o) {
-        var sel = STATE.cabling === o;
+      var g = el('div', { class: 'choices cols-2', role: 'radiogroup', 'aria-label': sg.label });
+      [['New', 'Installed New'], ['Reused', 'Reused Existing']].forEach(function (o) {
+        var sel = STATE[key] === o[0];
         g.appendChild(el('button', { type: 'button', class: 'choice', role: 'radio', 'aria-checked': sel ? 'true' : 'false', onclick: function () {
-          if (o === CAB_NEW) set(CAB_NEW, true);   // 1.20.168 (Curtis): only reusing asks for a confirmation
-          else ackPopup('Reusing Existing Cabling', ACK_REUSE, function () { set(CAB_REUSE, true); }, function () { set(CAB_REUSE, 'other'); });
-        } }, [el('span', { class: 'mark', text: sel ? '✓' : '' }), el('span', { text: o })]));
+          if (o[0] === 'New') set('New', true);
+          else ackPopup('Reusing the ' + cap(sg.name), 'I confirm the existing ' + sg.name + ' is Xplore-supplied and I inspected the full run, including all connectors.',
+            function () { set('Reused', true); }, function () { set('Reused', 'other'); });
+        } }, [el('span', { class: 'mark', text: sel ? '✓' : '' }), el('span', { text: o[1] })]));
       });
       var c = [g];
-      if (STATE.cabling === CAB_REUSE && STATE.cabling_ack === 'other') c.push(otherInput('cabling_other', 'cabling', "Why was cabling that doesn't meet Xplore standards reused?"));
-      return fieldWrap('cabling', 'Cabling', false, null, c);
+      if (STATE[key] === 'Reused' && STATE[key + '_ack'] === 'other') c.push(otherInput(key + '_other', key, 'Why was ' + sg.name + " that doesn't meet Xplore standards reused?"));
+      return fieldWrap(key, sg.label, false, null, c);
     },
-    done: function () {
-      return (STATE.cabling === CAB_NEW && STATE.cabling_ack === true) || (STATE.cabling === CAB_REUSE && (STATE.cabling_ack === true || (STATE.cabling_ack === 'other' && !!str(STATE.cabling_other))));
-    },
-    check: function (need) { need('cabling', 'Cabling', this.done(), STATE.cabling_ack === 'other' ? "Type why the cabling was reused." : 'Choose an answer.'); },
+    done: function () { return STATE[key] === 'New' || (STATE[key] === 'Reused' && (STATE[key + '_ack'] === true || (STATE[key + '_ack'] === 'other' && !!str(STATE[key + '_other'])))); },
+    check: function (need) { need(key, sg.label, this.done(), STATE[key + '_ack'] === 'other' ? 'Type why it was reused.' : 'Choose an answer.'); },
     out: function (m) {
-      if (!this.done()) return ['Cabling: ' + m('cabling', 'Cabling')];
-      if (STATE.cabling === CAB_NEW) return ['Cabling: Installed new Xplore-supplied cabling'];
-      if (STATE.cabling_ack === true) return ['Cabling: Reused existing Xplore-supplied cabling, tech inspected the full run including all connectors'];
-      return ['Cabling: Reused existing cabling that does not meet Xplore standards, ' + cap(STATE.cabling_other)];
+      if (!this.done()) return [sg.out + ': ' + m(key, sg.out)];
+      if (STATE[key] === 'New') return [sg.out + ': Installed new Xplore-supplied cable'];
+      if (STATE[key + '_ack'] === true) return [sg.out + ': Reused existing Xplore-supplied cable, tech inspected the full run including all connectors'];
+      return [sg.out + ': Reused existing cable that does not meet Xplore standards, ' + cap(STATE[key + '_other'])];
     }
   };
 }
 function convCabling() {
-  var c = STATE.cabling, g = STATE.grounding, sg = STATE.surge;   // answers saved with older versions: picked again so the tech confirms
-  if (c && c !== CAB_NEW && c !== CAB_REUSE) { if (c === 'Replaced - New Mount Location Required') STATE.cpe_reloc = true; delete STATE.cabling; delete STATE.cabling_ack; }
-  if (/^Installed New -/.test(g || '')) STATE.grounding = 'Installed New Grounding';
-  else if (g === 'Reused - Meets Xplore Standards') STATE.grounding = 'Reused Existing Grounding';
+  var c = STATE.cabling, g = STATE.grounding, sg = STATE.surge;   // answers saved with older versions
+  if (c === CAB_NEW) { STATE.cab_out = STATE.cab_in = 'New'; STATE.cab_out_ack = STATE.cab_in_ack = true; }
+  else if (c === CAB_REUSE && STATE.cabling_ack) {
+    ['cab_out', 'cab_in'].forEach(function (k) { STATE[k] = 'Reused'; STATE[k + '_ack'] = STATE.cabling_ack; if (STATE.cabling_other) STATE[k + '_other'] = STATE.cabling_other; });
+  } else if (c === 'Replaced - New Mount Location Required') STATE.cpe_reloc = true;
+  if (c) { delete STATE.cabling; delete STATE.cabling_ack; delete STATE.cabling_other; }
+  if (/^Installed New( -|.*Grounding)/.test(g || '')) STATE.grounding = 'Installed New';
+  else if (g === 'Reused - Meets Xplore Standards' || g === 'Reused Existing Grounding') STATE.grounding = 'Reused Existing';
   if (/^Installed New -/.test(sg || '')) STATE.surge = 'Installed New';
   var surge = tickC({ id: 'surge', label: 'Surge Protector', text: 'Installed new Surge Protector', yes: ['Installed New', 'Installed new surge protector'], out: 'Surge',
     whyLabel: 'Why was a new surge not installed?', otherOut: function (r) { return 'New surge protector not installed, ' + r; } });
   var r0 = surge.render; surge.render = function () { var w = r0.call(surge); w.classList.add('conv-surge'); return w; };
   return [
-    convCablingC(),
+    segC('cab_out'),
     surge,
+    segC('cab_in'),
     choiceC({ id: 'grounding', label: 'Grounding', cols: 2, out: 'Grounding', options: [
-      ['Installed New Grounding', 'Installed new grounding'], ['Reused Existing Grounding', 'Reused existing grounding']] }),
+      ['Installed New', 'Installed new grounding'], ['Reused Existing', 'Reused existing grounding']] }),   // 1.20.171: same short buttons as the cable runs
     groundSourceC()
   ];
 }
