@@ -1,7 +1,7 @@
 import asyncio, json
 from playwright.async_api import async_playwright
 exec(open('dev/tests/tm2.py').read().split('async def main')[0])
-# 1.20.158: MPT Light Level Reading is the first question after the drop type on Drop Required / Drop Only installs
+# 1.20.158: MPT Light Reading is the first question after the drop type on Drop Required / Drop Only installs
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(); ctx = await b.new_context(viewport={'width':360,'height':780}, device_scale_factor=2, has_touch=True, is_mobile=True)
@@ -16,7 +16,7 @@ async def main():
             if drop=='Drop Required':
                 M=pg.locator('[data-field-id=mpt_light] input'); await M.fill('19'); await M.blur()
                 N=pg.locator('[data-field-id=light] input'); await N.fill('30'); await N.blur(); await pg.wait_for_timeout(600)
-                print('   lines:', [l for l in (await pg.evaluate("buildOutput(false)")).split('\n') if 'Light Level' in l])
+                print('   lines:', [l for l in (await pg.evaluate("buildOutput(false)")).split('\n') if 'Light Reading' in l])
                 print('   NID odd-reading warning shown:', await pg.locator('[data-field-id=light] .warn').count(), '| MPT warning:', await pg.locator('[data-field-id=mpt_light] .warn').count())
                 await pg.locator('[data-field-id=mpt_light]').scroll_into_view_if_needed(); await pg.evaluate("scrollBy(0,-230)")
                 await pg.evaluate("document.querySelectorAll('*').forEach(e=>{const p=getComputedStyle(e).position; if(p==='fixed'||p==='sticky') e.style.visibility='hidden'})")

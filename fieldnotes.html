@@ -1169,7 +1169,7 @@ function lightBlock(label, key) {   // label: what the reading is called on the 
   var row = el('div', { class: 'unit-row' }, [negWrap(inp), el('span', { class: 'suffix', text: 'dBm' })]);
   var e = errFor(id);
   var wrap = el('div', { class: 'field light-block' + (e ? ' has-error' : ''), 'data-field-id': id }, [
-    el('p', { class: 'sub-q', style: 'margin-top:0', text: typeof label === 'string' ? label : 'NID Light Level Reading' }), row, warn
+    el('p', { class: 'sub-q', style: 'margin-top:0', text: typeof label === 'string' ? label : 'NID Light Reading' }), row, warn
   ]);
   if (e) wrap.appendChild(el('div', { class: 'field-error-msg', text: e.msg }));
   var frag = document.createDocumentFragment();
@@ -1507,25 +1507,25 @@ function connectorC() {
     out: function (m) {
       var l = base.out(m);
       if (STATE.nid === 'Pre-Installed' && STATE.connector) l.push('Splice Status: ' + (STATE.splice_prior === true ? 'Completed in NID prior to install' : 'Completed by tech at install'));
-      l.push('NID Light Level Reading: ' + lightText(m));
+      l.push('NID Light Reading: ' + lightText(m));
       return l;
     }
   };
 }
 /* the light level as a question of its own (fibre repair) */
-function lightC() { return { id: 'light', render: lightBlock, check: function (need, issues) { lightCheck(issues); }, out: function (m) { return ['NID Light Level Reading: ' + lightText(m)]; } }; }
+function lightC() { return { id: 'light', render: lightBlock, check: function (need, issues) { lightCheck(issues); }, out: function (m) { return ['NID Light Reading: ' + lightText(m)]; } }; }
 function lightCheck(issues, k, name) {
-  k = k || 'light'; name = name || 'NID Light Level Reading';
+  k = k || 'light'; name = name || 'NID Light Reading';
   var lp = parseLight(STATE[k]);
   if (lp === null) issues.push({ id: k, label: name, msg: 'Type the number only.' });
   else if (!lightInRange(lp) && STATE[k + '_ok'] !== lp) issues.push({ id: k, label: name + ' (please check it)', msg: 'This reading looks unusual. Check it, or tap the "Yes" button above.' });
 }
-function lightText(m, k) { k = k || 'light'; var lp = parseLight(STATE[k]); return lp === null ? m(k, 'Light level') : '-' + lp + ' dBm' + (lightNeedsCheck(k) ? ' ' + m(k, 'Check the reading') : ''); }
+function lightText(m, k) { k = k || 'light'; var lp = parseLight(STATE[k]); return lp === null ? m(k, 'Light reading') : '-' + lp + ' dBm' + (lightNeedsCheck(k) ? ' ' + m(k, 'Check the reading') : ''); }
 /* 1.20.158 (Curtis): drop required / drop only: the reading at the MPT, first thing after the drop type */
 function mptLightC() {
-  return { id: 'mpt_light', render: function () { var f = lightBlock('MPT Light Level Reading', 'mpt_light'); if (f.firstChild && f.firstChild.tagName === 'HR') f.removeChild(f.firstChild); return f; },   // no divider: it's a question of its own
-    check: function (need, issues) { lightCheck(issues, 'mpt_light', 'MPT Light Level Reading'); },
-    out: function (m) { return ['MPT Light Level Reading: ' + lightText(m, 'mpt_light')]; } };
+  return { id: 'mpt_light', render: function () { var f = lightBlock('MPT Light Reading', 'mpt_light'); if (f.firstChild && f.firstChild.tagName === 'HR') f.removeChild(f.firstChild); return f; },   // no divider: it's a question of its own
+    check: function (need, issues) { lightCheck(issues, 'mpt_light', 'MPT Light Reading'); },
+    out: function (m) { return ['MPT Light Reading: ' + lightText(m, 'mpt_light')]; } };
 }
 /* reused: 'nid' = the reused box only shows for a Pre-Installed NID; 'always' = it always shows (drop required forms have no NID question) */
 function patchC(reused) {
@@ -1553,13 +1553,13 @@ function patchC(reused) {
 function ontC(withLight) {
   return {
     id: 'ont',
-    render: function () { return locationField('ont', 'ont', 'ONT Installation Location', ROOM_OPTIONS, withLight ? function () { return lightBlock('ONT Light Level Reading'); } : null); },
+    render: function () { return locationField('ont', 'ont', 'ONT Installation Location', ROOM_OPTIONS, withLight ? function () { return lightBlock('ONT Light Reading'); } : null); },
     check: function (need, issues) {
       need('ont', 'ONT Installation Location', locationDone('ont'), 'Choose the floor and the room.');
       if (withLight) lightCheck(issues);
     },
     out: function (m) {
-      return (withLight ? ['Light Level Reading at ONT: ' + lightText(m)] : []).concat(['ONT Location: ' + locationText('ont', m)]);
+      return (withLight ? ['Light Reading at ONT: ' + lightText(m)] : []).concat(['ONT Location: ' + locationText('ont', m)]);
     }
   };
 }
