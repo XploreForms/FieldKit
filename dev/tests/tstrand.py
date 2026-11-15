@@ -14,9 +14,9 @@ async def main():
         st = "[...document.querySelectorAll('[data-field-id=route] .rt-ghosts button')].map(b=>b.textContent+(b.disabled||b.getAttribute('aria-disabled')==='true'?'(off)':'')).join(', ')"
         await R.get_by_role('radio', name='MPT Strand').click(); await pg.wait_for_timeout(500)
         print('type buttons:', await R.locator('.rt-types button').count(), '| chosen:', await R.locator('.rt-type-chosen').all_inner_texts(), '| stops:', await pg.evaluate(st))
+        await R.locator('.rt-flag').first.click(); await pg.wait_for_timeout(200)   # ticked before picking Midspan: must not carry over
         await R.locator('[data-field-id=route] .rt-ghosts button, .rt-ghosts button').filter(has_text='Midspan').first.click(); await pg.wait_for_timeout(500)
-        print('first span flaggers locked & ticked:', await R.locator('.rt-flag-lock[aria-checked=true]').count())
-        await R.locator('.rt-flag-lock').click(force=True); await pg.wait_for_timeout(300); print('   still ticked after tap:', await R.locator('.rt-flag-lock[aria-checked=true]').count())
+        print('flaggers ticks on the route (only the pending next span):', await R.locator('.rt-flag').count())
         print('after Midspan -> chosen:', await R.locator('.rt-type-chosen').all_inner_texts(), '| stops:', await pg.evaluate(st))
         await R.locator('.rt-ghosts button').filter(has_text='Structure').first.click(); await pg.wait_for_timeout(500)
         print([l for l in (await pg.evaluate("buildOutput(false)")).split('\n') if l.startswith('Drop Route')])

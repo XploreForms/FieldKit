@@ -686,7 +686,6 @@ header.app-header .header-top img.yawn { transform-origin: 50% 100%; animation: 
 .rt-pending .rt-type-chosen + .rt-flag { position: absolute; left: calc(1.05rem + 4.4rem + 1rem); }   /* same spot as on a drawn span */
 .rt-pending { position: relative; }   /* ticks line up whatever the span type */
 .route-tool .rt-flag { width: auto; min-height: 2.5rem; padding: 0 0.2rem; font-size: 0.9rem; font-weight: 600; color: var(--xp-dark); }
-.route-tool .rt-flag-lock { cursor: default; }   /* 1.20.150: always ticked (MPT strand to midspan) */
 .route-tool .rt-flag .mini-box { flex-basis: 1.25rem; width: 1.25rem; height: 1.25rem; border-color: var(--xp-carmanah); }
 .route-tool .rt-flag[aria-checked="true"] .mini-box { background: var(--xp-green); border-color: var(--xp-green); color: var(--xp-dark); }
 .rt-nudge { animation: rt-nudge 0.45s ease-in-out; }
@@ -1589,12 +1588,13 @@ function routeEnd() { var n = spanCount(); return n ? STATE['span' + n + '_to'] 
 function partialRun() { var e = routeEnd(); return !!e && e !== 'Structure'; }   // the route stops short of the structure
 /* a tick on each drawn span: aerial spans can need flaggers, buried spans can be a temp drop */
 function spanFlag(i) {
+  if (noFlags(i)) { delete STATE['span' + i + '_flag']; return null; }
   var t = STATE['span' + i + '_type'];
   return t === 'Aerial' ? { key: 'span' + i + '_flag', label: 'Flaggers Needed' } : t === 'Buried' ? { key: 'span' + i + '_temp', label: 'Temp Drop Deployed' } : null;
 }
-/* 1.20.150 (Curtis): the first span, MPT strand to a midspan, always needs flaggers: ticked and locked */
-function flagsForced(i) { return i === 1 && STATE.mpt === 'Strand' && STATE.span1_to === 'Midspan' && STATE.span1_type === 'Aerial'; }
-function spanFlagOn(i) { var f = spanFlag(i); return !!f && (STATE[f.key] === true || flagsForced(i)); }
+/* 1.20.151 (Curtis): the first span, MPT strand to a midspan, never needs flaggers: no tick at all */
+function noFlags(i) { return i === 1 && STATE.mpt === 'Strand' && STATE.span1_to === 'Midspan' && STATE.span1_type === 'Aerial'; }
+function spanFlagOn(i) { var f = spanFlag(i); return !!f && STATE[f.key] === true; }
 function tempDropNeeded() { for (var i = 1; i <= spanCount(); i++) if (STATE['span' + i + '_type'] === 'Buried' && STATE['span' + i + '_temp'] === true) return true; return false; }
 function anyAerial() { for (var i = 1; i <= spanCount(); i++) if (STATE['span' + i + '_type'] === 'Aerial') return true; return STATE.mpt === 'Strand'; }
 /* the next span: the tech always picks Aerial, Buried or Duct, nothing is filled in for them */
@@ -1662,11 +1662,9 @@ function routeC(dropOnly) {
   function complete() { return mptDone() && spanCount() > 0 && (dropOnly || routeEnd() === 'Structure'); }
   function stopName(name, cls) { return el('div', { class: 'rt-stop' + (cls ? ' ' + cls : '') }, [el('span', { class: 'rt-pin' }), el('span', { class: 'rt-stop-name', text: name })]); }
   function flagBox(key, label) {   // Flaggers Needed / Temp Drop tick on a span's line
-    var lock = key === 'span1_flag' && flagsForced(1);   // MPT strand to midspan: always flaggers
-    if (lock) STATE[key] = true;
     var on = STATE[key] === true;
-    return el('button', { type: 'button', class: 'mini-check rt-flag' + (lock ? ' rt-flag-lock' : ''), role: 'checkbox', 'aria-checked': on ? 'true' : 'false', 'aria-disabled': lock ? 'true' : null,
-      onclick: function () { if (lock) { showToast('Flaggers are always needed from the MPT strand to a midspan.'); return; } if (on) delete STATE[key]; else STATE[key] = true; changed('route', true); } },
+    return el('button', { type: 'button', class: 'mini-check rt-flag', role: 'checkbox', 'aria-checked': on ? 'true' : 'false',
+      onclick: function () { if (on) delete STATE[key]; else STATE[key] = true; changed('route', true); } },
       [el('span', { class: 'mini-box', text: on ? '✓' : '' }), el('span', { text: label })]);
   }
   function link(type) { return el('div', { class: 'rt-link rt-' + type.toLowerCase() }, [el('span', { class: 'rt-link-label', text: type })]); }
