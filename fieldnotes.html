@@ -2621,6 +2621,12 @@ function buildOutput(mark) {
   var title = jobKey() ? jobTitle() : (STATE.job_type || m('job', 'Job Type')) + ' — ' + (STATE.job_plat && !(needsDrop() && !STATE.job_drop) ? platLabel() : m('job', STATE.job_plat ? 'Drop' : 'Platform'));
   var lines = [who + ' - ' + title + ' - ' + stamp()];
   if (!jobKey()) return lines.join('\n');
+  // 1.20.131 (Curtis): the SA's job type / platform was changed in Field Kit: say what it was and why
+  var ch = null; try { ch = WIP_IN_SA && FieldKit.job.active() && FieldKit.job.active().changes; } catch (err) {}
+  if (ch && ch.length) {
+    lines.push('', 'JOB CHANGED', 'Original SA: ' + String(ch[0].from || '').replace(/ · /g, ' - '));
+    ch.forEach(function (c, i) { lines.push((ch.length > 1 ? 'Reason for change ' + (i + 1) + ': ' : 'Reason for change: ') + cap(c.reason)); });
+  }
   currentSections().forEach(function (sec) {
     var body = [];
     sec.items.filter(visible).forEach(function (c) {

@@ -212,6 +212,8 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 
 - (1.20.129) Repairs: the SA page's Equipment step is **not done** until something is deployed or recovered, or the tech ticks **"No equipment deployed or recovered"** (`job.noGear`; the tick only shows while nothing is deployed/recovered). Pill: Not confirmed / None / n deployed. Complete SA's warning says "the equipment isn't confirmed"; home's Equip. chip shows None (green) only once ticked. Ticked, the slots and Scan button fold away (1.20.130); untick to bring them back. Test: `dev/tests/tnogear.py`.
 
+- (1.20.131) **Change SA** (Curtis): a "Change" button on the right of the SA page header opens the New SA screen in change mode (title Change SA, SA-# locked, Type/Platform/Technology prefilled, required **Reason for Change**). `J.changeJob(job, to, reason)` keeps `job.changes` [{from, to, reason, at…}], updates the SA, its Field Cam job (restamp) and Comments' job questions (other answers kept; a copied comment goes stale), and re-syncs deploys. Comments prints `JOB CHANGED / Original SA: Repair - Satellite - HJ3 / Reason for change: …` under the title line. Test: `dev/tests/tchange.py`.
+
 **Things only a real phone can confirm** (the test browser has no camera or GPS)
 - Compass on Android (with and without the Compass web app installed; if Android shows an "open with" chooser instead of going straight in, adjust).
 - A real scan from the SA page returning correctly, and a real photo ticking its SN tile.

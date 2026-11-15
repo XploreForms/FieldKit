@@ -66,6 +66,10 @@ h3{margin:0;font:700 1.1rem/1.2 var(--f-display)}
 .who{margin:3px 0 0;color:var(--muted);font-size:.9rem;line-height:1.3;overflow-wrap:anywhere}
 .iconbtn{width:44px;height:44px;border-radius:50%;border:0;background:var(--surface);box-shadow:var(--shadow);color:var(--muted);display:grid;place-items:center;cursor:pointer;flex:none}
 .iconbtn svg{width:22px;height:22px}
+.lbchange{margin-left:auto;flex:none;align-self:center;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:52px;padding:6px 6px 4px;border:0;border-radius:14px;background:var(--surface);box-shadow:var(--shadow);color:var(--fg);font:600 .72rem/1.1 var(--fk-body,sans-serif);cursor:pointer}
+.lbchange svg{width:20px;height:20px}
+.njwhy textarea{width:100%;min-height:76px;box-sizing:border-box;border:0;border-radius:14px;padding:12px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);color:var(--fg);font:400 1rem/1.35 var(--fk-body,sans-serif);resize:vertical}
+.njwhy .njwas{margin:0 0 6px;font-size:.85rem;color:var(--muted)}
 
 /* buttons */
 .btn{border:0;border-radius:11px;padding:13px 16px;font-weight:600;background:var(--surface-2);display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;cursor:pointer;min-height:48px}
@@ -403,6 +407,8 @@ details.grp .btn{margin-bottom:12px}
       <div class="fk-tile" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg></div>
       <div class="fk-head-txt"><h1 class="fk-title" id="lbRef"></h1><p class="fk-sub" id="lbSub"></p></div>
     </header>
+    <!-- 1.20.131 (Curtis): change the job type / platform inside the SA (e.g. Repair to Conversion, Satellite to Fixed Wireless) -->
+    <button class="lbchange" id="lbChange" type="button" aria-label="Change the job type or platform"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4 3 8l4 4"/><path d="M3 8h13a4 4 0 0 1 4 4"/><path d="m17 20 4-4-4-4"/><path d="M21 16H8a4 4 0 0 1-4-4"/></svg><span>Change</span></button>
   </div>
   <section class="card lcard lstart" id="lbStart" aria-label="Started"></section>   <!-- 1.20.97 (Curtis): start time above the outcome -->
   <section class="card lcard" id="lbOut" aria-label="Outcome"></section>
@@ -575,7 +581,7 @@ details.grp .btn{margin-bottom:12px}
   var NJ_DROPS = ["Existing Drop", "Drop Required", "Drop Only"], NJ_VAS = ["XWR", "XWH", "XTV"];
   // Technology, asked for every platform except VAS
   var NJ_TECH = { "Fibre": ["FTX", "ATX", "CTX"], "Fixed Wireless": ["FWN", "LTE"], "Satellite": ["HJ3", "HJ2", "HTJ", "HV2", "HTV"] };
-  var nj = { work: null, fam: null, drop: null, vas: null, tech: null };
+  var nj = { work: null, fam: null, drop: null, vas: null, tech: null }, njChange = null;   // njChange: the SA being changed (1.20.131)
   var famOf = function (p) { return /^Fibre/.test(p) ? "Fibre" : p; };
   function njSeg(k, items, cur, n) {
     return '<div class="seg" style="--n:' + n + '" role="group">' + items.map(function (it) {
@@ -605,8 +611,24 @@ details.grp .btn{margin-bottom:12px}
       njSeg("drop", NJ_DROPS.map(function (d) { return [d, d, ps.indexOf("Fibre (" + d + ")") < 0]; }), nj.drop, 3).replace(/^<div[^>]*>/, ""));
     html += techs ? '<div class="field"><span class="lbl">Technology</span>' + tseg + '</div>'
       : '<div class="field"><span class="lbl">Technology</span><div class="seg njhold" style="--n:1"><button type="button" disabled tabindex="-1">Pick a platform first</button></div></div>';
+    if (njChange) html += '<div class="field njwhy"><span class="lbl">Reason for Change</span><p class="njwas">Was ' + esc(njChange.base || jobName(njChange)) + '</p><textarea id="njWhy" placeholder="e.g. Customer upgraded to Fixed Wireless on site" aria-label="Reason for change">' + esc(nj.why || "") + '</textarea></div>';
     $("njPick").innerHTML = html;
   }
+  $("njPick").addEventListener("input", function (e) { if (e.target.id === "njWhy") { nj.why = e.target.value; $("njErr").innerHTML = ""; } });
+  function njMode(change) {
+    njChange = change || null;
+    document.querySelector("#newjob .njtitle").textContent = change ? "Change SA" : "New SA";
+    var tile = document.querySelector("#newjob .fk-tile svg"); if (tile) tile.innerHTML = change ? '<path d="M7 4 3 8l4 4"/><path d="M3 8h13a4 4 0 0 1 4 4"/><path d="m17 20 4-4-4-4"/><path d="M21 16H8a4 4 0 0 1-4-4"/>' : '<path d="M12 5v14M5 12h14"/>';
+    $("njRef").readOnly = !!change; $("njPaste").hidden = !!change; $("njStart").textContent = change ? "Change SA" : "Start SA";
+  }
+  function openChangeJob() {
+    var j = J.active(); if (!j) return;
+    var m = /^Fibre \((.+)\)$/.exec(j.plat || "");
+    nj = { work: j.work || null, fam: j.plat ? famOf(j.plat) : null, drop: m ? m[1] : null, vas: j.plat === "VAS" ? (j.vas || j.tech || null) : null, tech: j.plat !== "VAS" ? (j.tech || null) : null, why: "" };
+    njMode(j); $("njRef").value = j.sa || ""; $("njErr").innerHTML = "";
+    paintNewJob(); history.pushState(null, "", "#job-change"); showView("newjob"); sizeNewJob();
+  }
+  $("lbChange").addEventListener("click", openChangeJob);
   $("njPick").addEventListener("click", function (e) {
     var b = e.target.closest("[data-nj]"); if (!b || b.disabled) return;
     var k = b.getAttribute("data-nj"), v = b.getAttribute("data-v");
@@ -636,14 +658,15 @@ details.grp .btn{margin-bottom:12px}
   $("njPaste").addEventListener("click", function () { pasteRef($("njRef")); });
 
   function openNewJob() {
-    nj = { work: null, fam: null, drop: null, vas: null, tech: null }; $("njRef").value = ""; $("njErr").innerHTML = "";
+    nj = { work: null, fam: null, drop: null, vas: null, tech: null }; njMode(null); $("njRef").value = ""; $("njErr").innerHTML = "";
     paintNewJob();
     if (!/^#new-job/.test(location.hash)) history.pushState(null, "", "#new-job");
     showView("newjob"); sizeNewJob();
   }
-  $("njBack").addEventListener("click", function (e) { e.preventDefault(); history.replaceState(null, "", location.pathname + location.search); openMenu(); });
+  $("njBack").addEventListener("click", function (e) { e.preventDefault(); if (njChange) { njMode(null); history.replaceState(null, "", "#job"); paintLobby(); showView("lobby"); return; } history.replaceState(null, "", location.pathname + location.search); openMenu(); });
   $("njStart").addEventListener("click", function () {
     var ref = normRef($("njRef").value), plat = njPlat(), miss = [];
+    if (njChange) return changeStart(plat);
     if (!ref) miss.push("SA-#");
     else if (!/^SA-\d{7}$/.test(ref)) { $("njErr").innerHTML = '<div class="err">\u201c' + esc(ref) + '\u201d isn\'t an SA-#. It needs 7 digits, e.g. SA-1234567.</div>'; return; }
     if (!nj.work) miss.push("job type");
@@ -665,6 +688,22 @@ details.grp .btn{margin-bottom:12px}
     history.replaceState(null, "", "#job");   // 1.20.27: a new SA opens its summary (photos, comments, equipment), not straight into the camera
     paintLobby(); showView("lobby");
   });
+  function changeStart(plat) {
+    var j = J.active(), miss = [];
+    if (!j) { njMode(null); openMenu(); return; }
+    if (!nj.work) miss.push("job type");
+    else if (!nj.fam) miss.push("platform");
+    else if (NJ_TECH[nj.fam] && !nj.tech) miss.push("technology");
+    else if (!plat) miss.push("drop");
+    else if (plat === "VAS" && !nj.vas) miss.push("technology (XWR, XWH or XTV)");
+    if (!String(nj.why || "").trim()) miss.push("reason for change");
+    if (miss.length) { $("njErr").innerHTML = '<div class="err">Still needed: ' + esc(miss.join(", ")) + '.</div>'; return; }
+    var tech = NJ_TECH[nj.fam] ? nj.tech : plat === "VAS" ? nj.vas : "", tname = NJ_TYPES.filter(function (t) { return t[0] === nj.work; })[0][1];
+    var base = J.withTech(tname + " · " + (plat === "VAS" ? "VAS · " + nj.vas : plat), tech);
+    if (nj.work === j.work && plat === j.plat && (tech || "") === (j.tech || "")) { $("njErr").innerHTML = '<div class="err">That\'s what the SA already is. Pick the new job type, platform or technology.</div>'; return; }
+    J.changeJob(j, { work: nj.work, plat: plat, tech: tech, vas: plat === "VAS" ? nj.vas : "", base: base }, String(nj.why).trim());
+    njMode(null); history.replaceState(null, "", "#job"); paintLobby(); showView("lobby"); toast("SA changed to " + base);
+  }
   function newJob() { openNewJob(); }
   var histAll = false;
   // the in-progress card shows how far the SA has got: required photos taken, comments copied, equipment slots filled
@@ -810,7 +849,7 @@ details.grp .btn{margin-bottom:12px}
     var c = j.notes && j.notes.comment, stale = !!(c && j.notes.stale);
     lobbyState.notesOk = !!c && !stale;
     var html = stepHead(2, "Comments", !!c && !stale, stale ? "Needs update" : c ? "Copied " + when(j.notes.copiedAt).replace(/^Today /, "") : "Not written", c && !stale ? "good" : "warn");
-    if (stale) html += '<p class="help" style="color:var(--warn)">The outcome changed after this was copied. Edit the comments and copy them again.</p>';
+    if (stale) html += '<p class="help" style="color:var(--warn)">The SA changed after this was copied. Edit the comments and copy them again.</p>';
     if (c) html += '<pre class="cmt" id="lbCmt">' + esc(c) + '</pre><div class="row"><button class="btn" type="button" id="lbCopy">Copy Again</button><a class="btn"' + (stale ? ' data-next="2"' : "") + ' href="fieldnotes.html#job">Edit Comments</a></div>';
     else html += '<a class="btn" data-next="2" href="fieldnotes.html#job">Write Comments</a>';   // 1.20.102: no caption (Curtis)
     $("lbNotes").innerHTML = html; paintNext(j);
@@ -859,7 +898,7 @@ details.grp .btn{margin-bottom:12px}
   function paintLobbyWarn(j) {
     var miss = [];
     if (!lobbyState.photosOk) miss.push("the pictures aren't all saved to your phone");
-    if (!lobbyState.notesOk) miss.push(j.notes && j.notes.stale ? "the comments need updating for the new outcome" : "the comments aren't copied");
+    if (!lobbyState.notesOk) miss.push(j.notes && j.notes.stale ? "the comments need updating for the SA's changes" : "the comments aren't copied");
     if (lobbyState.gearAsk) miss.push("the equipment isn't confirmed");
     else if (lobbyState.gearLeft) miss.push(lobbyState.gearLeft + " equipment slot" + (lobbyState.gearLeft === 1 ? " is" : "s are") + " empty");
     paintNext(j);
@@ -892,7 +931,7 @@ details.grp .btn{margin-bottom:12px}
   function leaveLobby() { if (/^#job/.test(location.hash)) history.replaceState(null, "", location.pathname + location.search); openMenu(); }
   $("lbBack").addEventListener("click", function (e) { e.preventDefault(); leaveLobby(); });
   addEventListener("popstate", function () {
-    if (/^#job/.test(location.hash) && J.active()) { paintLobby(); showView("lobby"); }
+    if (/^#job/.test(location.hash) && J.active()) { if (njChange) njMode(null); paintLobby(); showView("lobby"); }
     else if (/^#new-job/.test(location.hash)) { paintNewJob(); showView("newjob"); sizeNewJob(); }
     else if (/^#history/.test(location.hash)) { paintJobs(); showView("histView"); }
     else if (!$("lobby").hidden || !$("newjob").hidden || !$("histView").hidden) openMenu();

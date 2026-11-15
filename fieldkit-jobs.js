@@ -638,11 +638,28 @@
     if (cj) { cj.outcome = outcome; cj.reason = reason || null; cj.fkRestamp = true; set("fieldcam.jobs", camJobs); }
     save(job); return syncDeploys(job);
   }
+  /* 1.20.131 (Curtis): a repair can turn into a conversion, a Satellite into a Fixed Wireless... Changed inside the SA, with a reason.
+     to: {work, plat, tech, vas, base}. Kept in job.changes; Comments prints the original SA and the reason. */
+  function changeJob(job, to, reason) {
+    job.changes = (job.changes || []).concat([{ from: job.base || "", fromWork: job.work, fromPlat: job.plat, fromTech: job.tech || "", to: to.base, reason: reason, at: Date.now() }]);
+    job.work = to.work; job.plat = to.plat; job.tech = to.tech || ""; job.vas = to.vas || ""; job.base = to.base;
+    var oname = NOTE_OUT[job.outcome] || "";
+    job.title = job.base + (oname ? " · " + oname : "") + (job.reason ? " · " + job.reason : "");
+    var camJobs = get("fieldcam.jobs", {}) || {}, cj = job.camJobId && camJobs[job.camJobId];
+    if (cj) { cj.work = to.work; cj.plat = to.plat; cj.tech = to.tech || null; cj.vas = to.vas || null; cj.fkRestamp = true; set("fieldcam.jobs", camJobs); }
+    // Comments: the job questions follow the new type/platform (answers to other questions are kept)
+    function refill(st) { ["job_type", "job_plat", "job_tech", "job_drop", "fw_plat", "vas_gear"].forEach(function (k) { delete st[k]; }); notesFill(job, st); }
+    if (job.notes && job.notes.state) refill(job.notes.state);
+    var w = get(KN, null);
+    if (w && w.owner === job.id && w.state) { refill(w.state); set(KN, w); }
+    if (job.notes && job.notes.comment) job.notes.stale = true;
+    save(job); return syncDeploys(job);
+  }
   function setStep(step) { var j = active(); if (j && j.step !== step) { j.step = step; save(j); } }
 
   FK.job = {
     inMode: function () { return jobMode; }, camCur: camCur, setCamCur: setCamCur, notesKey: KN, active: active, get: byId, list: list, start: start, complete: complete, open: open, save: save, setActive: setActive,
     fromCam: fromCam, modelsFor: modelsFor, modelName: function (id) { return SKU[id] ? SKU[id].name : ""; }, pickModel: pickModel, stockNote: stockNote,
-    deployed: deployed, recoveredEvents: recoveredEvents, canRecover: canRecover, removeSerial: removeSerial, slotModel: slotModel, slotsHTML: slotsHTML, tempDrop: tempDrop, openSlot: openSlot, devicePhoto: devicePhoto, withTech: withTech, setSlot: setSlot, setOutcome: setOutcome, slotEntry: slotEntry, addSerial: addSerial, pasteInto: pasteInto, hasSlots: function (src) { return slotIds(src).length > 0; }, syncDeploys: syncDeploys, notesCopied: notesCopied, setStep: setStep, keepDays: 7
+    deployed: deployed, recoveredEvents: recoveredEvents, canRecover: canRecover, removeSerial: removeSerial, slotModel: slotModel, slotsHTML: slotsHTML, tempDrop: tempDrop, openSlot: openSlot, devicePhoto: devicePhoto, withTech: withTech, setSlot: setSlot, setOutcome: setOutcome, changeJob: changeJob, slotEntry: slotEntry, addSerial: addSerial, pasteInto: pasteInto, hasSlots: function (src) { return slotIds(src).length > 0; }, syncDeploys: syncDeploys, notesCopied: notesCopied, setStep: setStep, keepDays: 7
   };
 })();
