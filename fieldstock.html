@@ -598,7 +598,7 @@ header.top.fk-row .who{display:none}
       <div class="field">
         <div class="lbl-row"><label for="noteIn">Note <span class="muted">(Optional)</span></label>
           <button type="button" class="mic" id="micBtn" hidden aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span id="micLbl">Speak</span></button></div>
-        <textarea id="noteIn" placeholder="Fault, condition, where it's installed…"></textarea>
+        <textarea id="noteIn"></textarea>
       </div>
       <div class="loc" id="locLine"><span class="dot" id="locDot"></span><span id="locTxt">Location not checked yet</span>
         <button type="button" class="btn ghost" id="locRetry" hidden>Retry</button></div>
@@ -1093,8 +1093,8 @@ function renderLines(){
   if(!F.lines.length){
     const EMPTY={receive:"",
       deploy:"",
-      transfer:"Scan each unit you're transferring. Add drops, NIDs and mounts from the list below.",
-      rma:"Scan each unit going back on RMA.",
+      transfer:"Add each unit you are transferring.",
+      rma:"Add each unit going back on RMA.",
       recycle:""}[F.type];
     list.innerHTML=EMPTY?`<div class="lines-empty">${esc(EMPTY)}</div>`:""; return; }
   list.innerHTML=F.lines.map((l,i)=>{
