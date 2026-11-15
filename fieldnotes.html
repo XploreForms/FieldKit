@@ -1582,7 +1582,8 @@ var MPT_LOCS = ['Strand', 'Vault', 'Other'];   // alphabetical, Other last
 var AERIAL_TO = ['Pole', 'Structure'];                      // an aerial span lands on a pole or the structure
 var BURIED_TO = ['Pole', 'Flower Pot', 'Vault', 'Structure'];   // buried and duct runs land at the same places
 var MAX_SPANS = 8;
-function spanCount() { return Math.max(0, Math.min(MAX_SPANS, STATE.span_count || 0)); }
+function spanCount() { for (var i = 1; i <= MAX_SPANS; i++) if (STATE['span' + i + '_to'] === 'Midspan') STATE['span' + i + '_to'] = 'Mid-Span';   // 1.20.155: was Midspan
+  return Math.max(0, Math.min(MAX_SPANS, STATE.span_count || 0)); }
 function spanDone(i) { return !!STATE['span' + i + '_type'] && !!STATE['span' + i + '_to']; }
 function routeEnd() { var n = spanCount(); return n ? STATE['span' + n + '_to'] : null; }
 function partialRun() { var e = routeEnd(); return !!e && e !== 'Structure'; }   // the route stops short of the structure
@@ -1593,22 +1594,22 @@ function spanFlag(i) {
   return t === 'Aerial' ? { key: 'span' + i + '_flag', label: 'Flaggers Needed' } : t === 'Buried' ? { key: 'span' + i + '_temp', label: 'Temp Drop Deployed' } : null;
 }
 /* 1.20.151 (Curtis): the first span, MPT strand to a midspan, never needs flaggers: no tick at all */
-function noFlags(i) { return i === 1 && STATE.mpt === 'Strand' && STATE.span1_to === 'Midspan' && STATE.span1_type === 'Aerial'; }
+function noFlags(i) { return i === 1 && STATE.mpt === 'Strand' && STATE.span1_to === 'Mid-Span' && STATE.span1_type === 'Aerial'; }
 function spanFlagOn(i) { var f = spanFlag(i); return !!f && STATE[f.key] === true; }
 function tempDropNeeded() { for (var i = 1; i <= spanCount(); i++) if (STATE['span' + i + '_type'] === 'Buried' && STATE['span' + i + '_temp'] === true) return true; return false; }
 function anyAerial() { for (var i = 1; i <= spanCount(); i++) if (STATE['span' + i + '_type'] === 'Aerial') return true; return STATE.mpt === 'Strand'; }
 /* the next span: the tech always picks Aerial, Buried or Duct, nothing is filled in for them */
 function nextTypes() {
   var n = spanCount(), at = n ? STATE['span' + n + '_to'] : STATE.mpt;
-  if (at === 'Strand' || at === 'Midspan') return ['Aerial'];   // 1.20.149 (Curtis): off the strand it's always aerial
+  if (at === 'Strand' || at === 'Mid-Span') return ['Aerial'];   // 1.20.149 (Curtis): off the strand it's always aerial
   return !at || at === 'Structure' ? [] : ['Aerial', 'Buried', 'Duct'];
 }
 /* where the next span can land: off the MPT strand, a pole or a midspan (1.20.149); otherwise the usual stops */
 function nextStops() {
-  var n = spanCount(); if (!n && STATE.mpt === 'Strand') return ['Pole', 'Midspan'];
+  var n = spanCount(); if (!n && STATE.mpt === 'Strand') return ['Pole', 'Mid-Span'];
   // 1.20.154 (Curtis): an aerial span off a pole can also go to a midspan, once per route
-  var had = false; for (var i = 1; i <= n; i++) if (STATE['span' + i + '_to'] === 'Midspan') had = true;
-  return n && STATE['span' + n + '_to'] === 'Pole' && !had ? BURIED_TO.concat(['Midspan']) : BURIED_TO;
+  var had = false; for (var i = 1; i <= n; i++) if (STATE['span' + i + '_to'] === 'Mid-Span') had = true;
+  return n && STATE['span' + n + '_to'] === 'Pole' && !had ? BURIED_TO.concat(['Mid-Span']) : BURIED_TO;
 }
 function addSpan(type, to) {
   var n = spanCount() + 1;
@@ -1752,7 +1753,7 @@ function routeC(dropOnly) {
           addSpan(t, o);
           if (ticked && (t === 'Aerial' || t === 'Buried')) STATE['span' + k + (t === 'Aerial' ? '_flag' : '_temp')] = true;   // the tick moves onto the drawn span
           delete STATE.route_next; delete STATE.route_next_flag;
-        }, function (o) { return !t || (t === 'Aerial' && AERIAL_TO.indexOf(o) < 0 && o !== 'Midspan') || (t === 'Buried' && (o === 'Flower Pot' || o === 'Vault')) || (o === 'Midspan' && t !== 'Aerial'); });   // 1.20.152/153 (Curtis): a flower pot or a vault is only reached by duct
+        }, function (o) { return !t || (t === 'Aerial' && AERIAL_TO.indexOf(o) < 0 && o !== 'Mid-Span') || (t === 'Buried' && (o === 'Flower Pot' || o === 'Vault')) || (o === 'Mid-Span' && t !== 'Aerial'); });   // 1.20.152/153 (Curtis): a flower pot or a vault is only reached by duct
         if (fx && !fx.typeOnly) gh.classList.add('rt-fresh');
         box.appendChild(gh);
         if (dropOnly && n) box.appendChild(el('p', { class: 'rt-note', text: 'Partial run? Leave it here.' }));
