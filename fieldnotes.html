@@ -1842,9 +1842,11 @@ function cpeTypeC(withPlat, repair) { return choiceC({ id: 'cpe', label: 'CPE Ty
 function cpeAccessC(repair) { return choiceC({ id: 'cpe_access', label: 'CPE Access', cols: 2, otherLabel: 'Other Access', options:
   [['Serviceable from Ladder', 'Serviceable from ladder'], ['Stepping onto Roof Required', 'Stepping onto roof required']].concat(repair ? [['Tower Climb', 'Tower climb required']] : []).concat(['Other']) }); }
 /* 1.20.141 (Curtis): only the conversion types that end on the SA's technology (FWN or LTE); Move Conversion always */
-var CONV_TYPES = [['LTE to FWN, Same Tower', 'LTE to FWN to same tower'], ['LTE to FWN, New Tower', 'LTE to FWN to new tower'], ['SAT to FWN', 'SAT to FWN'], ['SAT to LTE', 'SAT to LTE'], ['Move Conversion', 'Move conversion']];
+var CONV_TYPES = [['LTE to FWN - Same Tower', 'LTE to FWN to same tower'], ['LTE to FWN - New Tower', 'LTE to FWN to new tower'],   // 1.20.142: " - " (was ", ")
+  ['SAT to FWN', 'SAT to FWN'], ['SAT to LTE', 'SAT to LTE'], ['Move Conversion', 'Move conversion']];
 function convTypes() {
   var t = STATE.job_tech || STATE.fw_plat;
+  if (/^LTE to FWN, /.test(STATE.conv_type || '')) STATE.conv_type = STATE.conv_type.replace(', ', ' - ');   // answers saved with the old wording
   var list = CONV_TYPES.filter(function (o) { return o[0] === 'Move Conversion' || !t || (t === 'FWN' ? /to FWN/ : /to LTE/).test(o[0]); });
   if (STATE.conv_type && !list.some(function (o) { return o[0] === STATE.conv_type; })) delete STATE.conv_type;   // picked before the technology changed
   return list;
