@@ -2061,7 +2061,7 @@ function repairComps() {
    Grounding = Installed New / Reused Existing. Answers saved before this are mapped. */
 /* 1.20.167 (Curtis): both cabling answers are acknowledged in a pop-up that names Xplore-supplied cabling (from the
    warehouse, no aftermarket cabling). Reused also has Other: the tech types why cabling that doesn't meet the standards stayed. */
-var ACK_REUSE = 'I confirm the existing cabling is Xplore-supplied Ethernet cabling, was thoroughly inspected, meets Xplore standards and is negotiating at least 1,000 Mbps.';
+var ACK_REUSE = 'I confirm the existing cabling is Xplore-supplied standard cabling and was thoroughly inspected, including all connectors.';   // 1.20.169 wording (Curtis)
 function ackPopup(title, text, onYes, onOther) {
   if (document.querySelector('.changelog')) return;
   function close() { ov.remove(); document.removeEventListener('keydown', onKey, true); }
@@ -2104,7 +2104,7 @@ function convCablingC() {
     out: function (m) {
       if (!this.done()) return ['Cabling: ' + m('cabling', 'Cabling')];
       if (STATE.cabling === CAB_NEW) return ['Cabling: Installed new Xplore-supplied cabling'];
-      if (STATE.cabling_ack === true) return ['Cabling: Reused existing Xplore-supplied cabling, tech confirmed it was thoroughly inspected, meets Xplore standards and is negotiating at least 1,000 Mbps'];
+      if (STATE.cabling_ack === true) return ['Cabling: Reused existing Xplore-supplied standard cabling, tech confirmed it was thoroughly inspected, including all connectors'];
       return ['Cabling: Reused existing cabling that does not meet Xplore standards, ' + cap(STATE.cabling_other)];
     }
   };
