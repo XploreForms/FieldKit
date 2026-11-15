@@ -1223,28 +1223,34 @@ function M(mark) { return function (id, label) { return mark ? MISS_OPEN + id + 
 /* ---------- generic components ---------- */
 
 /* pick one; 'Other' opens a labelled box */
-/* 1.20.114 (Curtis): a tick box for "did it the Xplore way" (new standard cabling, new surge, new ground block).
-   Starts ticked, since doing it right is the norm; unticking is the exception and asks why. Stores the same values the
-   old New / Other buttons did (yes label, or 'Other' + reason), so saved answers and the comment text don't change. */
+/* A tick box for "did it the Xplore way" (new standard cabling, new surge, new ground block). 1.20.116 (Curtis): starts
+   unticked; ticking it is the answer. The "why not" box only opens if they try to copy with it still unticked (like the
+   checklists, via PROMPT). Stored values match the old New / Other buttons (yes label, or 'Other' + reason). */
 function tickC(o) {
   // o: {id, text, yes: [label, out], out, whyLabel, otherOut}
-  function on() { return STATE[o.id] !== 'Other'; }
+  function on() { return STATE[o.id] === o.yes[0]; }
+  function why() { return str(STATE[o.id + '_other']); }
   return {
     id: o.id, show: o.show,
     render: function () {
       var t = on();
+      if (t) PROMPT[o.id] = false;
       var btn = el('button', { type: 'button', class: 'tick-row', role: 'checkbox', 'aria-checked': t ? 'true' : 'false',
-        onclick: function () { STATE[o.id] = t ? 'Other' : o.yes[0]; changed(o.id, true); } },
+        onclick: function () { STATE[o.id] = t ? (why() ? 'Other' : undefined) : o.yes[0]; changed(o.id, true); } },
         [el('span', { class: 'tick-box', 'aria-hidden': 'true', text: t ? '✓' : '' }), el('span', { text: o.text })]);
       var controls = [btn];
-      if (!t) controls.push(otherInput(o.id + '_other', o.id, o.whyLabel));
+      if (!t && (PROMPT[o.id] || why())) {
+        var box = otherInput(o.id + '_other', o.id, o.whyLabel);
+        box.addEventListener('input', function () { if (!on()) STATE[o.id] = why() ? 'Other' : undefined; });
+        controls.push(box);
+      }
       return fieldWrap(o.id, null, false, null, controls);
     },
-    done: function () { return on() || !!str(STATE[o.id + '_other']); },
-    check: function (need) { need(o.id, o.text, this.done(), 'Say why, or tick the box.'); },
+    done: function () { return on() || !!why(); },
+    check: function (need) { need(o.id, o.text, this.done(), 'Tick it, or say why not.'); },
     out: function (m) {
       if (on()) return [o.out + ': ' + o.yes[1]];
-      return [o.out + ': ' + (str(STATE[o.id + '_other']) ? o.otherOut(str(STATE[o.id + '_other'])) : m(o.id, o.whyLabel))];
+      return [o.out + ': ' + (why() ? o.otherOut(why()) : m(o.id, o.out))];
     }
   };
 }
@@ -2279,10 +2285,10 @@ var FORMS = {
       S('Signal', [pairC(towerC(), fwPlatC()), pairC(pairC(rsrpC(), sinrC(), 'tight mini'), null), cpeTypeC(true)]),
       S('Mount', [fwMountC()].concat(mountPlaceComps(), [heightC(), cpeAccessC()])),
       S('Cabling and Grounding', [
-        tickC({ id: 'cabling', text: 'New Xplore standard cabling', yes: ['New Xplore Standard Cabling', 'Installed new Xplore standard cabling'], out: 'Cabling',
+        tickC({ id: 'cabling', text: 'Installed all new Xplore standard cabling', yes: ['New Xplore Standard Cabling', 'Installed all new Xplore standard cabling'], out: 'Cabling',
           whyLabel: 'Why were Xplore standards not met?', otherOut: function (r) { return 'Xplore standards not met, ' + r; } }),
-        tickC({ id: 'surge', text: 'New surge suppressor', yes: ['Installed New', 'Installed new surge suppressor'], out: 'Surge',
-          whyLabel: 'Why was a new surge not installed?', otherOut: function (r) { return 'New surge suppressor not installed, ' + r; } }),
+        tickC({ id: 'surge', text: 'Installed new Surge Protector', yes: ['Installed New', 'Installed new surge protector'], out: 'Surge',
+          whyLabel: 'Why was a new surge not installed?', otherOut: function (r) { return 'New surge protector not installed, ' + r; } }),
         groundSourceC()]),
       S('Indoor', [powerC(), routerC()]), vasSection(), commentsSection(),
       S('Confirmations', [xapC(FW_XAP), lawnC(LAWN_REASONS_FW)])];
@@ -2343,9 +2349,9 @@ function satForm(install) {
   return [
     S('Mount', [reuseMountC(SAT_MOUNTS)].concat(mountPlaceComps(true), [cpeAccessC()])),
     S('Cabling and Grounding', [
-      tickC({ id: 'cabling', text: 'New Xplore standard cabling', yes: ['New Xplore Standard Cabling', 'Installed new Xplore standard cabling'], out: 'Cabling',
+      tickC({ id: 'cabling', text: 'Installed all new Xplore standard cabling', yes: ['New Xplore Standard Cabling', 'Installed all new Xplore standard cabling'], out: 'Cabling',
         whyLabel: 'Why were Xplore standards not met?', otherOut: function (r) { return 'Xplore standards not met, ' + r; } }),
-      tickC({ id: 'ground_block', text: 'New ground block', yes: ['Installed New', 'Installed new ground block'], out: 'Ground Block',
+      tickC({ id: 'ground_block', text: 'Installed new ground block', yes: ['Installed New', 'Installed new ground block'], out: 'Ground Block',
         whyLabel: 'Why was a new ground block not installed?', otherOut: function (r) { return 'New ground block not installed, ' + r; } }),
       groundSourceC()]),
     S('Indoor', [modemC(), routerC()]), vasSection(), commentsSection(),
