@@ -2496,6 +2496,7 @@ function requestSave(items) {
     openSorter(unl.sort((a, b) => a.created - b.created).map(p => p.id), true);
     return;
   }
+  if (!outcomeSet(curJob()) && fkJob()) { toast("Set the outcome on the SA page first.", 2600); return; }   // 1.20.162
   if (!outcomeSet(curJob())) { saveIds = items.map(p => p.id); toast("Pick the job outcome first.", 2200); openOutcomeSheet(); return; }
   if (!missingShots().length && !items.some(p => p.pending)) { saveIds = null; return downloadPhotos(items).then(ok => { if (ok) afterSave(); return ok; }); }
   saveIds = items.map(p => p.id); openSaveSheet();
@@ -3029,11 +3030,12 @@ function renderLabels() {
   if (j && !isQuick(j)) {
     const set = outcomeSet(j);
     ob.classList.toggle("need", !set);
-    ob.innerHTML = set ? `<i class="oc o-${j.outcome}"></i>${esc(j.reason || byId(OUTCOMES, j.outcome).name)} <span class="ochev" aria-hidden="true">▾</span>` : "Set outcome";
-    ob.setAttribute("aria-label", set ? `Outcome: ${byId(OUTCOMES, j.outcome).name}${j.reason ? ", " + j.reason : ""}. Tap to change.` : "Set the job outcome");
+    const ro = fkJob();   // 1.20.162 (Curtis): inside an SA the outcome is changed on the SA page, so the chip only shows it
+    ob.innerHTML = set ? `<i class="oc o-${j.outcome}"></i>${esc(j.reason || byId(OUTCOMES, j.outcome).name)}${ro ? "" : ` <span class="ochev" aria-hidden="true">▾</span>`}` : "Set outcome";
+    ob.setAttribute("aria-label", set ? `Outcome: ${byId(OUTCOMES, j.outcome).name}${j.reason ? ", " + j.reason : ""}.${ro ? "" : " Tap to change."}` : "Set the job outcome");
   }
 }
-$("outBtn").addEventListener("click", () => { saveIds = null; openOutcomeSheet(); });
+$("outBtn").addEventListener("click", () => { if (fkJob()) { toast("Change the outcome on the SA page.", 2200); return; } saveIds = null; openOutcomeSheet(); });
 $("lGrid").addEventListener("click", e => {
   const b = e.target.closest(".lt"); if (!b || !current) return;
   if (b.dataset.tolabel) return $("toLabelBtn").click();
@@ -3177,7 +3179,7 @@ function closeSorter() {
   renderAll();
   const left = curPhotos().filter(isUnl).length;
   // On the way to saving and everything is labelled now: carry on (one more tap to save)
-  if (SO.forSave && saveIds && !saveItems().some(isUnl)) { if (!outcomeSet(curJob())) openOutcomeSheet(); else openSaveSheet(); return; }
+  if (SO.forSave && saveIds && !saveItems().some(isUnl)) { if (!outcomeSet(curJob())) { if (fkJob()) toast("Set the outcome on the SA page first.", 2600); else openOutcomeSheet(); } else openSaveSheet(); return; }
   if (SO.forSave && saveIds && left) { toast(`${left} still to label. Saving needs every photo labelled.`, 2600); saveIds = null; return; }
   if (SO.done) toast(`Labelled ${plural(SO.done, "photo")}${left ? ` · ${left} still to label` : ""}`, 2400);
 }
@@ -3227,9 +3229,11 @@ $("jobBtn").addEventListener("click", e => {
     Object.assign(out, { work:jj.work, plat:jj.plat, vas:jj.vas || null, outcome:jj.outcome || null, reason:jj.reason || null }); drawOut(); jobChanged();
   });
   drawOut();
+  // 1.20.162 (Curtis): inside an SA, the job type and outcome are changed on the SA page (Change, Change Outcome)
+  $("sheetPicker").hidden = $("sheetOutcome").hidden = fkJob();
   $("inRefEdit").value = j.ref || "";
   const n = curPhotos().length;
-  $("jobEditHint").textContent = n
+  $("jobEditHint").textContent = fkJob() ? "The job type and outcome are changed on the SA page." : n
     ? `${plural(n, "photo")} taken. Changes here update the photo list and the info band on photos not saved yet.`
     : "Pick the outcome once you know it. Everything here can be changed at any point during the job.";
   $("finishConfirm").hidden = true; $("cancelConfirm").hidden = true;
