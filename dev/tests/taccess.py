@@ -28,6 +28,14 @@ async def main():
         print('wood post: roof tick shown', await pg.get_by_text('Stepping onto roof required').count(), '|', await pg.evaluate(out))
         await pg.locator('[data-field-id=mount_into]').get_by_text('Roof', exact=True).click(); await pg.wait_for_timeout(300)
         print('back to roof: tick shown', await pg.get_by_text('Stepping onto roof required').count(), '| ticked', await pg.evaluate("STATE.cpe_roof===true"))
+        # Satellite Steel Pole: no roof tick
+        await pg.goto(B+'fieldnotes.html'); await pg.evaluate("localStorage.removeItem('xplore_fsl_wip_v2')"); await pg.reload(); await pg.wait_for_timeout(1200)
+        J=pg.locator('#form-mount')
+        for n in ['Install','Satellite','Complete','HJ3']: await J.get_by_text(n, exact=True).first.click(); await pg.wait_for_timeout(300)
+        await pg.locator('[data-field-id=mount_into]').get_by_text('Steel Pole', exact=True).click(); await pg.wait_for_timeout(300)
+        print('steel pole: roof tick shown', await pg.get_by_text('Stepping onto roof required').count())
+        await pg.locator('[data-field-id=mount_into]').get_by_text('Roof', exact=True).click(); await pg.wait_for_timeout(300)
+        print('sat roof: roof tick shown', await pg.get_by_text('Stepping onto roof required').count())
         # an old saved answer
         await pg.evaluate("STATE.cpe_access='Stepping onto Roof Required'; delete STATE.cpe_roof; delete STATE.cpe_tower"); print('old answer ->', await pg.evaluate(out))
         print('errors', errs); await b.close()

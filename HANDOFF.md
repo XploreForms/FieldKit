@@ -224,6 +224,8 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 
 - (1.20.144) Comments CPE Access (Curtis): serviceable from ladder is the default (not asked); one tick **"Stepping onto roof required"** (`cpe_roof`), plus **"Tower climb required"** (`cpe_tower`) on repairs; since 1.20.145 these are small ticks right under Mounting Surface with no CPE Access label or hint; the roof tick is hidden (and cleared) for Mounting Surface Wood Post (1.20.147) or Steel Pole (1.20.148); Tower keeps it The comment says Serviceable from ladder / Stepping onto roof required / Tower climb required / both. Old `cpe_access` answers are mapped. Test: `dev/tests/taccess.py`.
 
+- (1.20.149) Drop Route (Curtis): out of **MPT Strand** the span is always Aerial (filled in, no type buttons) and lands on **Pole** or **Midspan** (new stop, `nextStops()`); out of a Midspan it's Aerial too (Pole or Structure). Comment: `MPT (Strand) > Aerial > Midspan > Aerial > Structure`. Test: `dev/tests/tstrand.py`.
+
 **Things only a real phone can confirm** (the test browser has no camera or GPS)
 - Compass on Android (with and without the Compass web app installed; if Android shows an "open with" chooser instead of going straight in, adjust).
 - A real scan from the SA page returning correctly, and a real photo ticking its SN tile.

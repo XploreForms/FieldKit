@@ -1597,8 +1597,11 @@ function anyAerial() { for (var i = 1; i <= spanCount(); i++) if (STATE['span' +
 /* the next span: the tech always picks Aerial, Buried or Duct, nothing is filled in for them */
 function nextTypes() {
   var n = spanCount(), at = n ? STATE['span' + n + '_to'] : STATE.mpt;
+  if (at === 'Strand' || at === 'Midspan') return ['Aerial'];   // 1.20.149 (Curtis): off the strand it's always aerial
   return !at || at === 'Structure' ? [] : ['Aerial', 'Buried', 'Duct'];
 }
+/* where the next span can land: off the MPT strand, a pole or a midspan (1.20.149); otherwise the usual stops */
+function nextStops() { var n = spanCount(); return !n && STATE.mpt === 'Strand' ? ['Pole', 'Midspan'] : BURIED_TO; }
 function addSpan(type, to) {
   var n = spanCount() + 1;
   if (n > MAX_SPANS) return;
@@ -1714,7 +1717,8 @@ function routeC(dropOnly) {
       if (types.length) {
         var startAt = n ? STATE['span' + n + '_to'] : STATE.mpt;
         var typeOff = function (x) { return x === 'Aerial' && startAt === 'Vault'; };   // nothing goes aerial out of a vault: greyed, kept in place
-        var t = types.indexOf(STATE.route_next) >= 0 && !typeOff(STATE.route_next) ? STATE.route_next : null;   // nothing picked until the tech picks it
+        var only = types.length === 1;   // one way to go (aerial off the strand): already picked, no buttons
+        var t = only ? types[0] : types.indexOf(STATE.route_next) >= 0 && !typeOff(STATE.route_next) ? STATE.route_next : null;   // nothing picked until the tech picks it
         var seg = el('div', { class: 'rt-link rt-pending rt-' + (t ? t.toLowerCase() : 'unset') + (fx && !fx.typeOnly ? ' rt-fresh' : '') });
         if (!t) {
           var tg = el('div', { class: 'rt-types' + (fx && fx.reopen ? ' rt-fresh' : ''), role: 'radiogroup', 'aria-label': 'How the drop runs to the next stop', 'data-route-key': 'type' });
@@ -1728,19 +1732,19 @@ function routeC(dropOnly) {
           });
           seg.appendChild(tg);
         } else {   // the picked type sits on the line like a drawn one; tap it to pick again
-          seg.appendChild(el('button', { type: 'button', class: 'rt-type-chosen rt-' + t.toLowerCase(), 'aria-label': t + ', tap to change',
+          seg.appendChild(only ? el('span', { class: 'rt-type-chosen rt-' + t.toLowerCase() }, [t]) : el('button', { type: 'button', class: 'rt-type-chosen rt-' + t.toLowerCase(), 'aria-label': t + ', tap to change',
             onclick: function () { delete STATE.route_next; delete STATE.route_next_flag; ROUTE_FX = { prev: null, typeOnly: true, reopen: true }; changed(null, true); routeFx(); } }, [t]));
           var pl = t === 'Aerial' ? 'Flaggers Needed' : t === 'Buried' ? 'Temp Drop Deployed' : null;   // the tick shows as soon as the type is picked
           if (pl) { var pb = flagBox('route_next_flag', pl); if (fx && fx.pills) pb.classList.add('rt-fresh'); seg.appendChild(pb); }
         }
         box.appendChild(seg);
         // every stop is always listed in the same order; until a span type is picked they're greyed, and aerial greys the ones it can't reach
-        var gh = ghosts('next', BURIED_TO, function (o) {
+        var gh = ghosts('next', nextStops(), function (o) {
           var k = spanCount() + 1, ticked = STATE.route_next_flag === true;
           addSpan(t, o);
           if (ticked && (t === 'Aerial' || t === 'Buried')) STATE['span' + k + (t === 'Aerial' ? '_flag' : '_temp')] = true;   // the tick moves onto the drawn span
           delete STATE.route_next; delete STATE.route_next_flag;
-        }, function (o) { return !t || (t === 'Aerial' && AERIAL_TO.indexOf(o) < 0); });
+        }, function (o) { return !t || (t === 'Aerial' && AERIAL_TO.indexOf(o) < 0 && o !== 'Midspan'); });
         if (fx && !fx.typeOnly) gh.classList.add('rt-fresh');
         box.appendChild(gh);
         if (dropOnly && n) box.appendChild(el('p', { class: 'rt-note', text: 'Partial run? Leave it here.' }));
