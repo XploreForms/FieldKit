@@ -1,0 +1,30 @@
+import asyncio, json
+from playwright.async_api import async_playwright
+exec(open('dev/tests/tm2.py').read().split('async def main')[0])
+async def main():
+    async with async_playwright() as p:
+        b = await p.chromium.launch(); ctx = await b.new_context(viewport={'width':360,'height':780}, device_scale_factor=2, has_touch=True, is_mobile=True)
+        await ctx.add_init_script("(s=>{for(const k in s) if(!localStorage.getItem(k)) localStorage.setItem(k,s[k]);})(%s)" % json.dumps(SEED))
+        pg = await ctx.new_page(); errs=[]; pg.on('pageerror', lambda e: errs.append(str(e)))
+        await pg.goto(B+'fieldnotes.html'); await pg.evaluate("localStorage.removeItem('xplore_fsl_wip_v2')"); await pg.reload(); await pg.wait_for_timeout(1200)
+        J=pg.locator('#form-mount')
+        for n in ['Install','Satellite','Complete','HJ3']: await J.get_by_text(n, exact=True).first.click(); await pg.wait_for_timeout(300)
+        print('mount types:', await pg.locator('[data-field-id=mount] button.choice').all_inner_texts())
+        await pg.locator('[data-field-id=mount]').get_by_text('Tri-Mast', exact=True).click(); await pg.wait_for_timeout(200)
+        S=pg.locator('[data-field-id=mount_into]')
+        print('NPRM before roof:', await pg.get_by_text('Mounted to NPRM').count())
+        await S.get_by_text('Roof', exact=True).click(); await pg.wait_for_timeout(250); print('NPRM on roof:', await pg.get_by_text('Mounted to NPRM').count())
+        await pg.get_by_text('Mounted to NPRM').click(); await pg.wait_for_timeout(250)
+        print('   ', [l for l in (await pg.evaluate("buildOutput(false)")).split('\n') if l.startswith(('Mount','Mounting'))])
+        await S.scroll_into_view_if_needed(); await pg.evaluate("scrollBy(0,-260)")
+        await pg.evaluate("document.querySelectorAll('*').forEach(e=>{const p=getComputedStyle(e).position; if(p==='fixed'||p==='sticky') e.style.visibility='hidden'})")
+        await pg.screenshot(path='/tmp/fk-shots/nprm.png')
+        await S.get_by_text('Wall', exact=True).click(); await pg.wait_for_timeout(250); print('wall: NPRM tick', await pg.get_by_text('Mounted to NPRM').count(), '| nprm state', await pg.evaluate("STATE.mount_nprm"))
+        await pg.evaluate("STATE.mount='Tri-Mast on NPRM'; delete STATE.mount_into; render()"); await pg.wait_for_timeout(300)
+        print('old answer:', await pg.evaluate("[STATE.mount, STATE.mount_into, STATE.mount_nprm].join(' / ')"))
+        for n in ['Repair']:
+            await pg.goto(B+'fieldnotes.html'); await pg.evaluate("localStorage.removeItem('xplore_fsl_wip_v2')"); await pg.reload(); await pg.wait_for_timeout(1200)
+            for x in ['Repair','Satellite','Complete','HJ3']: await J.get_by_text(x, exact=True).first.click(); await pg.wait_for_timeout(300)
+            print('sat repair tower tick:', await pg.get_by_text('Tower climb required').count(), '| roof tick:', await pg.get_by_text('Stepping onto roof required').count())
+        print('errors', errs); await b.close()
+asyncio.run(main())
