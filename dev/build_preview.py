@@ -12,6 +12,11 @@ PREAMBLE = r"""<base href="about:srcdoc"><script>
 /* Field Kit preview: pretend to be the Claude preview so Google sign-in shows "Website only",
    and send links between tools to the preview shell. */
 window.claude = window.claude || { use: function () {} };
+/* 1.20.134: a page that fetches another Field Kit page (the SA page reads Field Cam's outcome setup) gets it from the shell */
+(function () { var f = window.fetch; window.fetch = function (u) {
+  try { var n = String(u).split(/[?#]/)[0].replace(/^.*\//, ""), el = parent.document.getElementById("fkPages");
+    if (/^(index|fieldcam|fieldnotes|fieldstock)\.html$/.test(n) && el) { var P = JSON.parse(el.textContent); if (P[n]) return Promise.resolve(new Response(P[n], { headers: { "Content-Type": "text/html" } })); } } catch (e) {}
+  return f.apply(this, arguments); }; })();
 (function () {
   var TOOLS = /^(index|fieldcam|fieldnotes|fieldstock)\.html(#.*)?$/;
   window.__fkNav = function (u) {
