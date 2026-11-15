@@ -839,6 +839,7 @@ details.grp .btn{margin-bottom:12px}
     if (noneAsk && !none) lobbyState.gearLeft = 1, lobbyState.gearAsk = true; else lobbyState.gearAsk = false;
     var html = stepHead(3, m.canRecover ? "Equipment" : "Equipment Deployed", ok && (m.total > 0 || any || none), pill, ok ? "good" : "warn");
     if (noneAsk) html += '<label class="fkj-chk" style="margin:4px 0 10px"><input type="checkbox" id="lbNoGear"' + (none ? " checked" : "") + '><span>No equipment deployed' + (m.canRecover ? ' or recovered' : '') + '</span></label>';
+    if (none) { $("lbGear").innerHTML = html; paintNext(j); return; }   // 1.20.130 (Curtis): ticked = the slots fold away like answered ones; untick to bring them back
     if (why && count) html += '<p class="help" style="color:var(--warn)">' + esc(why) + '</p>';
     if (m.has || m.extras.length || m.canRecover) {
       html += J.slotsHTML(m, {

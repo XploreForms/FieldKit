@@ -12,7 +12,7 @@ async def main():
         await pg.locator('#njRef').fill('1234566'); await pg.get_by_role('button', name='Repair').click(); await pg.locator('[data-nj=fam][data-v="Fixed Wireless"]').click(); await pg.locator('[data-nj=tech][data-v=FWN]').click()
         await pg.get_by_role('button', name='Start SA').first.click(); await pg.wait_for_timeout(1500)
         G=pg.locator('#lbGear')
-        async def st(t): print(f'{t:22}', '| head done:', await G.locator('.lstep.done').count(), '| pill:', await G.locator('.pill').inner_text(), '| tick:', await pg.locator('#lbNoGear').count())
+        async def st(t): print(f'{t:22}', '| head done:', await G.locator('.lstep.done').count(), '| pill:', await G.locator('.pill').inner_text(), '| tick:', await pg.locator('#lbNoGear').count(), '| slots:', await G.locator('[data-slot-set]').count(), '| scan btn:', await G.locator('[data-scanret=many]').count())
         await st('new repair')
         await pg.evaluate("(()=>{const c=document.getElementById('lbNoGear'); c.checked=!c.checked; c.dispatchEvent(new Event('change',{bubbles:true}))})()"); await pg.wait_for_timeout(300); await st('ticked')
         await pg.goto(B+'index.html'); await pg.wait_for_timeout(1000); await pg.locator('[data-open-sa]').first.click(); await pg.wait_for_timeout(1000); await st('after reopen')
