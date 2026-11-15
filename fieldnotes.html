@@ -3372,9 +3372,12 @@ function initRetro() {
   initThanks();
   initIdleAndCredits();
   FieldKit.onLeave(wipSaveNow);
-  setTimeout(wipOffer, 900);
+  // 1.20.112: inside an SA the saved answers load straight away (no Restore prompt), so the page can open at the right question
+  if (WIP_IN_SA) { try { wipOffer(); } catch (e) {} } else setTimeout(wipOffer, 900);
   window.addEventListener('resize', function () { updatePreview(); });
-  // 1.20.105 (Curtis): no auto-scroll on arrival any more (it made opening Comments jarring); skipAnswered is unused
+  // 1.20.112 (Curtis): open at the first question still to answer, placed there before the page shows (no visible scroll;
+  // 1.20.105 had dropped the old smooth scroll a second after opening because it was jarring)
+  try { skipAnswered(true); } catch (e) {}
   setTimeout(function () { WAS_DONE = notesDone(); }, 1200);   // where things stand on arrival (prefilled from the SA)
 })();
 
@@ -3383,7 +3386,7 @@ function initRetro() {
    and not if the tech has already scrolled or tapped. */
 var touchedEarly = false;
 ['pointerdown', 'wheel', 'keydown', 'touchmove'].forEach(function (ev) { window.addEventListener(ev, function () { touchedEarly = true; }, { once: true, passive: true }); });
-function skipAnswered() {
+function skipAnswered(now) {
   if (!(window.FieldKit && FieldKit.job && FieldKit.job.inMode && FieldKit.job.inMode())) return;
   if (touchedEarly || (window.pageYOffset || 0) > 40 || !jobKey()) return;
   var todo = validate().filter(function (i) { return i.id !== 'tech'; });
@@ -3394,7 +3397,7 @@ function skipAnswered() {
   var head = document.querySelector('header.app-header'), headH = head ? head.getBoundingClientRect().height : 0;
   var top = window.pageYOffset + node.getBoundingClientRect().top - headH - 12;
   if (top < 80) return;   // already near the top
-  window.scrollTo({ top: top, behavior: calm() ? 'auto' : 'smooth' });
+  window.scrollTo({ top: top, behavior: now || calm() ? 'auto' : 'smooth' });
 }
 
 
