@@ -1841,6 +1841,7 @@ function reuseMountC(list, noTick) {   // noTick: repairs, where a reused mount 
   var base = choiceC({ id: 'mount', label: 'Mount Type', options: list, cols: 2, out: false, otherLabel: 'Other Mount',
     afterChange: function (o) {
       if (o === 'Tower') { STATE.mount_into = 'Tower'; STATE.mount_pos = 'Tower'; STATE.mount_reused = undefined; }   // a tower mount is on a tower
+      if (list === SAT_MOUNTS && o === 'Pole Mount') { STATE.mount_into = 'Steel Pole'; delete STATE.mount_nprm; delete STATE.cpe_roof; }   // 1.20.176 (Curtis): a pole mount is on a steel pole
       if (fw) { STATE.mount_pole = FW_POLE.indexOf(o) >= 0 ? true : undefined; if (FW_STAYS.indexOf(o) < 0) STATE.mount_stays = undefined; }
     } });
   function reusable() { return !!STATE.mount && STATE.mount !== 'Tower'; }   // a tower is never new or reused
@@ -1953,10 +1954,20 @@ function positionC(sat) {
 }
 function mountPlaceComps(sat) {   // sat: no tower or wooden post for a dish
   return [
-    choiceC({ id: 'structure', label: 'Structure', options: ['House', 'Garage', 'Shop', 'Barn', 'Trailer', 'Other'], cols: 3, otherLabel: 'Other Structure' }),
+    structureC(sat),
     sat ? nprmSurface() : choiceC({ id: 'mount_into', label: 'Mounting Surface', options: ['Roof', 'Fascia', 'Wall', 'Tower', ['Wood Post', 'Wood post'], 'Other'], cols: 2, out: 'Mounting Surface', otherLabel: 'Other Surface' }),
     // 1.20.110 (Curtis): Side and Position removed (mountSideC / positionC no longer asked)
   ];
+}
+/* 1.20.176 (Curtis): a satellite on a pole mount isn't on the structure: ask which structure the internet is supplied to */
+function structureC(sat) {
+  var base = choiceC({ id: 'structure', label: 'Structure', options: ['House', 'Garage', 'Shop', 'Barn', 'Trailer', 'Other'], cols: 3, otherLabel: 'Other Structure' });
+  if (!sat) return base;
+  var r0 = base.render, o0 = base.out;
+  function pole() { return STATE.mount === 'Pole Mount'; }
+  base.render = function () { var w = r0.call(base); if (pole()) { var q = w.querySelector('.q'); if (q) q.textContent = 'Structure Supplied with Internet'; } return w; };
+  base.out = function (m) { var l = o0.call(base, m); return pole() ? l.map(function (x) { return x.replace(/^Structure:/, 'Structure Supplied with Internet:'); }) : l; };
+  return base;
 }
 /* 1.20.175 (Curtis): satellite on a Roof: a "Mounted to NPRM" tick under Mounting Surface */
 function nprmSurface() {

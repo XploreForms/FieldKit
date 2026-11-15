@@ -20,6 +20,10 @@ async def main():
         await pg.evaluate("document.querySelectorAll('*').forEach(e=>{const p=getComputedStyle(e).position; if(p==='fixed'||p==='sticky') e.style.visibility='hidden'})")
         await pg.screenshot(path='/tmp/fk-shots/nprm.png')
         await S.get_by_text('Wall', exact=True).click(); await pg.wait_for_timeout(250); print('wall: NPRM tick', await pg.get_by_text('Mounted to NPRM').count(), '| nprm state', await pg.evaluate("STATE.mount_nprm"))
+        await pg.locator('[data-field-id=mount]').get_by_text('Pole Mount', exact=True).click(); await pg.wait_for_timeout(300)
+        print('pole mount: surface', await pg.evaluate("STATE.mount_into"), '| roof tick', await pg.get_by_text('Stepping onto roof required').count(), '| structure label', await pg.locator('[data-field-id=structure] .q').inner_text())
+        await pg.locator('[data-field-id=structure]').get_by_text('House', exact=True).click(); await pg.wait_for_timeout(200)
+        print('   ', [l for l in (await pg.evaluate("buildOutput(false)")).split('\n') if l.startswith(('Structure','Mounting'))])
         await pg.evaluate("STATE.mount='Tri-Mast on NPRM'; delete STATE.mount_into; render()"); await pg.wait_for_timeout(300)
         print('old answer:', await pg.evaluate("[STATE.mount, STATE.mount_into, STATE.mount_nprm].join(' / ')"))
         for n in ['Repair']:
