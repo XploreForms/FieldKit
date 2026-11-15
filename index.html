@@ -97,6 +97,7 @@ h3{margin:0;font:700 1.1rem/1.2 var(--f-display)}
 /* the SA card's progress: photos, comments, equipment */
 .jprog{grid-column:1/-1;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:6px;margin-top:2px}   /* 1.20.99: equal widths whatever the text (Curtis) */
 .jprog small{flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;justify-content:center;gap:4px;height:32px;padding:0 6px;border-radius:10px;background:var(--surface-2);color:var(--muted);font:600 .8rem/1 var(--f-body);white-space:nowrap}
+.jprog small[data-go]{cursor:pointer}
 .jprog small.ok{background:color-mix(in srgb,var(--btn) 18%,transparent);color:var(--accent)}
 .jprog small.warn{background:var(--warn-bg);color:var(--warn)}
 .jobwrap .newbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 28px);margin:0 14px 14px;height:46px;border:0;border-radius:12px;padding:0 12px;
@@ -669,7 +670,9 @@ details.grp .btn{margin-bottom:12px}
   // the in-progress card shows how far the SA has got: required photos taken, comments copied, equipment slots filled
   function jobProgress(j) {
     var out = [], tick = '<b aria-hidden="true" style="font:inherit">✓</b>';
-    function chip(name, val, cls, label) { out.push('<small class="' + cls + '" aria-label="' + esc(label) + '">' + (cls === "ok" ? tick : "") + esc(name) + (val ? " " + esc(val) : "") + '</small>'); }
+    // 1.20.111 (Curtis): each chip goes straight to its step (Pictures, Comments, or the SA's Equipment card)
+    var GO = { Pictures: "pics", Comments: "notes", "Equip.": "gear" };
+    function chip(name, val, cls, label) { out.push('<small class="' + cls + '" data-go="' + GO[name] + '" aria-label="' + esc(label) + '">' + (cls === "ok" ? tick : "") + esc(name) + (val ? " " + esc(val) : "") + '</small>'); }
     var need = j.need || 0, have = need ? need - Math.min(need, j.missing || 0) : 0, n = j.photos || 0;
     if (need) chip("Pictures", have + "/" + need, have === need ? (j.unsaved ? "warn" : "ok") : "", "Required photos: " + have + " of " + need + (j.unsaved ? ", " + j.unsaved + " not saved" : ""));
     else chip("Pictures", String(n), n ? (j.unsaved ? "warn" : "ok") : "", n + " photos");
@@ -709,6 +712,14 @@ details.grp .btn{margin-bottom:12px}
   var jobSureT = null;
   document.addEventListener("click", function (e) {
     if (e.target.closest("#jobStart")) { newJob(); return; }
+    var gc = e.target.closest(".jprog [data-go]");
+    if (gc && J.active()) {
+      var to = gc.getAttribute("data-go");
+      if (to === "pics") FK.go("fieldcam.html#job");
+      else if (to === "notes") FK.go("fieldnotes.html#job");
+      else { openLobby(); var g = $("lbGear"); if (g) requestAnimationFrame(function () { g.scrollIntoView({ block: "center" }); }); }
+      return;
+    }
     if (e.target.closest("#jobGo") || e.target.closest("[data-open-sa]")) { if (J.active()) openLobby(); return; }   // always the SA home, not the tool it was last in
     var nb = e.target.closest("#jobNew");
     if (nb) {

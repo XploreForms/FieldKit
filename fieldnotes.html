@@ -1164,7 +1164,7 @@ function commentsField() {
   return fieldWrap(id, null, false, null, [ta, el('div', { class: 'comment-meta' }, [el('span', { text: 'Each line becomes its own bullet.' }), count])]);
 }
 
-/* Units installed (None, 1, 2 ...) and where each one is. Used for XWH (up to 3) and TV (up to 4).
+/* Units installed (None, 1, 2 ...) and where each one is. Used for XWH and TV (up to 4 each, 1.20.111).
    With only one unit it is just "XWH" / "TV"; with several they are numbered. */
 function unitCount(key) { return STATE[key] === 'None' ? 0 : (parseInt(STATE[key], 10) || 0); }
 function unitName(key, abbr, i) { return unitCount(key) === 1 ? abbr : abbr + ' ' + i; }
@@ -1206,7 +1206,7 @@ function homePhoneDone() {
    ===================================================================================== */
 var FLOOR_OPTIONS = ['Basement', 'Main Floor', 'Upstairs'];
 var ROOM_OPTIONS = ['Utility Room', 'Living Room', 'Office', 'Bedroom', 'Dining Room', 'Other'];   // ONT, router, modem, power supply
-var XWH_ROOMS = ['Living Room', 'Office', 'Bedroom', 'Dining Room', 'Kitchen', 'Other'];
+var XWH_ROOMS = ROOM_OPTIONS;   // 1.20.111 (Curtis): same rooms as the router
 var TV_ROOMS = ['Living Room', 'Office', 'Bedroom', 'Other'];
 
 /* options are plain labels, or [label, text printed in the comment] */
@@ -1859,7 +1859,7 @@ function homePhoneC() {
   };
 }
 function vasComps() {
-  return [unitsC('xwh', 'XWH', 'XWH Units Installed', XWH_ROOMS, 3), unitsC('tv', 'XTV', 'XTV Boxes Installed', TV_ROOMS, 4), homePhoneC()];
+  return [unitsC('xwh', 'XWH', 'XWH Units Installed', XWH_ROOMS, 4), unitsC('tv', 'XTV', 'XTV Boxes Installed', TV_ROOMS, 4), homePhoneC()];
 }
 
 /* ---------- confirmations ---------- */
