@@ -285,6 +285,7 @@ input:focus, textarea:focus, .choice:focus-visible, .link-btn:focus-visible, but
 .device-card.loc-card .device-head, .device-card.loc-card .device-body { padding-left: 0; padding-right: 0; }
 .device-card.loc-card .device-body > .choices + .choices { margin-top: 0.5rem; }
 .field.device-card.loc-card.has-error { border-left: 0.4rem solid var(--xp-orange); padding-left: 0.4rem; margin-left: -0.8rem; }
+.swap-sub { margin: 0.55rem 0 0 0.2rem; }   /* 1.20.165: the small tick under a conversion's cabling / surge / grounding card */
 .router-beside { margin-top: -1.7rem; margin-bottom: 1.4rem; }   /* same gap above as the own-router tick */
 
 /* discreet tick box (own router, splice already done, reused patch) */
@@ -787,7 +788,7 @@ html:root[data-fn-theme] .sub-q{color:var(--fk-muted);font-size:.88rem}
 .tick-row{display:flex;align-items:center;gap:12px;width:100%;min-height:52px;padding:10px 14px;border:0;border-radius:12px;background:var(--fk-surface,#fff);box-shadow:inset 0 0 0 1px var(--fk-line,#d5dbd8);color:var(--fk-ink,inherit);font:inherit;font-weight:600;font-size:.95rem;text-align:left;cursor:pointer}
 .tick-box{width:24px;height:24px;flex:none;border-radius:7px;display:grid;place-items:center;font-size:15px;box-shadow:inset 0 0 0 2px var(--fk-line,#b9c4c0);color:var(--fk-accent-ink,#012929)}
 .tick-row[aria-checked="true"] .tick-box{background:var(--fk-accent,#5CBC5D);box-shadow:none}
-[data-field-id="cabling"] + [data-field-id="surge"], [data-field-id="cabling"] + [data-field-id="ground_block"]{margin-top:-0.6rem}
+[data-field-id="cabling"] + [data-field-id="surge"], [data-field-id="cabling"] + [data-field-id="ground_block"], [data-field-id="surge"] + [data-field-id="grounding"]{margin-top:-0.6rem}
 [data-field-id="cpe_access"].access-ticks, [data-field-id="cpe_reloc"].access-ticks{margin-top:-1.5rem}   /* 1.20.145: hugs Mounting Surface like the other small ticks */
 html:root[data-fn-theme] .choices:not(.settings-panel .choices){gap:4px;padding:4px;border-radius:12px;background:var(--fk-surface);box-shadow:inset 0 0 0 1px var(--fk-line)}
 html:root[data-fn-theme] .choices:not(.settings-panel .choices) .choice{background:transparent;box-shadow:none;color:var(--fk-ink);border-radius:9px;min-height:44px;padding:10px 6px;font-size:.88rem;line-height:1.15}
@@ -2048,6 +2049,48 @@ function repairComps() {
   ];
 }
 
+/* 1.20.165 (Curtis): conversions ask cabling, surge and grounding with install-style tick cards. The answers saved are the
+   same as the old buttons (so the comment wording is unchanged): the card = installed new; a small tick under it picks
+   the variant; unticked = reused (small tick) or, after a failed copy, a "why" box. */
+function swapTicks(base, o) {
+  var id = base.id;
+  function v() { return STATE[id]; }
+  function isNew() { return String(v() || '').indexOf(o.newPrefix) === 0; }
+  function sub(text, onVal, offVal) {   // a small tick that switches between two saved answers
+    var on = v() === onVal;
+    return el('div', { class: 'mini-check-wrap swap-sub' }, [el('button', { type: 'button', class: 'mini-check', role: 'checkbox', 'aria-checked': on ? 'true' : 'false',
+      onclick: function () { STATE[id] = on ? offVal : onVal; changed(id, true); } }, [el('span', { class: 'mini-box', text: on ? '✓' : '' }), el('span', { text: text })])]);
+  }
+  base.render = function () {
+    var t = isNew();
+    var card = el('button', { type: 'button', class: 'tick-row', role: 'checkbox', 'aria-checked': t ? 'true' : 'false',
+      onclick: function () { if (t) delete STATE[id]; else { STATE[id] = o.newOff; delete STATE[id + '_other']; } changed(id, true); } },
+      [el('span', { class: 'tick-box', 'aria-hidden': 'true', text: t ? '✓' : '' }), el('span', { text: o.text })]);
+    var c = [card];
+    if (t && o.newOn) c.push(sub(o.newOnText, o.newOn, o.newOff));
+    if (!t && o.reuse) c.push(sub(o.reuseText, o.reuse, undefined));
+    if (!t && v() !== o.reuse && (PROMPT[id] || str(STATE[id + '_other']))) {
+      var box = otherInput(id + '_other', id, o.whyLabel);
+      box.addEventListener('input', function () { STATE[id] = str(STATE[id + '_other']) ? 'Other' : undefined; });
+      c.push(box);
+    }
+    return fieldWrap(id, o.label || null, false, null, c);
+  };
+  base.check = function (need, issues) { need(id, o.text, base.done(), o.reuse ? 'Tick one, or say why not.' : 'Tick it, or say why not.'); };
+  return base;
+}
+function convSwapTicks(list) {
+  return [
+    swapTicks(list[0], { label: 'Cabling, Surge and Grounding', text: 'Installed new Xplore standard cabling', newPrefix: 'Replaced', newOff: 'Replaced - Original Cable Not Up to Xplore Standards',
+      reuse: 'Reused - Meets Xplore Standards', reuseText: 'Reused existing cabling (meets Xplore standards)', whyLabel: 'Cabling details' }),
+    swapTicks(list[1], { text: 'Installed new surge suppressor', newPrefix: 'Installed New', newOff: 'Installed New - No Pre-Existing Surge',
+      newOn: 'Installed New - Replaced Original', newOnText: 'Replaced an existing surge suppressor', whyLabel: 'Why not?' }),
+    swapTicks(list[2], { text: 'Installed new grounding', newPrefix: 'Installed New', newOff: 'Installed New - None Before',
+      newOn: 'Installed New - Old Not Up to Standards', newOnText: "Existing grounding wasn't up to Xplore standards",
+      reuse: 'Reused - Meets Xplore Standards', reuseText: 'Reused existing grounding (meets Xplore standards)', whyLabel: 'Grounding details' }),
+    list[3]
+  ];
+}
 /* fixed wireless conversion and repair: cabling, surge and grounding may be reused or replaced */
 function fwSwapCabling(conv) {
   // 1.20.164 (Curtis): conversions say a new mount location with the "CPE relocation required" tick instead
@@ -2397,7 +2440,7 @@ var FORMS = {
       S('Conversion', [choiceC({ id: 'conv_type', label: 'Conversion Type', cols: 2, out: 'Conversion', afterChange: convPlatform, options: convTypes() })]),
       S('Signal', [pairC(towerC(), fwPlatC()), pairC(rsrpC(), sinrC(), 'trio', heightC()), cpeTypeC(true), cpeRelocC()]),   // 1.20.119: CPE Height beside RSRP and SINR (Curtis)
       S('Mount', [fwMountC()].concat(mountPlaceComps(), [cpeAccessC()])),
-      S('Cabling and Grounding', fwSwapCabling(true)),
+      S('Cabling and Grounding', convSwapTicks(fwSwapCabling(true))),
       S('Indoor', [powerC(), routerC()]),
       S('Old Equipment', [choiceC({ id: 'recovery', label: 'Original CPE', cols: 0, out: 'Recovery', otherLabel: 'Recovery Details', options: [
         ['Recovered for RMA', 'Recovered original CPE for RMA'], ['Recovered to Be Recycled', 'Recovered original CPE to be recycled'], ['Not Recovered, No RMA', 'Did not recover original CPE, no RMA'], 'Other'] })]),

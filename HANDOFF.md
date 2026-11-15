@@ -242,6 +242,8 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 
 - (1.20.164) Fixed Wireless **conversion** (Curtis): Cabling no longer offers "Replaced - New Mount Location Required"; instead a small **"CPE relocation required"** tick sits under CPE Type (`cpe_reloc`; comment `CPE Relocation: Required, new mount location`). An old answer with that cabling choice becomes the tick. Repairs keep the cabling option. Test: `dev/tests/treloc.py`.
 
+- (1.20.165) Fixed Wireless **conversion** cabling / surge / grounding (Curtis): install-style tick cards under one label "Cabling, Surge and Grounding" (`swapTicks`/`convSwapTicks`). Card = installed new; a small tick under it picks the variant (surge: "Replaced an existing surge suppressor"; grounding: "Existing grounding wasn't up to Xplore standards"); unticked cabling/grounding show "Reused existing … (meets Xplore standards)"; a why box appears after a failed copy. Saved answers are the old button values, so the comment text is unchanged. Repairs still use the buttons. Test: `dev/tests/tswap.py`.
+
 **Things only a real phone can confirm** (the test browser has no camera or GPS)
 - Compass on Android (with and without the Compass web app installed; if Android shows an "open with" chooser instead of going straight in, adjust).
 - A real scan from the SA page returning correctly, and a real photo ticking its SN tile.
