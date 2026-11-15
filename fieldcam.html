@@ -2978,8 +2978,7 @@ function renderTop() {
   let sh = "";
   if (j) {
     const base = isQuick(j) ? "Field Cam" : `${byId(JOB_TYPES, j.work).name} · ${platShort(j.plat, j)}`;
-    if (isQuick(j) || !outcomeSet(j) || j.outcome === "OK") sh = esc(base);
-    else sh = esc(`${base} · ${j.outcome === "NR" ? "NR" : "CC"}${j.reason ? " · " + j.reason : ""}`);
+    sh = esc(base);   // 1.20.135 (Curtis): no outcome here (it was cut off); it's on the outcome chip on the picture
   }
   $("jobRef").textContent = j && j.ref ? j.ref : ""; $("jobRef").hidden = !(j && j.ref);   // 1.20.31: the back arrow no longer shows the SA-#, so the bar does   // in a Field Kit job the SA-# is on the back button
   $("jobTxt").innerHTML = j ? sh : "No job";
