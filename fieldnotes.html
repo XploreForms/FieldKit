@@ -1784,7 +1784,7 @@ function dropComps(dropOnly) {
 }
 
 /* ---------- fixed wireless and satellite ---------- */
-var CPE_TYPES = ['CAT12 2.5GHz', 'CAT12 3.5GHz', 'First Gen 5G', 'Next Gen 5G', 'First Gen High Gain', 'Next Gen High Gain', 'Pro Max'];
+var CPE_TYPES = ['CAT12 2.5GHz', 'CAT12 3.5GHz', 'First Gen 5G', 'Next Gen 5G', 'High Gain', 'Pro Max'];   // 1.20.143 (Curtis): one High Gain (was First Gen / Next Gen)
 var GROUND_SOURCES = [['Power Meter', 'Power meter'], ['Electrical Panel', 'Electrical panel'], ['Ground Rod', 'Ground rod'], ['Copper Pipe', 'Copper pipe'], ['HVAC Disconnect', 'HVAC disconnect'], 'Other'];
 /* fixed wireless install and conversion mounts: the type, then a tick if an existing mount was reused */
 /* same mounts as the SA's Equipment Deployed (plus Tower). Ticks under it: Side stays (J-Arm), 10ft pole (Gable Mount, Tripod;
@@ -1836,7 +1836,8 @@ function sinrC() { return readingC({ id: 'sinr', label: 'SINR', out: 'SINR', uni
 /* withPlat: the Platform question is on the form, so radios that don't belong to it are greyed out */
 function cpeOff(o) { return (STATE.fw_plat === 'FWN' && /^CAT12/.test(o)) || (STATE.fw_plat === 'LTE' && o === 'First Gen 5G'); }
 function cpeRepairOff(o) { return STATE.fw_plat === 'FWN' && /^CAT12/.test(o); }   // a repair can leave a First Gen 5G radio on LTE in place
-function cpeTypeC(withPlat, repair) { return choiceC({ id: 'cpe', label: 'CPE Type', options: CPE_TYPES, cols: 2, out: 'CPE', off: withPlat ? (repair ? cpeRepairOff : cpeOff) : null }); }
+function cpeTypeC(withPlat, repair) { if (/^(First|Next) Gen High Gain$/.test(STATE.cpe || '')) STATE.cpe = 'High Gain';   // saved before 1.20.143
+  return choiceC({ id: 'cpe', label: 'CPE Type', options: CPE_TYPES, cols: 2, out: 'CPE', off: withPlat ? (repair ? cpeRepairOff : cpeOff) : null }); }
 /* how the tech gets to the CPE (fixed wireless and satellite) */
 /* repair: a radio already on a tower may need a climb; installs and conversions never climb */
 function cpeAccessC(repair) { return choiceC({ id: 'cpe_access', label: 'CPE Access', cols: 2, otherLabel: 'Other Access', options:
