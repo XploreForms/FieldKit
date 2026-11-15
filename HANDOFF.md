@@ -210,6 +210,8 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 
 - (1.20.127, Curtis picked option 2) Location questions (ONT, power supply, modem, router, XWH/XTV units): no side bar or Floor/Room sub-labels, labels say "X Location", floor row then rooms 3 across (TV rooms 2 across). Under the ONT/modem/power supply: **"Router is beside the ONT / modem / power supply"** tick (`router_beside`, off by default); ticked skips the router's floor and room (own-router tick stays) and the comment's Router Location copies that device's location (`routerPartner()`). Test: `dev/tests/tbeside.py`.
 
+- (1.20.129) Repairs: the SA page's Equipment step is **not done** until something is deployed or recovered, or the tech ticks **"No equipment deployed or recovered"** (`job.noGear`; the tick only shows while nothing is deployed/recovered). Pill: Not confirmed / None / n deployed. Complete SA's warning says "the equipment isn't confirmed"; home's Equip. chip shows None (green) only once ticked. Test: `dev/tests/tnogear.py`.
+
 **Things only a real phone can confirm** (the test browser has no camera or GPS)
 - Compass on Android (with and without the Compass web app installed; if Android shows an "open with" chooser instead of going straight in, adjust).
 - A real scan from the SA page returning correctly, and a real photo ticking its SN tile.

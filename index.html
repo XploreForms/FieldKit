@@ -682,6 +682,8 @@ details.grp .btn{margin-bottom:12px}
       var m = J.slotModel(j, j.notes && j.notes.state);
       if (!m.off && m.total) chip("Equip.", m.done + "/" + m.total, m.done === m.total ? "ok" : "", "Equipment: " + m.done + " of " + m.total + " slots filled");
       else if (!m.off && m.deployedCount) chip("Equip.", String(m.deployedCount), "ok", m.deployedCount + " items deployed");
+      else if (!m.off && m.recovered && m.recovered.length) chip("Equip.", "0", "ok", m.recovered.length + " recovered");
+      else if (!m.off && m.has) chip("Equip.", j.noGear === true ? "None" : "", j.noGear === true ? "ok" : "", j.noGear === true ? "No equipment deployed" : "Equipment not confirmed");   // 1.20.129: repairs
     } catch (e) {}
     return '<div class="jprog">' + out.join("") + '</div>';
   }
@@ -821,7 +823,7 @@ details.grp .btn{margin-bottom:12px}
   function paintLobbyGear(j) {
     var m = J.slotModel(j, j.notes && j.notes.state), dep = J.deployed(j), why = gearWhy(j);
     if (m.off) {
-      lobbyState.gearLeft = 0;
+      lobbyState.gearLeft = 0; lobbyState.gearAsk = false;
       $("lbGear").innerHTML = stepHead(3, "Equipment Deployed", true, "None", "") + '<p class="help">None. The SA is ' + esc(j.outcome === "CC" ? "Cannot Complete" : "Not Required") + ', so no equipment is deployed or logged in Field Stock.</p>';
       paintNext(j); return;
     }
@@ -829,10 +831,14 @@ details.grp .btn{margin-bottom:12px}
     var rec = J.recoveredEvents(j), extrasOk = m.extras.every(function (s) { return s.sku; });
     lobbyState.gearLeft = m.total - m.done;
     var pill, ok;
+    // 1.20.129 (Curtis): a repair isn't "none deployed" until the tech says so: something deployed/recovered, or the tick
+    var any = m.deployedCount > 0 || m.recovered.length > 0, noneAsk = !m.total && !any, none = noneAsk && j.noGear === true;
     if (m.total) { pill = (m.done + m.extras.length) + " of " + (m.total + m.extras.length); ok = m.done === m.total && extrasOk; }
-    else { pill = m.deployedCount ? m.deployedCount + " deployed" : "None deployed"; ok = extrasOk; }   // repairs: nothing is required
+    else { pill = m.deployedCount ? m.deployedCount + " deployed" : none ? "None" : "Not confirmed"; ok = extrasOk && (any || none); }
     if (m.recovered.length) pill += " · " + m.recovered.length + " recovered";
-    var html = stepHead(3, m.canRecover ? "Equipment" : "Equipment Deployed", ok && (m.total > 0 || m.deployedCount > 0 || m.recovered.length > 0 || m.has), pill, ok ? "good" : "warn");
+    if (noneAsk && !none) lobbyState.gearLeft = 1, lobbyState.gearAsk = true; else lobbyState.gearAsk = false;
+    var html = stepHead(3, m.canRecover ? "Equipment" : "Equipment Deployed", ok && (m.total > 0 || any || none), pill, ok ? "good" : "warn");
+    if (noneAsk) html += '<label class="fkj-chk" style="margin:4px 0 10px"><input type="checkbox" id="lbNoGear"' + (none ? " checked" : "") + '><span>No equipment deployed' + (m.canRecover ? ' or recovered' : '') + '</span></label>';
     if (why && count) html += '<p class="help" style="color:var(--warn)">' + esc(why) + '</p>';
     if (m.has || m.extras.length || m.canRecover) {
       html += J.slotsHTML(m, {
@@ -853,7 +859,8 @@ details.grp .btn{margin-bottom:12px}
     var miss = [];
     if (!lobbyState.photosOk) miss.push("the pictures aren't all saved to your phone");
     if (!lobbyState.notesOk) miss.push(j.notes && j.notes.stale ? "the comments need updating for the new outcome" : "the comments aren't copied");
-    if (lobbyState.gearLeft) miss.push(lobbyState.gearLeft + " equipment slot" + (lobbyState.gearLeft === 1 ? " is" : "s are") + " empty");
+    if (lobbyState.gearAsk) miss.push("the equipment isn't confirmed");
+    else if (lobbyState.gearLeft) miss.push(lobbyState.gearLeft + " equipment slot" + (lobbyState.gearLeft === 1 ? " is" : "s are") + " empty");
     paintNext(j);
     $("lbWarn").innerHTML = lobbySure && miss.length ? '<div class="err">' + esc(miss.join(", ").replace(/, ([^,]*)$/, " and $1").replace(/^./, function (m) { return m.toUpperCase(); })) + '. Tap Complete SA again to finish anyway.</div>' : "";
   }
@@ -894,6 +901,11 @@ details.grp .btn{margin-bottom:12px}
     if (j.status !== "complete" && !lobbySure && (!lobbyState.photosOk || !lobbyState.notesOk || lobbyState.gearLeft)) { lobbySure = true; paintLobbyWarn(j); return; }
     if (j.status === "complete") J.setActive(null); else { J.complete(j.id); toast("SA completed"); }
     leaveLobby();
+  });
+  document.addEventListener("change", function (e) {   // 1.20.129: repair "No equipment deployed or recovered"
+    if (!e.target || e.target.id !== "lbNoGear") return;
+    var j = J.active(); if (!j) return;
+    j.noGear = e.target.checked ? true : undefined; J.save(j); lobbySure = false; $("lbWarn").innerHTML = ""; paintLobbyGear(j);
   });
   var rmSureT = null;
   document.addEventListener("click", function (e) {
