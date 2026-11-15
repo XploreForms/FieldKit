@@ -2114,9 +2114,12 @@ function segC(key) {
     }
   };
 }
-function convCabling() {
+/* repair (1.20.172, Curtis): the same, except the surge protector may be reused (Installed New / Reused Existing) */
+function convCabling(repair) {
   var c = STATE.cabling, g = STATE.grounding, sg = STATE.surge;   // answers saved with older versions
-  if (c === CAB_NEW) { STATE.cab_out = STATE.cab_in = 'New'; STATE.cab_out_ack = STATE.cab_in_ack = true; }
+  if (repair && /^Replaced/.test(c || '')) { STATE.cab_out = STATE.cab_in = 'New'; STATE.cab_out_ack = STATE.cab_in_ack = true; }
+  else if (repair && c === 'Reused - Meets Xplore Standards') { STATE.cab_out = STATE.cab_in = 'Reused'; STATE.cab_out_ack = STATE.cab_in_ack = true; }
+  else if (c === CAB_NEW) { STATE.cab_out = STATE.cab_in = 'New'; STATE.cab_out_ack = STATE.cab_in_ack = true; }
   else if (c === CAB_REUSE && STATE.cabling_ack) {
     ['cab_out', 'cab_in'].forEach(function (k) { STATE[k] = 'Reused'; STATE[k + '_ack'] = STATE.cabling_ack; if (STATE.cabling_other) STATE[k + '_other'] = STATE.cabling_other; });
   } else if (c === 'Replaced - New Mount Location Required') STATE.cpe_reloc = true;
@@ -2124,9 +2127,11 @@ function convCabling() {
   if (/^Installed New( -|.*Grounding)/.test(g || '')) STATE.grounding = 'Installed New';
   else if (g === 'Reused - Meets Xplore Standards' || g === 'Reused Existing Grounding') STATE.grounding = 'Reused Existing';
   if (/^Installed New -/.test(sg || '')) STATE.surge = 'Installed New';
-  var surge = tickC({ id: 'surge', label: 'Surge Protector', text: 'Installed new Surge Protector', yes: ['Installed New', 'Installed new surge protector'], out: 'Surge',
+  if (repair && sg === 'Other') delete STATE.surge;
+  var surge = repair ? choiceC({ id: 'surge', label: 'Surge Protector', cols: 2, out: 'Surge', options: [
+      ['Installed New', 'Installed new surge protector'], ['Reused Existing', 'Reused existing surge protector']] }) : tickC({ id: 'surge', label: 'Surge Protector', text: 'Installed new Surge Protector', yes: ['Installed New', 'Installed new surge protector'], out: 'Surge',
     whyLabel: 'Why was a new surge not installed?', otherOut: function (r) { return 'New surge protector not installed, ' + r; } });
-  var r0 = surge.render; surge.render = function () { var w = r0.call(surge); w.classList.add('conv-surge'); return w; };
+  if (!repair) { var r0 = surge.render; surge.render = function () { var w = r0.call(surge); w.classList.add('conv-surge'); return w; }; }
   return [
     segC('cab_out'),
     surge,
@@ -2506,7 +2511,7 @@ var FORMS = {
       // 1.20.126 (Curtis): same readings row as installs (units inside the boxes, RSRP/SINR not "Final"); Structure and Mounting Surface buttons instead of a typed Mount Location
       S('Signal', [pairC(towerC(), fwPlatC()), textC({ id: 'cell_id', label: 'Cell ID' }), pairC(rsrpC(), sinrC(), 'trio', heightC()), cpeTypeC(true, true)]),
       S('Mount', [reuseMountC(FW_MOUNTS, true)].concat(mountPlaceComps(), [cpeAccessC(true)])),
-      S('Cabling and Grounding', fwSwapCabling()),
+      S('Cabling and Grounding', convCabling(true)),   // 1.20.172: same as conversions (surge may be reused)
       S('Indoor', [powerC(), routerC()]), commentsSection(),
       S('Confirmations', [lawnC()])];
   },
