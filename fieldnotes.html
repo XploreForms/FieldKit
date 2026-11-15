@@ -765,6 +765,10 @@ html:root[data-fn-theme] .q{font-size:.92rem;font-weight:600;color:var(--fk-mute
 html:root[data-fn-theme] .q .opt,html:root[data-fn-theme] .hint{color:var(--fk-muted)}
 html:root[data-fn-theme] .hint{font-size:.85rem}
 html:root[data-fn-theme] .sub-q{color:var(--fk-muted);font-size:.88rem}
+.tick-row{display:flex;align-items:center;gap:12px;width:100%;min-height:52px;padding:10px 14px;border:0;border-radius:12px;background:var(--fk-surface,#fff);box-shadow:inset 0 0 0 1px var(--fk-line,#d5dbd8);color:var(--fk-ink,inherit);font:inherit;font-weight:600;font-size:.95rem;text-align:left;cursor:pointer}
+.tick-box{width:24px;height:24px;flex:none;border-radius:7px;display:grid;place-items:center;font-size:15px;box-shadow:inset 0 0 0 2px var(--fk-line,#b9c4c0);color:var(--fk-accent-ink,#012929)}
+.tick-row[aria-checked="true"] .tick-box{background:var(--fk-accent,#5CBC5D);box-shadow:none}
+[data-field-id="cabling"] + [data-field-id="surge"], [data-field-id="cabling"] + [data-field-id="ground_block"]{margin-top:-0.6rem}
 html:root[data-fn-theme] .choices:not(.settings-panel .choices){gap:4px;padding:4px;border-radius:12px;background:var(--fk-surface);box-shadow:inset 0 0 0 1px var(--fk-line)}
 html:root[data-fn-theme] .choices:not(.settings-panel .choices) .choice{background:transparent;box-shadow:none;color:var(--fk-ink);border-radius:9px;min-height:44px;padding:10px 6px;font-size:.88rem;line-height:1.15}
 html:root[data-fn-theme] .choices.cols-list .choice,html:root[data-fn-theme] .choices:not([class*="cols-"]) .choice{padding:10px 12px}
@@ -1219,6 +1223,31 @@ function M(mark) { return function (id, label) { return mark ? MISS_OPEN + id + 
 /* ---------- generic components ---------- */
 
 /* pick one; 'Other' opens a labelled box */
+/* 1.20.114 (Curtis): a tick box for "did it the Xplore way" (new standard cabling, new surge, new ground block).
+   Starts ticked, since doing it right is the norm; unticking is the exception and asks why. Stores the same values the
+   old New / Other buttons did (yes label, or 'Other' + reason), so saved answers and the comment text don't change. */
+function tickC(o) {
+  // o: {id, text, yes: [label, out], out, whyLabel, otherOut}
+  function on() { return STATE[o.id] !== 'Other'; }
+  return {
+    id: o.id, show: o.show,
+    render: function () {
+      var t = on();
+      var btn = el('button', { type: 'button', class: 'tick-row', role: 'checkbox', 'aria-checked': t ? 'true' : 'false',
+        onclick: function () { STATE[o.id] = t ? 'Other' : o.yes[0]; changed(o.id, true); } },
+        [el('span', { class: 'tick-box', 'aria-hidden': 'true', text: t ? '✓' : '' }), el('span', { text: o.text })]);
+      var controls = [btn];
+      if (!t) controls.push(otherInput(o.id + '_other', o.id, o.whyLabel));
+      return fieldWrap(o.id, null, false, null, controls);
+    },
+    done: function () { return on() || !!str(STATE[o.id + '_other']); },
+    check: function (need) { need(o.id, o.text, this.done(), 'Say why, or tick the box.'); },
+    out: function (m) {
+      if (on()) return [o.out + ': ' + o.yes[1]];
+      return [o.out + ': ' + (str(STATE[o.id + '_other']) ? o.otherOut(str(STATE[o.id + '_other'])) : m(o.id, o.whyLabel))];
+    }
+  };
+}
 function choiceC(o) {
   // o: {id, label, options, cols, otherLabel, out, gap, msg, show}
   var labels = o.options.map(optLabel);
@@ -2250,10 +2279,10 @@ var FORMS = {
       S('Signal', [pairC(towerC(), fwPlatC()), pairC(pairC(rsrpC(), sinrC(), 'tight mini'), null), cpeTypeC(true)]),
       S('Mount', [fwMountC()].concat(mountPlaceComps(), [heightC(), cpeAccessC()])),
       S('Cabling and Grounding', [
-        choiceC({ id: 'cabling', label: 'Cabling', options: [['New Xplore Standard Cabling', 'Installed new Xplore standard cabling'], 'Other'], cols: 2,
-          otherLabel: 'Why Were Xplore Standards Not Met', otherOut: function (r) { return 'Xplore standards not met, ' + r; } }),
-        choiceC({ id: 'surge', label: 'Surge Suppressor', options: [['Installed New', 'Installed new surge suppressor'], 'Other'], cols: 2, out: 'Surge',
-          otherLabel: 'Why was a new surge not installed?', otherOut: function (r) { return 'New surge suppressor not installed, ' + r; } }),
+        tickC({ id: 'cabling', text: 'New Xplore standard cabling', yes: ['New Xplore Standard Cabling', 'Installed new Xplore standard cabling'], out: 'Cabling',
+          whyLabel: 'Why were Xplore standards not met?', otherOut: function (r) { return 'Xplore standards not met, ' + r; } }),
+        tickC({ id: 'surge', text: 'New surge suppressor', yes: ['Installed New', 'Installed new surge suppressor'], out: 'Surge',
+          whyLabel: 'Why was a new surge not installed?', otherOut: function (r) { return 'New surge suppressor not installed, ' + r; } }),
         groundSourceC()]),
       S('Indoor', [powerC(), routerC()]), vasSection(), commentsSection(),
       S('Confirmations', [xapC(FW_XAP), lawnC(LAWN_REASONS_FW)])];
@@ -2314,10 +2343,10 @@ function satForm(install) {
   return [
     S('Mount', [reuseMountC(SAT_MOUNTS)].concat(mountPlaceComps(true), [cpeAccessC()])),
     S('Cabling and Grounding', [
-      choiceC({ id: 'cabling', label: 'Cabling', options: [['New Xplore Standard Cabling', 'Installed new Xplore standard cabling'], 'Other'], cols: 2,
-        otherLabel: 'Why Were Xplore Standards Not Met', otherOut: function (r) { return 'Xplore standards not met, ' + r; } }),
-      choiceC({ id: 'ground_block', label: 'Ground Block', options: [['Installed New', 'Installed new ground block'], 'Other'], cols: 2,
-        otherLabel: 'Why Was a New One Not Installed', otherOut: function (r) { return 'New ground block not installed, ' + r; } }),
+      tickC({ id: 'cabling', text: 'New Xplore standard cabling', yes: ['New Xplore Standard Cabling', 'Installed new Xplore standard cabling'], out: 'Cabling',
+        whyLabel: 'Why were Xplore standards not met?', otherOut: function (r) { return 'Xplore standards not met, ' + r; } }),
+      tickC({ id: 'ground_block', text: 'New ground block', yes: ['Installed New', 'Installed new ground block'], out: 'Ground Block',
+        whyLabel: 'Why was a new ground block not installed?', otherOut: function (r) { return 'New ground block not installed, ' + r; } }),
       groundSourceC()]),
     S('Indoor', [modemC(), routerC()]), vasSection(), commentsSection(),
     S('Confirmations', conf)];
