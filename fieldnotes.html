@@ -1176,7 +1176,7 @@ function commentsField() {
   }
   ta.addEventListener('input', function () { STATE.additional = ta.value; sync(); changed(id, false); });
   sync();
-  return fieldWrap(id, null, false, null, [ta, el('div', { class: 'comment-meta' }, [el('span', { text: 'Each line becomes its own bullet.' }), count])]);
+  return fieldWrap(id, 'Additional Comments', true, 'Each line becomes its own bullet.', [ta, el('div', { class: 'comment-meta' }, [el('span'), count])]);   // 1.20.126: label and hint like every other box
 }
 
 /* Units installed (None, 1, 2 ...) and where each one is. Used for XWH and TV (up to 4 each, 1.20.111).
@@ -1812,8 +1812,8 @@ var FW_REPAIR_MOUNTS = [['J-Arm', 'J-arm'], ['J-Arm + Side Stays', 'J-arm with s
 var SAT_MOUNTS = [['Tri-Mast on Roof', 'tri-mast on roof'], ['Tri-Mast on Wall', 'tri-mast on wall'], ['Tri-Mast on NPRM', 'tri-mast on NPRM'], ['Pole Mount', 'pole mount'], 'Other'];
 
 function towerC() { return textC({ id: 'tower', label: 'Tower', words: true }); }
-function rsrpC(final) { return readingC({ id: 'rsrp', label: 'RSRP', out: final ? 'Final RSRP' : 'RSRP', unit: 'dBm', digits: 3, sign: 'minus' }); }
-function sinrC(final) { return readingC({ id: 'sinr', label: 'SINR', out: final ? 'Final SINR' : 'SINR', unit: 'dB', digits: 2, sign: 'none' }); }   // a successful job always has a positive SINR
+function rsrpC() { return readingC({ id: 'rsrp', label: 'RSRP', out: 'RSRP', unit: 'dBm', digits: 3, sign: 'minus' }); }
+function sinrC() { return readingC({ id: 'sinr', label: 'SINR', out: 'SINR', unit: 'dB', digits: 2, sign: 'none' }); }   // a successful job always has a positive SINR
 /* withPlat: the Platform question is on the form, so radios that don't belong to it are greyed out */
 function cpeOff(o) { return (STATE.fw_plat === 'FWN' && /^CAT12/.test(o)) || (STATE.fw_plat === 'LTE' && o === 'First Gen 5G'); }
 function cpeRepairOff(o) { return STATE.fw_plat === 'FWN' && /^CAT12/.test(o); }   // a repair can leave a First Gen 5G radio on LTE in place
@@ -2046,7 +2046,7 @@ function recoveryComps() {
 /* ---------- the jobs ---------- */
 function S(title, items, heading) { return { title: title, heading: heading === undefined ? title.toUpperCase() : heading, items: items }; }
 function vasSection() { return S('Value Added Services', vasComps()); }
-function commentsSection() { return { title: 'Additional Comments', heading: 'ADDITIONAL COMMENTS', optional: true, showTitle: true, items: [commentsC()] }; }
+function commentsSection() { return { title: 'Additional Comments', heading: 'ADDITIONAL COMMENTS', optional: true, items: [commentsC()] }; }
 
 
 /* ---------- cannot complete (same form for every job type and platform, from the Cannot Complete JotForm) ---------- */
@@ -2328,8 +2328,9 @@ var FORMS = {
   'Repair|Fixed Wireless': function () {
     return [
       S('Repair', repairComps()),
-      S('Signal', [pairC(towerC(), fwPlatC()), pairC(textC({ id: 'cell_id', label: 'Cell ID' }), pairC(rsrpC(true), sinrC(true), 'tight mini')), cpeTypeC(true, true)]),
-      S('Mount', [reuseMountC(FW_MOUNTS, true), pairC(mountLocC(), heightC()), cpeAccessC(true)]),
+      // 1.20.126 (Curtis): same readings row as installs (units inside the boxes, RSRP/SINR not "Final"); Structure and Mounting Surface buttons instead of a typed Mount Location
+      S('Signal', [pairC(towerC(), fwPlatC()), textC({ id: 'cell_id', label: 'Cell ID' }), pairC(rsrpC(), sinrC(), 'trio', heightC()), cpeTypeC(true, true)]),
+      S('Mount', [reuseMountC(FW_MOUNTS, true)].concat(mountPlaceComps(), [cpeAccessC(true)])),
       S('Cabling and Grounding', fwSwapCabling()),
       S('Indoor', [powerC(), routerC()]), commentsSection(),
       S('Confirmations', [lawnC()])];
@@ -2341,7 +2342,7 @@ var FORMS = {
         choiceC({ id: 'los', label: 'Line of Sight', cols: 2, out: 'LOS', otherLabel: 'LOS Details', options: [['Confirmed Clear', 'Confirmed LOS is clear of obstructions'], 'Other'] }),
         choiceC({ id: 'peak', label: 'Point and Peak', cols: 2, out: 'Point & Peak', otherLabel: 'Point and Peak Details', options: [
           ['Pointed and Peaked', 'Pointed & peaked system while on site'], ['Not Necessary', 'Did not repoint and peak system, not necessary'], 'Other'] })]),
-      S('Mount', [reuseMountC(SAT_MOUNTS, true), mountLocC(), cpeAccessC(true)]),
+      S('Mount', [reuseMountC(SAT_MOUNTS, true)].concat(mountPlaceComps(true), [cpeAccessC(true)])),
       S('Cabling and Grounding', [
         choiceC({ id: 'cabling', label: 'Cabling', cols: 2, otherLabel: 'Cabling Details', options: [['Up to Xplore Specs', 'Confirmed all cabling is up to Xplore specifications'], 'Other'] }),
         groundSourceC()]),
@@ -2546,10 +2547,11 @@ function render() {
   mount.innerHTML = '';
   mount.appendChild(jobSection());
   if (!jobKey()) mount.appendChild(ghostSections());
-  currentSections().forEach(function (sec) {
+  var secs = currentSections(), ac = secs.filter(function (x) { return x.title === 'Additional Comments'; });
+  secs.filter(function (x) { return x.title !== 'Additional Comments'; }).concat(ac).forEach(function (sec) {   // 1.20.126: Additional Comments is last on the form
     var items = sec.items.filter(visible);
     if (!items.length) return;
-    // 1.20.125 (Curtis): no section labels (SIGNAL, MOUNT, INDOOR…); each question has its own label. Additional Comments keeps its title (its box has no label).
+    // 1.20.125 (Curtis): no section labels (SIGNAL, MOUNT, INDOOR…); each question has its own label.
     var s = el('section', { class: 'form-section' + (sec.showTitle ? '' : ' untitled'), 'data-sec': sec.title }, sec.showTitle ? [
       el('h2', { class: 'form-section-title' }, [sec.title, sec.optional ? el('span', { class: 'opt', text: ' (optional)' }) : null])
     ] : []);
