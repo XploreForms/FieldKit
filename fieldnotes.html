@@ -423,6 +423,10 @@ footer.app-footer { margin-top: 2rem; padding-top: 0.8rem; font-size: 0.75rem; c
    ===================================================================================== */
 :root { --xp-green-rgb: 88,199,116; --xp-dark-rgb: 0,43,43; --bar-h: 5rem; }
 body { padding-bottom: 6rem; }
+/* 1.20.110 (Curtis): no gap between the comment card and the Copy Comment bar. The footer is gone when nothing in it shows
+   (Field Kit hides settings), and the page ends just above the bar (--fn-bar-h is measured by the script below) */
+footer.app-footer:not(:has(> :not([hidden]):not(.footer-text))) { display: none; }
+body.fn-barfit { padding-bottom: calc(var(--fn-bar-h, 76px) + 14px) !important; }
 
 /* sections and questions slide in and out instead of jumping */
 .slide-in { animation: xp-slide-in 0.32s ease-out both; overflow: hidden; }
@@ -808,7 +812,7 @@ html:root[data-fn-theme] header.app-header .fk-row h1.fk-title{font-size:1.2rem}
     <div id="output-box"></div>
     <div class="preview-foot">
       <p id="preview-status" class="next-step" role="status"></p>
-      <button type="button" id="clear-btn" class="link-btn">Clear Form</button>
+      <button type="button" id="clear-btn" class="link-btn" hidden>Clear Form</button>   <!-- 1.20.110 (Curtis): removed from view -->
     </div>
   </section>
 
@@ -866,6 +870,7 @@ var store = {
   ok: function () { try { var k = '__xp_test'; window.localStorage.setItem(k, '1'); window.localStorage.removeItem(k); return true; } catch (e) { return false; } }
 };
 
+function capWords(t) { return String(t || '').trim().replace(/(^|[\s\-\/(])([a-z])/g, function (x, a, b) { return a + b.toUpperCase(); }); }
 function cap(t) { t = String(t || '').trim(); return t ? t.charAt(0).toUpperCase() + t.slice(1) : ''; }
 function lowerFirst(t) { t = String(t || '').trim(); return t ? t.charAt(0).toLowerCase() + t.slice(1) : ''; }
 function str(v) { return String(v === undefined || v === null ? '' : v).trim(); }
@@ -1239,11 +1244,11 @@ function choiceC(o) {
 /* one line of text, or several lines that become bullets */
 function linesOfText(v) { return str(v).split('\n').map(function (l) { return cap(l.replace(/^\s*[-•*]\s*/, '')); }).filter(Boolean); }
 function textC(o) {
-  // o: {id, label, out, multi, show}
+  // o: {id, label, out, multi, show, words}  words: capitalize each word (tower names, 1.20.110)
   return {
     id: o.id, show: o.show,
     render: function () {
-      var inp = o.multi ? el('textarea', { 'aria-label': o.label }) : el('input', { type: 'text', 'aria-label': o.label, autocomplete: 'off' });
+      var inp = o.multi ? el('textarea', { 'aria-label': o.label }) : el('input', { type: 'text', 'aria-label': o.label, autocomplete: 'off', autocapitalize: o.words ? 'words' : 'sentences' });
       inp.value = STATE[o.id] || '';
       inp.addEventListener('input', function () { STATE[o.id] = inp.value; changed(o.id, false); });
       return fieldWrap(o.id, o.label, false, o.multi ? 'Each line becomes its own bullet.' : null, [inp]);
@@ -1251,7 +1256,7 @@ function textC(o) {
     check: function (need) { need(o.id, o.label, !!str(STATE[o.id]), 'Please fill this in.'); },
     out: function (m) {
       var lab = o.out || o.label;
-      if (!o.multi) return [lab + ': ' + (str(STATE[o.id]) ? cap(STATE[o.id]) : m(o.id, o.label))];
+      if (!o.multi) return [lab + ': ' + (str(STATE[o.id]) ? (o.words ? capWords(STATE[o.id]) : cap(STATE[o.id])) : m(o.id, o.label))];
       var ls = linesOfText(STATE[o.id]);
       if (!ls.length) return [lab + ': ' + m(o.id, o.label)];
       if (ls.length === 1) return [lab + ': ' + ls[0]];
@@ -1275,6 +1280,17 @@ function readingC(o) {
         var c = clean(inp.value); if (inp.value !== c) inp.value = c; STATE[o.id] = c; changed(o.id, false);
         // RSRP (3 digits) and SINR (2 digits): the keyboard closes once the number is all there
         if (/rsrp|sinr/.test(o.id) && c.length >= (o.digits || 3)) inp.blur();
+      });
+      // 1.20.110 (Curtis): a reading outside the usual range asks "are you sure?" (RSRP -60 to -110 dBm, SINR -10 to 50 dB)
+      var rng = /rsrp/.test(o.id) ? [-110, -60] : /sinr/.test(o.id) ? [-10, 50] : null;
+      if (rng) inp.addEventListener('change', function () {
+        var c = clean(inp.value); if (!c) return;
+        var v = (neg() ? -1 : 1) * parseInt(c, 10);
+        if ((v >= rng[0] && v <= rng[1]) || STATE[o.id + '_ok'] === c) return;
+        askConfirm(o.label + ' of ' + v + ' ' + o.unit + ' is outside the usual ' + (rng[1] < 0 ? rng[1] + ' to ' + rng[0] : rng[0] + ' to ' + rng[1]) + ' ' + o.unit + '. Are you sure?',
+          'Yes, keep it', 'Change it', function () { STATE[o.id + '_ok'] = c; });
+        var no = document.querySelector('#dialog-mount .btn.secondary');
+        if (no) no.addEventListener('click', function () { setTimeout(function () { inp.focus(); }, 50); });
       });
       inp.addEventListener('focus', function () { if (inp.value) setTimeout(function () { try { inp.setSelectionRange(0, inp.value.length); } catch (e) {} }, 0); });
       var lead;
@@ -1749,7 +1765,7 @@ function reuseMountC(list, noTick) {   // noTick: repairs, where a reused mount 
 var FW_REPAIR_MOUNTS = [['J-Arm', 'J-arm'], ['J-Arm + Side Stays', 'J-arm with side stays'], ['Tripod + 10ft Pole', 'Tripod + 10ft pole'], ['Tower Leg', 'Tower leg (within reach from ladder)'], 'Other'];
 var SAT_MOUNTS = [['Tri-Mast on Roof', 'tri-mast on roof'], ['Tri-Mast on Wall', 'tri-mast on wall'], ['Tri-Mast on NPRM', 'tri-mast on NPRM'], ['Pole Mount', 'pole mount'], 'Other'];
 
-function towerC() { return textC({ id: 'tower', label: 'Tower' }); }
+function towerC() { return textC({ id: 'tower', label: 'Tower', words: true }); }
 function rsrpC(final) { return readingC({ id: 'rsrp', label: 'RSRP', out: final ? 'Final RSRP' : 'RSRP', unit: 'dBm', digits: 3, sign: 'minus' }); }
 function sinrC(final) { return readingC({ id: 'sinr', label: 'SINR', out: final ? 'Final SINR' : 'SINR', unit: 'dB', digits: 2, sign: 'none' }); }   // a successful job always has a positive SINR
 /* withPlat: the Platform question is on the form, so radios that don't belong to it are greyed out */
@@ -1794,8 +1810,7 @@ function mountPlaceComps(sat) {   // sat: no tower or wooden post for a dish
   return [
     choiceC({ id: 'structure', label: 'Structure', options: ['House', 'Garage', 'Shop', 'Barn', 'Trailer', 'Other'], cols: 3, otherLabel: 'Other Structure' }),
     choiceC({ id: 'mount_into', label: 'Mounting Surface', options: ['Roof', 'Fascia', 'Wall'].concat(sat ? [] : ['Tower', ['Wooden Post', 'Wooden post']], [['Steel Pole', 'Steel pole'], 'Other']), cols: 2, out: 'Mounting Surface', otherLabel: 'Other Surface' }),
-    mountSideC(),
-    positionC(sat)
+    // 1.20.110 (Curtis): Side and Position removed (mountSideC / positionC no longer asked)
   ];
 }
 /* which side of the structure, standing with your back to the road (the front faces the road) */
@@ -2109,7 +2124,7 @@ function towerTestsC() {
   function noSig(i) { return STATE[k(i, 'nosig')] === true; }
   function parts(i) {
     return {
-      tower: textC({ id: k(i, 'tower'), label: 'Tower' }),
+      tower: textC({ id: k(i, 'tower'), label: 'Tower', words: true }),
       plat: choiceC({ id: k(i, 'plat'), label: 'Platform', options: ['FWN', 'LTE'], cols: 2 }),
       cell: textC({ id: k(i, 'cell'), label: 'Cell ID' }),
       rsrp: readingC({ id: k(i, 'rsrp'), label: 'RSRP', unit: 'dBm', digits: 3, sign: 'minus' }),
@@ -2409,7 +2424,7 @@ function jobSection() {
   if (needsDrop() && STATE.job_outcome === 'Complete')
     wrap.appendChild(el('div', { 'data-anim': 'job_drop' }, [el('p', { class: 'sub-q', text: 'Drop' }), group('job_drop', PICK_DROPS, 3, dropOff)]));
   if (e) wrap.appendChild(el('div', { class: 'field-error-msg', text: e.msg }));
-  return el('section', { class: 'form-section job-section', 'data-sec': 'Job' }, [el('h2', { class: 'form-section-title', text: 'Job' }), wrap]);
+  return el('section', { class: 'form-section job-section', 'data-sec': 'Job' }, [wrap]);   // 1.20.110 (Curtis): no JOB title
 }
 /* until the job is picked, grey placeholder sections show where the questions will load */
 function ghostSections() {
@@ -3338,6 +3353,11 @@ function initRetro() {
   $('copy-btn').addEventListener('click', onCopy);
   $('bar-btn').addEventListener('click', onBarButton);
   $('clear-btn').addEventListener('click', onClear);
+  (function barFit() {   // 1.20.110: keep the page's end just above the sticky Copy Comment bar
+    var bar = document.querySelector('.sticky-bar'); if (!bar) return;
+    function fit() { var h = bar.getBoundingClientRect().height; if (h) { document.documentElement.style.setProperty('--fn-bar-h', Math.round(h) + 'px'); document.body.classList.add('fn-barfit'); } }
+    fit(); window.addEventListener('resize', fit); if (window.ResizeObserver) new ResizeObserver(fit).observe(bar);
+  })();
   $('output-box').addEventListener('click', function (e) {
     var g = e.target.closest && e.target.closest('.missing[data-gap]');
     if (g && !String(window.getSelection ? window.getSelection() : '')) jumpToGap(g.getAttribute('data-gap'));
