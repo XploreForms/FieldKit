@@ -248,6 +248,8 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 
 - (1.20.178) Home screen (Curtis): the outside sites (Compass, Percipio, **Dealer Portal** (was Inventory), **Installer Portal** (1.20.179), RMA Request, **Absent Notice** (1.20.180, the Absent Notification form)) are a small 3 × 2 row of links under the header (`#quick`); the tiles are just Manual Order (across the top, icon beside the text), Field Cam ("Photos without an SA") and Field Stock. The SA card's New button is "+ New SA". The version line is only in Settings now.
 
+- (1.20.181) SA page Equipment: "New mount not required" is a tick under the mount buttons (after "Deployed 10ft pole"), not on the right of the Mount heading (Curtis).
+
 **Things only a real phone can confirm** (the test browser has no camera or GPS)
 - Compass on Android (with and without the Compass web app installed; if Android shows an "open with" chooser instead of going straight in, adjust).
 - A real scan from the SA page returning correctly, and a real photo ticking its SN tile.

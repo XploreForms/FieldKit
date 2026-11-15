@@ -226,9 +226,8 @@
         if (r.value && OPEN_SLOT[r.id] !== r.value)
           return '<div class="fkj-slot fkj-row"><div class="fkj-sh">' + tick + '<b>' + esc(r.name) + '</b></div><button type="button" class="fkj-change" data-slot-open="' + esc(r.id) + '" data-v="' + esc(r.value) + '" aria-label="Change mount">' +
             '<span class="fkj-val">' + esc(none ? "New mount not required" : base + (pole ? " + 10ft pole" : "")) + '</span><span class="fkj-chev" aria-hidden="true">▾</span></button></div>';
-        // "New mount not required" sits on the right of the Mount heading (reused existing, or on a tower: nothing to log)
-        var mh = '<div class="fkj-slot"><div class="fkj-sh">' + (r.done ? tick : r.optional ? '<i class="fkj-need fkj-maybe" aria-hidden="true"></i>' : dot) + '<b>' + esc(r.name) + '</b>' +
-          '<label class="fkj-chk fkj-chk-r"><input type="checkbox" data-slot-set="mount" data-v="' + (none ? "" : esc(M.none)) + '"' + (none ? " checked" : "") + '><span>New mount not required</span></label></div>' +
+        // "New mount not required" (reused existing, or on a tower: nothing to log) sits under the buttons, like the pole tick (1.20.181, Curtis)
+        var mh = '<div class="fkj-slot"><div class="fkj-sh">' + (r.done ? tick : r.optional ? '<i class="fkj-need fkj-maybe" aria-hidden="true"></i>' : dot) + '<b>' + esc(r.name) + '</b></div>' +
           '<div class="fkj-seg' + (none ? ' fkj-off' : '') + '" role="group" aria-label="Mount type">' + M.types.map(function (t) {
             var v = M.poles.indexOf(t) >= 0 ? t + " + 10ft Pole" : t;   // a gable mount or tripod starts with its pole ticked
             if (t === base) v = r.value;                                   // tapping the picked one keeps the pole answer
@@ -236,6 +235,7 @@
           }).join("") + '</div>';
         if (M.poles.indexOf(base) >= 0)
           mh += '<label class="fkj-chk"><input type="checkbox" data-slot-set="mount" data-v="' + esc(pole ? base : base + " + 10ft Pole") + '"' + (pole ? " checked" : "") + '><span>Deployed 10ft pole</span></label>';
+        mh += '<label class="fkj-chk"><input type="checkbox" data-slot-set="mount" data-v="' + (none ? "" : esc(M.none)) + '"' + (none ? " checked" : "") + '><span>New mount not required</span></label>';
         return mh + '</div>';
       }
       if (r.kind === "choice" && r.ui === "nidtick") {
