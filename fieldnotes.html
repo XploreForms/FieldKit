@@ -270,7 +270,7 @@ input:focus, textarea:focus, .choice:focus-visible, .link-btn:focus-visible, but
 .field.device-card.has-error { border-left: 0.5rem solid var(--xp-orange); padding-left: 0; margin-left: 0; }
 
 /* discreet tick box (own router, splice already done, reused patch) */
-.mini-check-wrap { margin-top: 1rem; padding-top: 0.2rem; }
+.mini-check-wrap { margin-top: 0.2rem; padding-top: 0; }   /* 1.20.118 (Curtis): tighter to the buttons above (was 1rem + .2rem; applies to every small tick under a question) */
 .mini-check-wrap + .mini-check-wrap { margin-top: 0.15rem; }   /* ticks under one question sit together */
 .mini-check {
   display: flex; align-items: center; gap: 0.6rem; width: 100%; min-height: 2.9rem; padding: 0.3rem 0;
