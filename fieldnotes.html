@@ -1268,7 +1268,7 @@ function tickC(o) {
         box.addEventListener('input', function () { if (!on()) STATE[o.id] = why() ? 'Other' : undefined; });
         controls.push(box);
       }
-      return fieldWrap(o.id, null, false, null, controls);
+      return fieldWrap(o.id, o.label || null, false, null, controls);   // 1.20.146: optional label above the tick
     },
     done: function () { return on() || !!why(); },
     check: function (need) { need(o.id, o.text, this.done(), 'Tick it, or say why not.'); },
@@ -2348,7 +2348,7 @@ var FORMS = {
       S('Signal', [pairC(towerC(), fwPlatC()), pairC(rsrpC(), sinrC(), 'trio', heightC()), cpeTypeC(true)]),   // 1.20.119: CPE Height beside RSRP and SINR (Curtis)
       S('Mount', [fwMountC()].concat(mountPlaceComps(), [cpeAccessC()])),
       S('Cabling and Grounding', [
-        tickC({ id: 'cabling', text: 'Installed all new Xplore standard cabling', yes: ['New Xplore Standard Cabling', 'Installed all new Xplore standard cabling'], out: 'Cabling',
+        tickC({ id: 'cabling', label: 'Cabling and Surge', text: 'Installed all new Xplore standard cabling', yes: ['New Xplore Standard Cabling', 'Installed all new Xplore standard cabling'], out: 'Cabling',
           whyLabel: 'Why were Xplore standards not met?', otherOut: function (r) { return 'Xplore standards not met, ' + r; } }),
         tickC({ id: 'surge', text: 'Installed new Surge Protector', yes: ['Installed New', 'Installed new surge protector'], out: 'Surge',
           whyLabel: 'Why was a new surge not installed?', otherOut: function (r) { return 'New surge protector not installed, ' + r; } }),
@@ -2412,7 +2412,7 @@ function satForm(install) {
   return [
     S('Mount', [reuseMountC(SAT_MOUNTS)].concat(mountPlaceComps(true), [cpeAccessC()])),
     S('Cabling and Grounding', [
-      tickC({ id: 'cabling', text: 'Installed all new Xplore standard cabling', yes: ['New Xplore Standard Cabling', 'Installed all new Xplore standard cabling'], out: 'Cabling',
+      tickC({ id: 'cabling', label: 'Cabling and Ground Block', text: 'Installed all new Xplore standard cabling', yes: ['New Xplore Standard Cabling', 'Installed all new Xplore standard cabling'], out: 'Cabling',
         whyLabel: 'Why were Xplore standards not met?', otherOut: function (r) { return 'Xplore standards not met, ' + r; } }),
       tickC({ id: 'ground_block', text: 'Installed new ground block', yes: ['Installed New', 'Installed new ground block'], out: 'Ground Block',
         whyLabel: 'Why was a new ground block not installed?', otherOut: function (r) { return 'New ground block not installed, ' + r; } }),
