@@ -234,6 +234,8 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 
 - (1.20.158) Fibre Drop Required / Drop Only (Curtis): **MPT Light Reading** (`mpt_light`, `mptLightC()`) is the first question after the drop type, same box and odd-reading check as the NID reading (`lightBlock(label, key)` now takes the saved key). Comment: `MPT Light Reading: -19 dBm`; since 1.20.159 every reading in Comments is "Light Reading" (NID Light Reading, Light Reading at ONT), not "Light Level"; since 1.20.160 the photo labels too (NID Light Reading, MPT Light Reading), and old photos with the old labels move onto them (`OLD_LIGHT_LABELS` in fieldcam.html's `fixSnPhotos`). Test: `dev/tests/tmpt.py`.
 
+- (1.20.161) Pictures: **MPT Light Reading** is a required photo (after MPT) on Install Fibre Drop Required and Drop Only (Curtis). Conversions unchanged.
+
 **Things only a real phone can confirm** (the test browser has no camera or GPS)
 - Compass on Android (with and without the Compass web app installed; if Android shows an "open with" chooser instead of going straight in, adjust).
 - A real scan from the SA page returning correctly, and a real photo ticking its SN tile.
