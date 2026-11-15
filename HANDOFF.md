@@ -194,12 +194,12 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 **Not done yet (he asked to wait)**
 - Filtering SA equipment and pickers by the SA's Technology using the workbook's platform codes. Several codes are unconfirmed (CAB, CCW, CTX, XHP, XWR); the Zyxel EMG6726 has none. Satellite SA slots still use the Viasat (SurfBeam) parts even on Hughes technologies, which this filtering would fix.
 - HV2 modem and transceiver are off the order form for now.
+- The Zyxel router (NLA) stays off the order form (Curtis confirmed, Nov 14).
 
 **Clean-up and reminders**
 - **Google Sheets backup is skippable "for now"** (see Profile and setup). Make it required again at final rollout.
 
 **To confirm with Curtis**
-- The Zyxel router (NLA) is off the order form; ok?
 - Field Notes' Cannot Complete reason list still has "Temp Drop Required" (from the Cannot Complete JotForm). Should it go?
 - The old "ONT Placement" / "Router Placement" / "Modem Placement" / "PoE Placement" photo labels still sit beside the new SN ones. Replace them?
 - CPE SN / Modem SN / TRIA SN naming (he only named ONT, XWR, XWH, XTV).
