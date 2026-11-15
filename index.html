@@ -494,6 +494,7 @@ details.grp .btn{margin-bottom:12px}
     { id: "stock", name: "Field Stock", desc: "Receive, deploy, transfer and RMA", href: "fieldstock.html", icon: '<path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/>' },
     { name: "Inventory", desc: "Xplore Dealer Portal", href: "https://dealerportal.xplore.ca/", out: true, icon: '<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.3a1 1 0 0 0 1 .7h9.6a1 1 0 0 0 1-.8L21 8H6"/>' },
     { name: "Manual Order Request", desc: "When you can't order in the portal", href: "fieldstock.html#order", icon: '<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/>' },
+    { name: "Installer Portal", desc: "Xplore Installer Portal", href: "https://installerportal.xplore.ca/", out: true, icon: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/>' },   /* 1.20.179 (Curtis) */
     { name: "RMA Request", desc: "Request an RMA number", href: "https://form.jotform.com/72404477841257", out: true, icon: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>' },
     { name: "Compass", desc: "eCoverage Intelligence", href: "https://ecoverage-intelligence-29408448304181.1.azure.databricksapps.com/", out: true, app: true, icon: '<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>' },
     { name: "Percipio", desc: "Xplore University", href: "https://xploreuniversity.percipio.com/", out: true, icon: '<path d="M2 9l10-5 10 5-10 5-10-5z"/><path d="M6 11v5c2 2 10 2 12 0v-5"/><path d="M22 9v6"/>' },   /* learning platform (1.20.48) */
@@ -538,10 +539,10 @@ details.grp .btn{margin-bottom:12px}
     var byName = {}; items.forEach(function (l) { byName[l.name] = l; });
     // 1.20.178 (Curtis): the outside sites (Compass, Percipio, Dealer Portal, RMA) are a small row of links under the header;
     // the tiles are just Field Kit's own tools: Manual Order across the top, Field Cam and Field Stock nearest the thumb
-    var QUICK = ["Compass", "Percipio", "Inventory", "RMA Request"];
+    var QUICK = ["Compass", "Percipio", "Inventory", "Installer Portal", "RMA Request"];   // 1.20.179: + Installer Portal; RMA Request goes across the bottom
     $("quick").innerHTML = QUICK.map(function (n) { return byName[n]; }).filter(Boolean).map(function (l) {
       var t = TILE[l.name] || [l.name], viaApp = l.app && ANDROID;
-      return '<li><a href="' + esc(viaApp ? appHref(l.href) : l.href) + '"' + (l.out && !viaApp ? ' target="_blank" rel="noopener"' : '') + '>' + svg(l.icon) +
+      return '<li' + (l.name === "RMA Request" ? ' class="wide"' : '') + '><a href="' + esc(viaApp ? appHref(l.href) : l.href) + '"' + (l.out && !viaApp ? ' target="_blank" rel="noopener"' : '') + '>' + svg(l.icon) +
         '<span>' + esc(t[0]) + '</span>' + (l.out ? '<span class="out" aria-hidden="true">' + OUT + '</span><span class="sr-only"> (opens in a new tab)</span>' : '') + '</a></li>';
     }).join("");
     items = items.filter(function (l) { return QUICK.indexOf(l.name) < 0; }); paired = {}; PAIR = {};
@@ -1614,6 +1615,7 @@ html body #menu .tiles .tile.wide small{grid-row:2;grid-column:2;align-self:star
 .quick{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;flex:none}
 .quick a{display:flex;align-items:center;gap:8px;height:40px;padding:0 10px;border-radius:12px;background:var(--surface);box-shadow:var(--shadow);color:var(--fg);text-decoration:none;font-weight:600;font-size:.9rem;min-width:0}
 .quick a:active{background:var(--surface-2)}
+.quick li.wide{grid-column:1 / -1}
 .quick a > svg{width:18px;height:18px;flex:none;color:var(--accent)}
 .quick a > span:not(.out):not(.sr-only){flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .quick .out{display:flex;flex:none;opacity:.55}.quick .out svg{width:13px;height:13px}
