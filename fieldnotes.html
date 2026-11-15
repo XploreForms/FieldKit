@@ -785,7 +785,7 @@ html:root[data-fn-theme] .sub-q{color:var(--fk-muted);font-size:.88rem}
 .tick-box{width:24px;height:24px;flex:none;border-radius:7px;display:grid;place-items:center;font-size:15px;box-shadow:inset 0 0 0 2px var(--fk-line,#b9c4c0);color:var(--fk-accent-ink,#012929)}
 .tick-row[aria-checked="true"] .tick-box{background:var(--fk-accent,#5CBC5D);box-shadow:none}
 [data-field-id="cabling"] + [data-field-id="surge"], [data-field-id="cabling"] + [data-field-id="ground_block"]{margin-top:-0.6rem}
-[data-field-id="cpe_access"] .tick-row + .tick-row{margin-top:8px}   /* 1.20.144: roof and tower ticks on a repair */
+[data-field-id="cpe_access"].access-ticks{margin-top:-1.5rem}   /* 1.20.145: hugs Mounting Surface like the other small ticks */
 html:root[data-fn-theme] .choices:not(.settings-panel .choices){gap:4px;padding:4px;border-radius:12px;background:var(--fk-surface);box-shadow:inset 0 0 0 1px var(--fk-line)}
 html:root[data-fn-theme] .choices:not(.settings-panel .choices) .choice{background:transparent;box-shadow:none;color:var(--fk-ink);border-radius:9px;min-height:44px;padding:10px 6px;font-size:.88rem;line-height:1.15}
 html:root[data-fn-theme] .choices.cols-list .choice,html:root[data-fn-theme] .choices:not([class*="cols-"]) .choice{padding:10px 12px}
@@ -1848,18 +1848,12 @@ function cpeAccessC(repair) {
   if (STATE.cpe_access === 'Stepping onto Roof Required') STATE.cpe_roof = true;
   if (STATE.cpe_access === 'Tower Climb') STATE.cpe_tower = true;
   if (STATE.cpe_access && STATE.cpe_access !== 'Other') delete STATE.cpe_access;
-  function tick(key, text) {
-    var on = STATE[key] === true;
-    return el('button', { type: 'button', class: 'tick-row', role: 'checkbox', 'aria-checked': on ? 'true' : 'false',
-      onclick: function () { STATE[key] = on ? undefined : true; changed('cpe_access', true); } },
-      [el('span', { class: 'tick-box', 'aria-hidden': 'true', text: on ? '✓' : '' }), el('span', { text: text })]);
-  }
   return {
     id: 'cpe_access',
-    render: function () {
-      var c = [tick('cpe_roof', 'Stepping onto roof required')];
-      if (repair) c.push(tick('cpe_tower', 'Tower climb required'));
-      return fieldWrap('cpe_access', 'CPE Access', false, 'Leave unticked if it was serviceable from a ladder.', c);
+    render: function () {   // 1.20.145 (Curtis): small tick boxes right under Mounting Surface, no label
+      var c = [miniCheck('cpe_roof', 'Stepping onto roof required')];
+      if (repair) c.push(miniCheck('cpe_tower', 'Tower climb required'));
+      var w = fieldWrap('cpe_access', null, false, null, c); w.classList.add('access-ticks'); return w;
     },
     check: function () {},
     out: function () {

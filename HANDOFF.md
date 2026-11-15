@@ -222,7 +222,7 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 
 - (1.20.140) In Comments inside an SA, tapping a different job type / platform / technology / drop doesn't change it there: it opens Change SA (`index.html#job-change`, `fieldkit.changeFrom` in sessionStorage) with the tap already picked; Change SA (reason required) or Back returns to Comments. Test: `dev/tests/tchange2.py`.
 
-- (1.20.144) Comments CPE Access (Curtis): serviceable from ladder is the default (not asked); one tick **"Stepping onto roof required"** (`cpe_roof`), plus **"Tower climb required"** (`cpe_tower`) on repairs; hint "Leave unticked if it was serviceable from a ladder." The comment says Serviceable from ladder / Stepping onto roof required / Tower climb required / both. Old `cpe_access` answers are mapped. Test: `dev/tests/taccess.py`.
+- (1.20.144) Comments CPE Access (Curtis): serviceable from ladder is the default (not asked); one tick **"Stepping onto roof required"** (`cpe_roof`), plus **"Tower climb required"** (`cpe_tower`) on repairs; since 1.20.145 these are small ticks right under Mounting Surface with no CPE Access label or hint The comment says Serviceable from ladder / Stepping onto roof required / Tower climb required / both. Old `cpe_access` answers are mapped. Test: `dev/tests/taccess.py`.
 
 **Things only a real phone can confirm** (the test browser has no camera or GPS)
 - Compass on Android (with and without the Compass web app installed; if Android shows an "open with" chooser instead of going straight in, adjust).
