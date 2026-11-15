@@ -177,7 +177,7 @@ An Android-only shortcut (Chrome speculation-rules prerender of Field Stock/Manu
 - History hides voided entries; they're only under the last filter chip, **Voided** (still kept and sealed for History Check).
 - Always opens on the **Log** tab (renamed from "Logs"); the last tab isn't restored. Manual Order Request opens as its **own page** (`fieldstock.html#order` adds `html.order-only`, hiding Field Stock's tab bar, status pill and sync banner).
 - Names and categories come from the catalogue. Items sharing a plain name are one item to techs: one row in the stock list (counts added), one entry in pickers (the three Nokia XS-010X ONTs; the TRIA - 1 Watt radios). Known serials identify the exact model first, then the patterns.
-- **Deploy can pick any item by hand**, serialized too: the serial is tapped from this phone's stock or typed, and must match the item. Receive/Transfer/RMA/Recycle still list only items without serials by hand.
+- **Deploy, Receive and Transfer can pick any item by hand** (Receive/Transfer since 1.20.124, Curtis), serialized too: the serial is typed (Deploy/Transfer can also tap one from this phone's stock; serials already on the list aren't offered), and must match the item. Each serialized pick is its own line. RMA/Recycle still list only items without serials by hand.
 - **Manual orders go by product family**, not SKU. `ORDER_PICK` families (Router, 5G High Gain CPE, ONT, Drop cable, TV box, Aerial kit, AzEl, Trimast, Dish): no "any model", the tech must choose a model. `ORDER_FAMILY_ONLY` (5G CPE, LTE CPE – CAT12 2.5 / 3.5 GHz): by family, no model choice. `ORDER_HIDE`: CAT4. Items whose system description starts "NLA" (e.g. the Zyxel EMG6726 router) are left off. Other families have one item and order as it. Order-only lines (`ORDER_EXTRA`): Adtran 411 ONT, Nova remote, two aerial kits. The email shows the family, system codes, and the chosen model.
 - Max per order line is 20 (10 for J-Arm and High Gain).
 - Drop names stay long ("Drop - 300m - Evolv Dielectric Drop PushLok Tech") because more drop types are coming.
@@ -195,16 +195,14 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 - Filtering SA equipment and pickers by the SA's Technology using the workbook's platform codes. Several codes are unconfirmed (CAB, CCW, CTX, XHP, XWR); the Zyxel EMG6726 has none. Satellite SA slots still use the Viasat (SurfBeam) parts even on Hughes technologies, which this filtering would fix.
 - HV2 modem and transceiver are off the order form for now.
 - The Zyxel router (NLA) stays off the order form (Curtis confirmed, Nov 14).
+- The old ONT/Router/Modem/PoE Placement photo labels stay beside the SN ones, and CPE SN / Modem SN / TRIA SN names are right (Curtis confirmed, Nov 14).
 
 **Clean-up and reminders**
 - **Google Sheets backup is skippable "for now"** (see Profile and setup). Make it required again at final rollout.
 
 **To confirm with Curtis**
 - Field Notes' Cannot Complete reason list still has "Temp Drop Required" (from the Cannot Complete JotForm). Should it go?
-- The old "ONT Placement" / "Router Placement" / "Modem Placement" / "PoE Placement" photo labels still sit beside the new SN ones. Replace them?
-- CPE SN / Modem SN / TRIA SN naming (he only named ONT, XWR, XWH, XTV).
 - Fibre Drop Only photo rules (MPT, Drop Route); whether Install Overview should be alone on Fibre Existing Drop; whether the SA summary header should use the truck icon.
-- Should Receive/Transfer also pick serialized items by hand?
 
 **Things only a real phone can confirm** (the test browser has no camera or GPS)
 - Compass on Android (with and without the Compass web app installed; if Android shows an "open with" chooser instead of going straight in, adjust).

@@ -1054,13 +1054,14 @@ $("dItemSel").innerHTML = `<option value="">Non-Serialized</option>` + GROUPS.ma
   const items=window.FK_CATALOG.firstOfName(SKUS.filter(s=>s.group===g && !s.serial && !s.hidden));
   return items.length ? `<optgroup label="${esc(g)}">`+items.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join("")+`</optgroup>` : "";
 }).join("");
-/* Deploy can pick any item by hand (serialized ones too: the serial is then picked from this phone's stock or typed) */
+/* Deploy, Receive and Transfer can pick any item by hand (serialized ones too: the serial is then typed, or for Deploy/Transfer tapped from this phone's stock) */
 const ALL_ITEMS_OPTS = `<option value="">Pick an item…</option>` + GROUPS.map(g=>{
   const items=window.FK_CATALOG.firstOfName(SKUS.filter(s=>s.group===g && !s.hidden));
   return items.length ? `<optgroup label="${esc(g)}">`+items.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join("")+`</optgroup>` : "";
 }).join("");
 const NOSERIAL_OPTS = $("dItemSel").innerHTML;
-function fillItemSel(){ $("dItemSel").innerHTML = F.type==="deploy" ? ALL_ITEMS_OPTS : NOSERIAL_OPTS; $("dItemSel").setAttribute("aria-label", F.type==="deploy" ? "Pick an item" : "Pick an item without a serial"); }
+const anyByHand=()=>["deploy","receive","transfer"].includes(F.type);
+function fillItemSel(){ $("dItemSel").innerHTML = anyByHand() ? ALL_ITEMS_OPTS : NOSERIAL_OPTS; $("dItemSel").setAttribute("aria-label", anyByHand() ? "Pick an item" : "Pick an item without a serial"); }
 const SERIAL_ITEMS_OPTS = `<option value="">Pick the item…</option>` + GROUPS.map(g=>{
   const items=window.FK_CATALOG.firstOfName(SKUS.filter(s=>s.group===g && s.serial && !s.hidden));
   return items.length ? `<optgroup label="${esc(g)}">`+items.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join("")+`</optgroup>` : "";
@@ -1109,8 +1110,10 @@ function renderLines(){
       else if(!(rec && rec.inStock)) body+=`<small class="warn">Not in your stock records</small>`;
     } else if(s && s.serial){   // picked by hand: needs its serial
       const ids=SKUS.filter(x=>x.group===s.group && x.name===s.name).map(x=>x.id);
-      const mine=[].concat(...ids.map(id=>STOCK.bySku[id])).sort((a,b)=>b.ts-a.ts).slice(0,12);
-      body+=`<small class="warn">${mine.length?"Tap the serial you're deploying, or type it":"Type the serial you're deploying"}</small>`;
+      const used=new Set(F.lines.filter(x=>x.serial).map(x=>keyOf(x.serial)));
+      const mine=F.type==="receive" ? [] : [].concat(...ids.map(id=>STOCK.bySku[id])).filter(r=>!used.has(keyOf(r.serial))).sort((a,b)=>b.ts-a.ts).slice(0,12);
+      const verb={receive:"you received",transfer:"you're transferring"}[F.type]||"you're deploying";
+      body+=`<small class="warn">${mine.length?`Tap the serial ${verb}, or type it`:`Type the serial ${verb}`}</small>`;
       if(mine.length) body+=`<div class="chips">${mine.map(r=>`<button type="button" class="mono" data-lser="${i}" data-serial="${esc(r.serial)}">${esc(r.serial)}</button>`).join("")}</div>`;
       body+=`<div class="row"><input type="text" class="mono" data-lin="${i}" placeholder="Type the serial" autocomplete="off" autocapitalize="characters" spellcheck="false"><button type="button" class="btn" data-ladd="${i}">Add</button></div>`;
     } else if(s){
@@ -1142,7 +1145,7 @@ $("lineList").addEventListener("keydown",e=>{ if(e.key==="Enter" && e.target.mat
 $("lineList").addEventListener("change",e=>{ const sel=e.target.closest("[data-lsel]"); if(sel && sel.value){ const l=F.lines[Number(sel.dataset.lsel)]; l.sku=sel.value; l.pick=null; renderLines(); } });
 $("dItemSel").addEventListener("change",()=>{
   const id=$("dItemSel").value; if(!id) return;
-  const same=multi() && F.lines.find(l=>!l.serial && l.sku===id);
+  const same=multi() && !(SKU[id]&&SKU[id].serial) && F.lines.find(l=>!l.serial && l.sku===id);
   if(same) same.qty++; else if(multi()) F.lines.push({serial:"", sku:id, qty:1}); else F.lines=[{serial:"", sku:id, qty:1}];
   $("dItemSel").value=""; renderLines();
 });
@@ -1407,7 +1410,9 @@ async function saveMulti(){
   if(t==="rma") tracking=$("rmaTrack").value.trim();
   if(t==="rma" && !$("rmaIn").value.trim()) return err("Enter the RMA number.","rmaIn");
   if(!F.lines.length) return err({receive:"Scan or add the items you received.",transfer:"Scan or add the items you're transferring.",rma:"Scan the items going back on RMA.",recycle:"Scan or add the items you're recycling."}[t]);
+  document.querySelectorAll("#lineList [data-lin]").forEach(inp=>{ if(inp.value.trim()) lineSetSerial(Number(inp.dataset.lin), inp.value); });
   const unknown=F.lines.find(l=>!SKU[l.sku]); if(unknown) return err(`Pick the item for ${unknown.serial}.`);
+  const noSn=F.lines.find(l=>SKU[l.sku].serial && !l.serial); if(noSn) return err(`Add the serial number for ${SKU[noSn.sku].name}.`);
   if(t==="receive"){
     const dup=F.lines.find(l=>{ if(!l.serial) return false; const r=STOCK.serials.get(keyOf(l.serial)); return r && r.inStock; });
     if(dup) return err(`${dup.serial} is already in your stock. Remove it to continue.`);

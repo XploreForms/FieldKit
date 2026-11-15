@@ -27,8 +27,10 @@ async def main():
         # wrong-item serial typed
         await pg.locator('#lineList [data-lin]').fill('ALCLFFDBFA43'); await pg.locator('#lineList [data-ladd]').click(); await pg.wait_for_timeout(300)
         print('typed an ONT serial for a router ->', await pg.evaluate("document.getElementById('toast').textContent"), '| line still needs serial:', await pg.locator('#lineList [data-lin]').count()==1)
-        # tap a stock chip
-        await pg.locator('#lineList [data-lser]').first.click(); await pg.wait_for_timeout(300)
+        # tap a stock chip (or type one when the sample stock is empty)
+        if await pg.locator('#lineList [data-lser]').count(): await pg.locator('#lineList [data-lser]').first.click()
+        else: await pg.locator('#lineList [data-lin]').fill('TEST854Z999'); await pg.locator('#lineList [data-ladd]').click()
+        await pg.wait_for_timeout(300)
         print('after tapping a chip:', (await pg.locator('#lineList').inner_text()).replace('\n',' | ')[:120])
         before = await pg.locator('#st-ser').inner_text() if False else None
         await pg.locator('#saveBtn').click(); await pg.wait_for_timeout(900)
@@ -39,9 +41,24 @@ async def main():
         print('typed serial, saved with Save only ->', await pg.evaluate("(({type,skuName,serial})=>[type,skuName,serial].join(' · '))(JSON.parse(localStorage.getItem('techstock.events')).filter(e=>!e.voided && e.type==='deploy').sort((a,b)=>b.ts-a.ts)[0])"))
         await pg.locator('#dItemSel').select_option(label='NID'); await pg.wait_for_timeout(300); await pg.locator('#saveBtn').click(); await pg.wait_for_timeout(900)
         print('NID (no serial) ->', await pg.evaluate("(({type,skuName,serial,qty})=>[type,skuName,serial||'-',qty].join(' · '))(JSON.parse(localStorage.getItem('techstock.events')).filter(e=>!e.voided && e.type==='deploy').sort((a,b)=>b.ts-a.ts)[0])"))
-        # other functions keep the old picker
+        # Receive: serialized items by hand (typed only), two units of the same item = two lines
         await pg.locator('#typeSeg button', has_text='Receive').click(); await pg.wait_for_timeout(300)
-        o2 = await pg.evaluate("[...document.querySelectorAll('#dItemSel option')].map(o=>o.textContent)"); print('receive picker:', o2[0], '| serialized item offered:', 'Adtran 854-V6' in o2)
+        o2 = await pg.evaluate("[...document.querySelectorAll('#dItemSel option')].map(o=>o.textContent)"); print('receive picker:', o2[0], '| serialized offered:', 'Adtran 854-V6' in o2)
+        await pg.locator('#fromSeg [data-from]').first.click()
+        await pg.locator('#dItemSel').select_option(label='Adtran 854-V6'); await pg.locator('#dItemSel').select_option(label='Adtran 854-V6'); await pg.wait_for_timeout(300)
+        print('receive lines:', await pg.locator('#lineList .line').count(), '| stock chips (should be 0):', await pg.locator('#lineList [data-lser]').count())
+        await pg.locator('#saveBtn').click(); await pg.wait_for_timeout(300); print('receive w/o serial ->', (await pg.locator('#formErr').inner_text()).strip())
+        ins=pg.locator('#lineList [data-lin]'); await ins.nth(0).fill('TEST854A001'); await ins.nth(1).fill('TEST854A002')
+        await pg.locator('#saveBtn').click(); await pg.wait_for_timeout(1200)
+        print('received ->', await pg.evaluate("JSON.parse(localStorage.getItem('techstock.events')).filter(e=>!e.voided && e.type==='receive').sort((a,b)=>b.ts-a.ts).slice(0,2).map(e=>e.skuName+' '+e.serial).join(' / ')"), '|', (await pg.locator('#formErr').inner_text()).strip()[:80])
+        # Transfer: stock chips offered
+        await pg.locator('#typeSeg button', has_text='Transfer').click(); await pg.wait_for_timeout(300)
+        await pg.locator('#dItemSel').select_option(label='Adtran 854-V6'); await pg.wait_for_timeout(300)
+        print('transfer line:', (await pg.locator('#lineList').inner_text()).replace('\n',' | ')[:110], '| chips:', await pg.locator('#lineList [data-lser]').count())
+        await pg.locator('#lineList [data-lser]').first.click(); await pg.wait_for_timeout(300)
+        print('transfer after chip:', (await pg.locator('#lineList').inner_text()).replace('\n',' | ')[:110])
+        await pg.locator('#typeSeg button', has_text='RMA').click(); await pg.wait_for_timeout(300)
+        o3 = await pg.evaluate("[...document.querySelectorAll('#dItemSel option')].map(o=>o.textContent)"); print('rma picker serialized offered (should be False):', 'Adtran 854-V6' in o3)
         print('history check:', end=' ')
         await pg.locator('.tabs [role=tab]', has_text='History').click(); await pg.wait_for_timeout(400); t=await pg.locator('#p-history').inner_text(); i=t.find('VERIFIED'); print('VERIFIED' if i>=0 else t[t.find('History Check'):][:80])
         await pg.goto(B+'index.html'); await pg.wait_for_timeout(500); await pg.goto(B+'fieldstock.html#testremove'); await pg.wait_for_timeout(2500)
