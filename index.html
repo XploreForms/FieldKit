@@ -228,9 +228,9 @@ html:not(.fk-slim) .lhead.fk-row .njtitle{font-size:1.2rem!important}
 .btn.sure{background:var(--warn-bg);color:var(--warn)}
 .lfoot{display:flex;flex-direction:column;gap:8px}
 /* 1.20.48: Complete SA pinned in the same spot and size as the home screen's Start New SA; a warning grows the bar upward,
-   so the button never moves and the page never jumps. The cards sit at the bottom, right above it (one-handed). */
+   so the button never moves and the page never jumps. Since 1.20.137 the cards sit at the top (Curtis). */
 #lobby{padding-bottom:0}
-#lobby #lbStart{margin-top:auto}   /* the first card (1.20.97 put Started above the outcome) */
+#lobby .lfoot{margin-top:auto}   /* 1.20.137 (Curtis): the cards anchor to the top; Complete SA keeps its spot at the bottom */
 /* 1.20.103 (Curtis): Complete SA no longer floats; it ends the page, and once scrolled to the bottom it sits in the same
    spot and size as Start New SA (--go-gap / --go-h) */
 #lobby .lfoot{gap:10px;padding-bottom:var(--go-gap,34px)}
