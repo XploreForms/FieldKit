@@ -240,6 +240,8 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 
 - (1.20.163) Pictures: optional **Recovered SN** photo label on every Conversion and Repair (Complete outcome) (Curtis).
 
+- (1.20.164) Fixed Wireless **conversion** (Curtis): Cabling no longer offers "Replaced - New Mount Location Required"; instead a small **"CPE relocation required"** tick sits under CPE Type (`cpe_reloc`; comment `CPE Relocation: Required, new mount location`). An old answer with that cabling choice becomes the tick. Repairs keep the cabling option. Test: `dev/tests/treloc.py`.
+
 **Things only a real phone can confirm** (the test browser has no camera or GPS)
 - Compass on Android (with and without the Compass web app installed; if Android shows an "open with" chooser instead of going straight in, adjust).
 - A real scan from the SA page returning correctly, and a real photo ticking its SN tile.

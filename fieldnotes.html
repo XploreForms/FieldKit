@@ -788,7 +788,7 @@ html:root[data-fn-theme] .sub-q{color:var(--fk-muted);font-size:.88rem}
 .tick-box{width:24px;height:24px;flex:none;border-radius:7px;display:grid;place-items:center;font-size:15px;box-shadow:inset 0 0 0 2px var(--fk-line,#b9c4c0);color:var(--fk-accent-ink,#012929)}
 .tick-row[aria-checked="true"] .tick-box{background:var(--fk-accent,#5CBC5D);box-shadow:none}
 [data-field-id="cabling"] + [data-field-id="surge"], [data-field-id="cabling"] + [data-field-id="ground_block"]{margin-top:-0.6rem}
-[data-field-id="cpe_access"].access-ticks{margin-top:-1.5rem}   /* 1.20.145: hugs Mounting Surface like the other small ticks */
+[data-field-id="cpe_access"].access-ticks, [data-field-id="cpe_reloc"].access-ticks{margin-top:-1.5rem}   /* 1.20.145: hugs Mounting Surface like the other small ticks */
 html:root[data-fn-theme] .choices:not(.settings-panel .choices){gap:4px;padding:4px;border-radius:12px;background:var(--fk-surface);box-shadow:inset 0 0 0 1px var(--fk-line)}
 html:root[data-fn-theme] .choices:not(.settings-panel .choices) .choice{background:transparent;box-shadow:none;color:var(--fk-ink);border-radius:9px;min-height:44px;padding:10px 6px;font-size:.88rem;line-height:1.15}
 html:root[data-fn-theme] .choices.cols-list .choice,html:root[data-fn-theme] .choices:not([class*="cols-"]) .choice{padding:10px 12px}
@@ -1863,6 +1863,13 @@ function cpeOff(o) { return (STATE.fw_plat === 'FWN' && /^CAT12/.test(o)) || (ST
 function cpeRepairOff(o) { return STATE.fw_plat === 'FWN' && /^CAT12/.test(o); }   // a repair can leave a First Gen 5G radio on LTE in place
 function cpeTypeC(withPlat, repair) { if (/^(First|Next) Gen High Gain$/.test(STATE.cpe || '')) STATE.cpe = 'High Gain';   // saved before 1.20.143
   return choiceC({ id: 'cpe', label: 'CPE Type', options: CPE_TYPES, cols: 2, out: 'CPE', off: withPlat ? (repair ? cpeRepairOff : cpeOff) : null }); }
+/* 1.20.164 (Curtis): fixed wireless conversion: a small tick right under CPE Type */
+function cpeRelocC() {
+  return { id: 'cpe_reloc',
+    render: function () { var w = fieldWrap('cpe_reloc', null, false, null, [miniCheck('cpe_reloc', 'CPE relocation required')]); w.classList.add('access-ticks'); return w; },
+    check: function () {},
+    out: function () { return STATE.cpe_reloc === true ? ['CPE Relocation: Required, new mount location'] : []; } };
+}
 /* how the tech gets to the CPE (fixed wireless and satellite) */
 /* repair: a radio already on a tower may need a climb; installs and conversions never climb */
 /* 1.20.144 (Curtis): serviceable from ladder is the default; the tech ticks only when stepping onto the roof (or, on a
@@ -2042,13 +2049,15 @@ function repairComps() {
 }
 
 /* fixed wireless conversion and repair: cabling, surge and grounding may be reused or replaced */
-function fwSwapCabling() {
+function fwSwapCabling(conv) {
+  // 1.20.164 (Curtis): conversions say a new mount location with the "CPE relocation required" tick instead
+  if (conv && STATE.cabling === 'Replaced - New Mount Location Required') { delete STATE.cabling; STATE.cpe_reloc = true; }
   return [
     choiceC({ id: 'cabling', label: 'Cabling', cols: 2, otherLabel: 'Cabling Details', options: [
       ['Reused - Meets Xplore Standards', 'Reused existing cabling which meets Xplore standards'],
-      ['Replaced - Original Cable Not Up to Xplore Standards', 'Replaced cabling, original cable was not up to Xplore standards'],
-      ['Replaced - New Mount Location Required', 'Replaced cabling, new mount location required'],
-      'Other'] }),
+      ['Replaced - Original Cable Not Up to Xplore Standards', 'Replaced cabling, original cable was not up to Xplore standards']].concat(
+      conv ? [] : [['Replaced - New Mount Location Required', 'Replaced cabling, new mount location required']], [
+      'Other']) }),
     choiceC({ id: 'surge', label: 'Surge Suppressor', cols: 2, out: 'Surge', otherLabel: 'Surge Details', options: [
       ['Installed New - Replaced Original', 'Installed new surge suppressor, replacing original'],
       ['Installed New - No Pre-Existing Surge', 'Installed new surge suppressor, no pre-existing surge suppressor'],
@@ -2386,9 +2395,9 @@ var FORMS = {
   'Conversion|Fixed Wireless': function () {
     return [
       S('Conversion', [choiceC({ id: 'conv_type', label: 'Conversion Type', cols: 2, out: 'Conversion', afterChange: convPlatform, options: convTypes() })]),
-      S('Signal', [pairC(towerC(), fwPlatC()), pairC(rsrpC(), sinrC(), 'trio', heightC()), cpeTypeC(true)]),   // 1.20.119: CPE Height beside RSRP and SINR (Curtis)
+      S('Signal', [pairC(towerC(), fwPlatC()), pairC(rsrpC(), sinrC(), 'trio', heightC()), cpeTypeC(true), cpeRelocC()]),   // 1.20.119: CPE Height beside RSRP and SINR (Curtis)
       S('Mount', [fwMountC()].concat(mountPlaceComps(), [cpeAccessC()])),
-      S('Cabling and Grounding', fwSwapCabling()),
+      S('Cabling and Grounding', fwSwapCabling(true)),
       S('Indoor', [powerC(), routerC()]),
       S('Old Equipment', [choiceC({ id: 'recovery', label: 'Original CPE', cols: 0, out: 'Recovery', otherLabel: 'Recovery Details', options: [
         ['Recovered for RMA', 'Recovered original CPE for RMA'], ['Recovered to Be Recycled', 'Recovered original CPE to be recycled'], ['Not Recovered, No RMA', 'Did not recover original CPE, no RMA'], 'Other'] })]),
