@@ -2440,6 +2440,13 @@ function answersBesidesJob(st) { var c = {}; Object.keys(st || {}).forEach(funct
 /* changing the job clears the answers (Undo brings them back), so a value from another form can never slip into this one */
 function setJob(key, value) {
   if (STATE[key] === value || SOON[value]) return;
+  // 1.20.140 (Curtis): inside an SA, changing the job type, platform, technology or drop goes through Change SA (with a reason)
+  if (WIP_IN_SA && STATE[key] && ['job_type', 'job_plat', 'job_tech', 'job_drop'].indexOf(key) >= 0) {
+    try { sessionStorage.setItem('fieldkit.changeFrom', JSON.stringify({ key: key, value: value, ret: 'fieldnotes.html#job' })); } catch (err) {}
+    wipSaveNow();
+    if (window.FieldKit && FieldKit.go) FieldKit.go('index.html#job-change'); else location.href = 'index.html#job-change';
+    return;
+  }
   var before = JSON.stringify(STATE), had = answersBesidesJob(STATE), wasKey = jobKey();
   STATE[key] = value;
   if (!STATE.job_outcome) STATE.job_outcome = 'Complete';   // Field Kit: the outcome starts as Complete; tap another to change it

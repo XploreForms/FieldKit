@@ -643,6 +643,7 @@
   function changeJob(job, to, reason) {
     job.changes = (job.changes || []).concat([{ from: job.base || "", fromWork: job.work, fromPlat: job.plat, fromTech: job.tech || "", to: to.base, reason: reason, at: Date.now() }]);
     job.work = to.work; job.plat = to.plat; job.tech = to.tech || ""; job.vas = to.vas || ""; job.base = to.base;
+    delete job.outcomeOpts;   // the new job type has its own outcome reasons (refilled by the SA page or Field Cam)
     var oname = NOTE_OUT[job.outcome] || "";
     job.title = job.base + (oname ? " · " + oname : "") + (job.reason ? " · " + job.reason : "");
     var camJobs = get("fieldcam.jobs", {}) || {}, cj = job.camJobId && camJobs[job.camJobId];

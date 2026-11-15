@@ -627,10 +627,22 @@ details.grp .btn{margin-bottom:12px}
     var tile = document.querySelector("#newjob .fk-tile svg"); if (tile) tile.innerHTML = change ? '<path d="M7 4 3 8l4 4"/><path d="M3 8h13a4 4 0 0 1 4 4"/><path d="m17 20 4-4-4-4"/><path d="M21 16H8a4 4 0 0 1-4-4"/>' : '<path d="M12 5v14M5 12h14"/>';
     $("njRef").readOnly = !!change; $("njPaste").hidden = !!change; $("njStart").textContent = change ? "Change SA" : "Start SA";
   }
-  function openChangeJob() {
+  var njRet = "";   // 1.20.140: Change SA opened from Comments goes back there
+  function openChangeJob(fromTool) {
     var j = J.active(); if (!j) return;
     var m = /^Fibre \((.+)\)$/.exec(j.plat || "");
     nj = { work: j.work || null, fam: j.plat ? famOf(j.plat) : null, drop: m ? m[1] : null, vas: j.plat === "VAS" ? (j.vas || j.tech || null) : null, tech: j.plat !== "VAS" ? (j.tech || null) : null, why: "" };
+    njRet = "";
+    if (fromTool === true) {   // what the tech tapped in Comments is already picked here
+      var cf = null; try { cf = JSON.parse(sessionStorage.getItem("fieldkit.changeFrom") || "null"); sessionStorage.removeItem("fieldkit.changeFrom"); } catch (e) {}
+      if (cf) {
+        njRet = cf.ret || "";
+        if (cf.key === "job_type") { var t = NJ_TYPES.filter(function (x) { return x[1] === cf.value; })[0]; if (t) nj.work = t[0]; }
+        else if (cf.key === "job_plat") { var f = cf.value === "Value Added Services" ? "VAS" : cf.value; if (f !== nj.fam) { nj.fam = f; nj.tech = null; nj.vas = null; nj.drop = null; } }
+        else if (cf.key === "job_tech") { if (nj.fam === "VAS") nj.vas = cf.value; else nj.tech = cf.value; }
+        else if (cf.key === "job_drop") nj.drop = cf.value;
+      }
+    }
     njMode(j); $("njRef").value = j.sa || ""; $("njErr").innerHTML = "";
     paintNewJob(); history.pushState(null, "", "#job-change"); showView("newjob"); sizeNewJob();
   }
@@ -669,7 +681,7 @@ details.grp .btn{margin-bottom:12px}
     if (!/^#new-job/.test(location.hash)) history.pushState(null, "", "#new-job");
     showView("newjob"); sizeNewJob();
   }
-  $("njBack").addEventListener("click", function (e) { e.preventDefault(); if (njChange) { njMode(null); history.replaceState(null, "", "#job"); paintLobby(); showView("lobby"); return; } history.replaceState(null, "", location.pathname + location.search); openMenu(); });
+  $("njBack").addEventListener("click", function (e) { e.preventDefault(); if (njChange && njRet) { var r = njRet; njRet = ""; njMode(null); FK.go(r); return; } if (njChange) { njMode(null); history.replaceState(null, "", "#job"); paintLobby(); showView("lobby"); return; } history.replaceState(null, "", location.pathname + location.search); openMenu(); });
   $("njStart").addEventListener("click", function () {
     var ref = normRef($("njRef").value), plat = njPlat(), miss = [];
     if (njChange) return changeStart(plat);
@@ -709,6 +721,7 @@ details.grp .btn{margin-bottom:12px}
     if (nj.work === j.work && plat === j.plat && (tech || "") === (j.tech || "")) { $("njErr").innerHTML = '<div class="err">That\'s what the SA already is. Pick the new job type, platform or technology.</div>'; return; }
     J.changeJob(j, { work: nj.work, plat: plat, tech: tech, vas: plat === "VAS" ? nj.vas : "", base: base }, String(nj.why).trim());
     fillOutcomes(J.active(), true);   // the new job type has its own outcome reasons
+    if (njRet) { var r = njRet; njRet = ""; njMode(null); FK.go(r); return; }   // back to Comments, now with the new job
     njMode(null); history.replaceState(null, "", "#job"); paintLobby(); showView("lobby"); toast("SA changed to " + base);
   }
   function newJob() { openNewJob(); }
@@ -1492,6 +1505,7 @@ details.grp .btn{margin-bottom:12px}
       if (sr === "ok") toast("Google Sheet is up to date"); else if (sr) $("sErr").innerHTML = '<div class="err">' + esc(sr) + '</div>';
       return;
     }
+    if (/^#job-change/.test(location.hash) && J.active()) { history.replaceState(null, "", "#job"); openChangeJob(true); return; }   // 1.20.140: from Comments
     if (/^#job/.test(location.hash) && J.active()) { paintLobby(); showView("lobby"); return; }
     if (/^#new-job/.test(location.hash)) { openNewJob(); return; }
     if (/^#history/.test(location.hash)) { openHist(); return; }

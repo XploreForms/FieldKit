@@ -220,6 +220,8 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 
 - (1.20.137) SA page: the cards anchor to the top under the header (was bottom); Complete SA stays at the bottom spot (`.lfoot{margin-top:auto}`).
 
+- (1.20.140) In Comments inside an SA, tapping a different job type / platform / technology / drop doesn't change it there: it opens Change SA (`index.html#job-change`, `fieldkit.changeFrom` in sessionStorage) with the tap already picked; Change SA (reason required) or Back returns to Comments. Test: `dev/tests/tchange2.py`.
+
 **Things only a real phone can confirm** (the test browser has no camera or GPS)
 - Compass on Android (with and without the Compass web app installed; if Android shows an "open with" chooser instead of going straight in, adjust).
 - A real scan from the SA page returning correctly, and a real photo ticking its SN tile.
