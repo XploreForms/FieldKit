@@ -232,6 +232,8 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 
 - (1.20.157) Comments spacing: untitled sections have no extra bottom margin, so every question is the same distance apart; the NID Light Level Reading under Connector Type is spaced like its own question.
 
+- (1.20.158) Fibre Drop Required / Drop Only (Curtis): **MPT Light Level Reading** (`mpt_light`, `mptLightC()`) is the first question after the drop type, same box and odd-reading check as the NID reading (`lightBlock(label, key)` now takes the saved key). Comment: `MPT Light Level Reading: -19 dBm`. Test: `dev/tests/tmpt.py`.
+
 **Things only a real phone can confirm** (the test browser has no camera or GPS)
 - Compass on Android (with and without the Compass web app installed; if Android shows an "open with" chooser instead of going straight in, adjust).
 - A real scan from the SA page returning correctly, and a real photo ticking its SN tile.

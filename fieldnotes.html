@@ -1075,7 +1075,7 @@ function parseLight(v) {
   return /^\d{1,2}$/.test(s) ? String(parseInt(s, 10)) : null;
 }
 function lightInRange(s) { var n = parseFloat(s); return n >= 8 && n <= 25; }
-function lightNeedsCheck() { var lp = parseLight(STATE.light); return lp !== null && !lightInRange(lp) && STATE.light_ok !== lp; }
+function lightNeedsCheck(k) { k = k || 'light'; var lp = parseLight(STATE[k]); return lp !== null && !lightInRange(lp) && STATE[k + '_ok'] !== lp; }
 
 /* lives inside the ONT Installation Location card, below Floor and Room */
 /* always-negative readings: a soft minus sits just ahead of the digits (always shown, so techs know not to type it) */
@@ -1105,16 +1105,16 @@ function placeNeg(w) {
 function placeAllNeg() { [].forEach.call(document.querySelectorAll('.neg-wrap'), placeNeg); }
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(placeAllNeg);   // re-measure once Poppins has loaded
 window.addEventListener('resize', placeAllNeg);
-function lightBlock(label) {   // label: what the reading is called on the form
-  var id = 'light';
-  if (STATE.light !== undefined) STATE.light = cleanLight(STATE.light);   // tidy anything saved by an older version
+function lightBlock(label, key) {   // label: what the reading is called on the form; key: 'light' (NID/ONT) or 'mpt_light' (1.20.158)
+  var id = typeof key === 'string' ? key : 'light';
+  if (STATE[id] !== undefined) STATE[id] = cleanLight(STATE[id]);   // tidy anything saved by an older version
   var inp = el('input', { type: 'text', inputmode: 'numeric', pattern: '[0-9]*', maxlength: '2', class: 'light-input has-neg', 'aria-label': 'Light level reading, number only', autocomplete: 'off' });
-  inp.value = STATE.light || '';
+  inp.value = STATE[id] || '';
   var warn = el('div', {});
   function updateWarn() {
     warn.innerHTML = '';
     if (!LIGHT_PROMPT) return;   // stay quiet while they type; only speak up once they try to move on
-    var raw = str(STATE.light);
+    var raw = str(STATE[id]);
     if (!raw) return;
     var parsed = parseLight(raw);
     if (parsed === null) {
@@ -1122,13 +1122,13 @@ function lightBlock(label) {   // label: what the reading is called on the form
       return;
     }
     if (!lightInRange(parsed)) {
-      var confirmed = STATE.light_ok === parsed;
+      var confirmed = STATE[id + '_ok'] === parsed;
       warn.appendChild(el('div', { class: 'warn' }, [
         el('div', { text: '-' + parsed + ' dBm is outside the normal range (-8 to -25). Please check the reading.' }),
         el('div', { class: 'choices' }, [
           el('button', {
             type: 'button', class: 'choice', role: 'checkbox', 'aria-checked': confirmed ? 'true' : 'false',
-            onclick: function () { STATE.light_ok = confirmed ? null : parsed; changed(id, true); }
+            onclick: function () { STATE[id + '_ok'] = confirmed ? null : parsed; changed(id, true); }
           }, [el('span', { class: 'mark', text: confirmed ? '✓' : '' }), el('span', { text: 'Yes, -' + parsed + ' dBm is correct' })])
         ])
       ]));
@@ -1137,7 +1137,7 @@ function lightBlock(label) {   // label: what the reading is called on the form
   inp.addEventListener('input', function () {
     var c = cleanLight(inp.value);          // numbers only, two digits at most (also covers pasting)
     if (inp.value !== c) inp.value = c;
-    STATE.light = c; changed(id, false); updateWarn();
+    STATE[id] = c; changed(id, false); updateWarn();
     if (c.length >= 2) inp.blur();          // two digits is the whole reading: close the keyboard
   });
   // tapping a box that already holds a reading selects it, so typing two new digits replaces it
@@ -1148,7 +1148,7 @@ function lightBlock(label) {   // label: what the reading is called on the form
   // leaving the box (moving on to the next field) is when an odd reading gets flagged.
   // Short delay so a tap on whatever they touch next lands before the warning pushes the page down.
   inp.addEventListener('blur', function () {
-    if (!str(STATE.light)) return;
+    if (!str(STATE[id])) return;
     LIGHT_PROMPT = true;
     setTimeout(function () { updateWarn(); flagNow(); }, 250);
   });
@@ -1159,7 +1159,7 @@ function lightBlock(label) {   // label: what the reading is called on the form
     if (!issue) return;
     ERRORS.push(issue);
     // the form may have been rebuilt by the tap that moved them on, so find the live copy
-    var live = document.querySelector('#form-mount [data-field-id="light"]');
+    var live = document.querySelector('#form-mount [data-field-id="' + id + '"]');
     if (!live) return;
     live.classList.add('has-error');
     live.appendChild(el('div', { class: 'field-error-msg', text: issue.msg }));
@@ -1514,12 +1514,19 @@ function connectorC() {
 }
 /* the light level as a question of its own (fibre repair) */
 function lightC() { return { id: 'light', render: lightBlock, check: function (need, issues) { lightCheck(issues); }, out: function (m) { return ['NID Light Level Reading: ' + lightText(m)]; } }; }
-function lightCheck(issues) {
-  var lp = parseLight(STATE.light);
-  if (lp === null) issues.push({ id: 'light', label: 'NID Light Level Reading', msg: 'Type the number only.' });
-  else if (!lightInRange(lp) && STATE.light_ok !== lp) issues.push({ id: 'light', label: 'NID Light Level Reading (please check it)', msg: 'This reading looks unusual. Check it, or tap the "Yes" button above.' });
+function lightCheck(issues, k, name) {
+  k = k || 'light'; name = name || 'NID Light Level Reading';
+  var lp = parseLight(STATE[k]);
+  if (lp === null) issues.push({ id: k, label: name, msg: 'Type the number only.' });
+  else if (!lightInRange(lp) && STATE[k + '_ok'] !== lp) issues.push({ id: k, label: name + ' (please check it)', msg: 'This reading looks unusual. Check it, or tap the "Yes" button above.' });
 }
-function lightText(m) { var lp = parseLight(STATE.light); return lp === null ? m('light', 'Light level') : '-' + lp + ' dBm' + (lightNeedsCheck() ? ' ' + m('light', 'Check the reading') : ''); }
+function lightText(m, k) { k = k || 'light'; var lp = parseLight(STATE[k]); return lp === null ? m(k, 'Light level') : '-' + lp + ' dBm' + (lightNeedsCheck(k) ? ' ' + m(k, 'Check the reading') : ''); }
+/* 1.20.158 (Curtis): drop required / drop only: the reading at the MPT, first thing after the drop type */
+function mptLightC() {
+  return { id: 'mpt_light', render: function () { var f = lightBlock('MPT Light Level Reading', 'mpt_light'); if (f.firstChild && f.firstChild.tagName === 'HR') f.removeChild(f.firstChild); return f; },   // no divider: it's a question of its own
+    check: function (need, issues) { lightCheck(issues, 'mpt_light', 'MPT Light Level Reading'); },
+    out: function (m) { return ['MPT Light Level Reading: ' + lightText(m, 'mpt_light')]; } };
+}
 /* reused: 'nid' = the reused box only shows for a Pre-Installed NID; 'always' = it always shows (drop required forms have no NID question) */
 function patchC(reused) {
   function showReused() { return reused === 'always' || STATE.nid === 'Pre-Installed'; }
@@ -1790,6 +1797,7 @@ function routeC(dropOnly) {
 }
 function dropComps(dropOnly) {
   return [
+    mptLightC(),
     choiceC({ id: 'drop_len', label: 'Drop Length Deployed', options: ['100m', '200m', '300m', '500m', '750m', '1000m'], cols: 3, out: 'Drop Length Deployed' }),
     routeC(dropOnly),
     choiceC({ id: 'temp_reason', label: 'Temp Drop Reason', cols: 2, show: tempDropNeeded, otherLabel: 'Other Reason', options: [
@@ -2776,7 +2784,7 @@ function onCopy() {
   ERRORS = validate();
   if (ERRORS.length) {
     ERRORS.forEach(function (e) { PROMPT[e.id] = true; });   // checklists open their reason box
-    if (ERRORS.some(function (e) { return e.id === 'light'; })) LIGHT_PROMPT = true;
+    if (ERRORS.some(function (e) { return e.id === 'light' || e.id === 'mpt_light'; })) LIGHT_PROMPT = true;
     render();
     sortErrors();
     updatePreview();
