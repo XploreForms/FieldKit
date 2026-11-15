@@ -1609,7 +1609,7 @@ function nextStops() {
   var n = spanCount(); if (!n && STATE.mpt === 'Strand') return ['Pole', 'Mid-Span'];
   // 1.20.154 (Curtis): an aerial span off a pole can also go to a midspan, once per route
   var had = false; for (var i = 1; i <= n; i++) if (STATE['span' + i + '_to'] === 'Mid-Span') had = true;
-  return n && STATE['span' + n + '_to'] === 'Pole' && !had ? BURIED_TO.concat(['Mid-Span']) : BURIED_TO;
+  return n && STATE['span' + n + '_to'] === 'Pole' && !had ? ['Pole', 'Mid-Span'].concat(BURIED_TO.slice(1)) : BURIED_TO;   // 1.20.156: Mid-Span right after Pole
 }
 function addSpan(type, to) {
   var n = spanCount() + 1;
