@@ -2282,8 +2282,8 @@ var FORMS = {
   'New Install|Fibre (Drop Only)': function () { return [S('Drop', dropComps(true)), commentsSection()]; },
   'New Install|Fixed Wireless': function () {
     return [
-      S('Signal', [pairC(towerC(), fwPlatC()), pairC(pairC(rsrpC(), sinrC(), 'tight mini'), null), cpeTypeC(true)]),
-      S('Mount', [fwMountC()].concat(mountPlaceComps(), [heightC(), cpeAccessC()])),
+      S('Signal', [pairC(towerC(), fwPlatC()), pairC(pairC(rsrpC(), sinrC(), 'tight mini'), heightC()), cpeTypeC(true)]),   // 1.20.119: CPE Height beside RSRP and SINR (Curtis)
+      S('Mount', [fwMountC()].concat(mountPlaceComps(), [cpeAccessC()])),
       S('Cabling and Grounding', [
         tickC({ id: 'cabling', text: 'Installed all new Xplore standard cabling', yes: ['New Xplore Standard Cabling', 'Installed all new Xplore standard cabling'], out: 'Cabling',
           whyLabel: 'Why were Xplore standards not met?', otherOut: function (r) { return 'Xplore standards not met, ' + r; } }),
@@ -2297,8 +2297,8 @@ var FORMS = {
     return [
       S('Conversion', [choiceC({ id: 'conv_type', label: 'Conversion Type', cols: 2, out: 'Conversion', afterChange: convPlatform, options: [
         ['LTE to FWN, Same Tower', 'LTE to FWN to same tower'], ['LTE to FWN, New Tower', 'LTE to FWN to new tower'], ['SAT to FWN', 'SAT to FWN'], ['SAT to LTE', 'SAT to LTE'], ['Move Conversion', 'Move conversion']] })]),
-      S('Signal', [pairC(towerC(), fwPlatC()), pairC(pairC(rsrpC(), sinrC(), 'tight mini'), null), cpeTypeC(true)]),
-      S('Mount', [fwMountC()].concat(mountPlaceComps(), [heightC(), cpeAccessC()])),
+      S('Signal', [pairC(towerC(), fwPlatC()), pairC(pairC(rsrpC(), sinrC(), 'tight mini'), heightC()), cpeTypeC(true)]),   // 1.20.119: CPE Height beside RSRP and SINR (Curtis)
+      S('Mount', [fwMountC()].concat(mountPlaceComps(), [cpeAccessC()])),
       S('Cabling and Grounding', fwSwapCabling()),
       S('Indoor', [powerC(), routerC()]),
       S('Old Equipment', [choiceC({ id: 'recovery', label: 'Original CPE', cols: 0, out: 'Recovery', otherLabel: 'Recovery Details', options: [
