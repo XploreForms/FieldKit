@@ -1755,7 +1755,7 @@ function dropComps(dropOnly) {
 
 /* ---------- fixed wireless and satellite ---------- */
 var CPE_TYPES = ['CAT12 2.5GHz', 'CAT12 3.5GHz', 'First Gen 5G', 'Next Gen 5G', 'First Gen High Gain', 'Next Gen High Gain', 'Pro Max'];
-var GROUND_SOURCES = [['Power Meter', 'Power meter'], ['Electrical Panel', 'Electrical panel'], ['Ground Rod', 'Ground rod'], ['Tower', 'Tower'], ['Copper Pipe', 'Copper pipe'], ['HVAC Disconnect', 'HVAC disconnect'], 'Other'];
+var GROUND_SOURCES = [['Power Meter', 'Power meter'], ['Electrical Panel', 'Electrical panel'], ['Ground Rod', 'Ground rod'], ['Copper Pipe', 'Copper pipe'], ['HVAC Disconnect', 'HVAC disconnect'], 'Other'];
 /* fixed wireless install and conversion mounts: the type, then a tick if an existing mount was reused */
 /* same mounts as the SA's Equipment Deployed (plus Tower). Ticks under it: Side stays (J-Arm), 10ft pole (Gable Mount, Tripod;
    ticked when picked), and Reused existing mount. */
@@ -1906,8 +1906,8 @@ var FIBRE_XAP = [
 var FW_XAP = ['Account holder not on site', 'Account holder did not have a payment method available', 'Customer preferred to complete it on their own later', 'Provisioning issues delaying activation', 'Other'];
 var SAT_XAP = ['Account holder not on site', 'Account holder did not have a payment method available', 'Other'];
 function xapC(reasons) { return yesNoReasonC({ id: 'xap', label: 'XAP Completed On-Site', out: 'XAP', reasons: reasons, yesOut: 'Completed on-site', noOut: function (r) { return 'Not completed - ' + r; } }); }
-var LAWN_REASONS = ['Customer declined', 'Out of stock', 'No viable install location', 'Did not offer to customer'];
-var LAWN_REASONS_FW = ['Customer declined', 'Ground frozen', 'Out of stock', 'No viable install location', 'Did not offer to customer'];
+var LAWN_REASONS = ['Customer declined', 'No viable install location', 'Did not offer to customer', 'Out of stock'];   // 1.20.117 order (Curtis)
+var LAWN_REASONS_FW = ['Customer declined', 'Ground frozen', 'No viable install location', 'Did not offer to customer', 'Out of stock'];
 function lawnC(reasons) { return yesNoReasonC({ id: 'lawn', label: 'Lawn Sign Deployed', out: 'Lawn Sign', reasons: reasons || LAWN_REASONS, yesOut: 'Deployed', noOut: function (r) { return 'Unable to deploy, ' + r; } }); }
 function photosC(items) { return checklistC({ id: 'photos', label: 'Required Pictures Checklist', items: items, out: 'Pictures', allOut: 'All required pictures uploaded to FSL', whatMissing: "A few photos aren't ticked." }); }
 function commentsC() {
