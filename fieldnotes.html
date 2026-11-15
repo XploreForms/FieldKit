@@ -111,6 +111,7 @@ header.app-header p { margin: 0.3rem 0 0; font-size: 0.9rem; line-height: 1.4; c
 .card-title { margin-bottom: 1.2rem; }
 
 .form-section { margin-bottom: 2.2rem; }
+.form-section.untitled { margin-bottom: 0; }   /* 1.20.157: no section labels any more, so the questions are evenly spaced */
 .form-section:last-child { margin-bottom: 0; }
 .form-section-title {
   font-size: 1.05rem; font-weight: 600; color: var(--xp-green);
@@ -277,6 +278,7 @@ input:focus, textarea:focus, .choice:focus-visible, .link-btn:focus-visible, but
 .device-rule { border: 0; margin: 0.4rem 0 0; }
 .device-body .light-block { margin: 0.9rem 0 0; padding: 0; }
 .device-body .light-block.has-error { padding-left: 0.4rem; margin-left: -0.9rem; margin-top: 0.9rem; }
+[data-field-id="connector"] > .light-block { margin: 1.1rem 0 0 !important; }   /* 1.20.157: NID reading spaced like its own question (was tight above, loose below) */
 .field.device-card.has-error { border-left: 0.5rem solid var(--xp-orange); padding-left: 0; margin-left: 0; }
 /* 1.20.127: location cards: no side bar or Floor/Room labels, the two button groups stacked */
 .device-card.loc-card { border-left: 0; }
@@ -776,6 +778,7 @@ html:root input:focus, html:root textarea:focus { outline: none !important; box-
 html:root[data-fn-theme] .form-section-title{font:600 .78rem/1.2 var(--fk-body);letter-spacing:.09em;text-transform:uppercase;color:var(--fk-muted);border-bottom:0;padding-bottom:0;margin-bottom:.8rem}
 html:root[data-fn-theme] .form-section-title .opt{color:var(--fk-muted);text-transform:none;letter-spacing:0}
 html:root[data-fn-theme] .form-section{margin-bottom:1.8rem}
+html:root[data-fn-theme] .form-section.untitled{margin-bottom:0}   /* 1.20.157 */
 html:root[data-fn-theme] .field{margin-bottom:1.1rem}
 html:root[data-fn-theme] .q{font-size:.92rem;font-weight:600;color:var(--fk-muted);margin-bottom:.35rem}
 html:root[data-fn-theme] .q .opt,html:root[data-fn-theme] .hint{color:var(--fk-muted)}
