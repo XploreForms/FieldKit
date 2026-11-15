@@ -2509,8 +2509,8 @@ var FORMS = {
   'Repair|Fixed Wireless': function () {
     return [
       S('Repair', repairComps()),
-      // 1.20.126 (Curtis): same readings row as installs (units inside the boxes, RSRP/SINR not "Final"); Structure and Mounting Surface buttons instead of a typed Mount Location
-      S('Signal', [pairC(towerC(), fwPlatC()), textC({ id: 'cell_id', label: 'Cell ID' }), pairC(rsrpC(), sinrC(), 'trio', heightC()), cpeTypeC(true, true)]),
+      // 1.20.174: no Cell ID (Curtis). 1.20.126 (Curtis): same readings row as installs (units inside the boxes, RSRP/SINR not "Final"); Structure and Mounting Surface buttons instead of a typed Mount Location
+      S('Signal', [pairC(towerC(), fwPlatC()), pairC(rsrpC(), sinrC(), 'trio', heightC()), cpeTypeC(true, true)]),
       S('Mount', [reuseMountC(FW_MOUNTS, true)].concat(mountPlaceComps(), [cpeAccessC(true)])),
       S('Cabling and Grounding', convCabling(true)),   // 1.20.172: same as conversions (surge may be reused)
       S('Indoor', [powerC(), routerC()]), commentsSection(),
