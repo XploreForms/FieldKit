@@ -709,6 +709,7 @@ details.grp .btn{margin-bottom:12px}
     var base = J.withTech(tname + " · " + (plat === "VAS" ? "VAS · " + nj.vas : plat), tech);
     if (nj.work === j.work && plat === j.plat && (tech || "") === (j.tech || "")) { $("njErr").innerHTML = '<div class="err">That\'s what the SA already is. Pick the new job type, platform or technology.</div>'; return; }
     J.changeJob(j, { work: nj.work, plat: plat, tech: tech, vas: plat === "VAS" ? nj.vas : "", base: base }, String(nj.why).trim());
+    fillOutcomes(J.active(), true);   // the new job type has its own outcome reasons
     njMode(null); history.replaceState(null, "", "#job"); paintLobby(); showView("lobby"); toast("SA changed to " + base);
   }
   function newJob() { openNewJob(); }
@@ -831,6 +832,26 @@ details.grp .btn{margin-bottom:12px}
   /* ---- outcome: change it here, or in Field Cam (tap the outcome next to New Job) ---- */
   var OUT_DEFAULT = [{ id: "OK", name: "Complete", reasons: [] }, { id: "CC", name: "Cannot Complete", reasons: [] }, { id: "NR", name: "Not Required", reasons: [] }];
   var outOpen = false;
+  /* 1.20.134 (Curtis): the outcome reasons come from Field Cam's own setup (SETUP in fieldcam.html, the one list), so Change
+     Outcome asks for a reason before Pictures has ever been opened. Read once from the cached page. */
+  var setupP = null;
+  function camSetup() {
+    if (!setupP) setupP = fetch("fieldcam.html").then(function (r) { return r.text(); }).then(function (t) {
+      var m = /const SETUP = (\{.*?\});\s*\n/.exec(t); return m ? JSON.parse(m[1]) : null;
+    }).catch(function () { setupP = null; return null; });
+    return setupP;
+  }
+  function fillOutcomes(j, force) {
+    if (!j || !j.work || !j.plat || (j.outcomeOpts && !force)) return;
+    var id = j.id;
+    camSetup().then(function (S) {
+      var a = J.active(); if (!S || !a || a.id !== id) return;
+      var s = (S[a.work] || {})[a.plat === "VAS" && a.vas ? "VAS · " + a.vas : a.plat]; if (!s) return;
+      a.outcomeOpts = [["OK", "Complete"], ["CC", "Cannot Complete"], ["NR", "Not Required"]].filter(function (o) { return !s[o[0]] || s[o[0]].on; })
+        .map(function (o) { return { id: o[0], name: o[1], reasons: ((s[o[0]] || {}).reasons || []).slice() }; });
+      J.save(a); paintLobbyOut(a);
+    });
+  }
   function outName(j) { var o = (j.outcomeOpts || OUT_DEFAULT).filter(function (x) { return x.id === j.outcome; })[0]; return o ? o.name : ({ OK: "Complete", CC: "Cannot Complete", NR: "Not Required" })[j.outcome] || "Not set"; }
   function paintLobbyOut(j) {
     var html = '<div class="lout"><i class="odot o-' + esc(j.outcome || "") + '" aria-hidden="true"></i><div class="ov">' + esc(outName(j)) + (j.reason ? '<small>' + esc(j.reason) + '</small>' : "") + '</div>' +
@@ -929,7 +950,7 @@ details.grp .btn{margin-bottom:12px}
     lobbySure = false; $("lbWarn").innerHTML = ""; lobbyState.photosReady = false;
     $("lbStart").innerHTML = svg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', 2) + '<span class="lsl">Started</span><span class="lst">' + esc(when(j.created)) + '</span>'; $("lbStart").innerHTML = '<div class="lout">' + $("lbStart").innerHTML + '</div>';
     if (j.status === "complete" && j.completedAt) $("lbStart").innerHTML += '<div class="lout" style="margin-top:10px">' + svg('<circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.5 2.5L16 9.5"/>', 2) + '<span class="lsl">Finished</span><span class="lst">' + esc(when(j.completedAt)) + '</span></div>';   // 1.20.133
-    paintLobbyOut(j); paintLobbyPhotos(j); paintLobbyNotes(j); paintLobbyGear(j); paintNext(j);
+    paintLobbyOut(j); paintLobbyPhotos(j); paintLobbyNotes(j); paintLobbyGear(j); paintNext(j); fillOutcomes(j);
   }
   function openLobby() {
     if (!J.active()) { openMenu(); return; }

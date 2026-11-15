@@ -216,6 +216,8 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 
 - (1.20.133) SA history shows start – finish (`span()`: "Today 8:24 PM – 9:59 PM"; finish date only when it's another day); a completed SA's page has a Finished row under Started. Test: `dev/tests/tfinish.py`.
 
+- (1.20.134) The SA page's Change Outcome lists the reasons from the start: `fillOutcomes()` (index.html) reads `SETUP` out of the cached fieldcam.html (still the one list) and sets `job.outcomeOpts`; redone after Change SA. Previously reasons only appeared after Pictures had been opened. Test: `dev/tests/toutreasons.py`.
+
 **Things only a real phone can confirm** (the test browser has no camera or GPS)
 - Compass on Android (with and without the Compass web app installed; if Android shows an "open with" chooser instead of going straight in, adjust).
 - A real scan from the SA page returning correctly, and a real photo ticking its SN tile.
