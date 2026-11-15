@@ -660,6 +660,6 @@
   FK.job = {
     inMode: function () { return jobMode; }, camCur: camCur, setCamCur: setCamCur, notesKey: KN, active: active, get: byId, list: list, start: start, complete: complete, open: open, save: save, setActive: setActive,
     fromCam: fromCam, modelsFor: modelsFor, modelName: function (id) { return SKU[id] ? SKU[id].name : ""; }, pickModel: pickModel, stockNote: stockNote,
-    deployed: deployed, recoveredEvents: recoveredEvents, canRecover: canRecover, removeSerial: removeSerial, slotModel: slotModel, slotsHTML: slotsHTML, tempDrop: tempDrop, openSlot: openSlot, devicePhoto: devicePhoto, withTech: withTech, setSlot: setSlot, setOutcome: setOutcome, changeJob: changeJob, slotEntry: slotEntry, addSerial: addSerial, pasteInto: pasteInto, hasSlots: function (src) { return slotIds(src).length > 0; }, syncDeploys: syncDeploys, notesCopied: notesCopied, setStep: setStep, keepDays: 7
+    deployed: deployed, recoveredEvents: recoveredEvents, canRecover: canRecover, removeSerial: removeSerial, slotModel: slotModel, slotsHTML: slotsHTML, tempDrop: tempDrop, openSlot: openSlot, devicePhoto: devicePhoto, withTech: withTech, setSlot: setSlot, setOutcome: setOutcome, changeJob: changeJob, css: css, slotEntry: slotEntry, addSerial: addSerial, pasteInto: pasteInto, hasSlots: function (src) { return slotIds(src).length > 0; }, syncDeploys: syncDeploys, notesCopied: notesCopied, setStep: setStep, keepDays: 7
   };
 })();
