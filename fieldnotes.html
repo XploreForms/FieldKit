@@ -2061,7 +2061,6 @@ function repairComps() {
    Grounding = Installed New / Reused Existing. Answers saved before this are mapped. */
 /* 1.20.167 (Curtis): both cabling answers are acknowledged in a pop-up that names Xplore-supplied cabling (from the
    warehouse, no aftermarket cabling). Reused also has Other: the tech types why cabling that doesn't meet the standards stayed. */
-var ACK_NEW = 'I confirm I installed new Xplore-supplied Ethernet cabling from the Xplore warehouse. No aftermarket or customer cabling was used.';
 var ACK_REUSE = 'I confirm the existing cabling is Xplore-supplied Ethernet cabling, was thoroughly inspected, meets Xplore standards and is negotiating at least 1,000 Mbps.';
 function ackPopup(title, text, onYes, onOther) {
   if (document.querySelector('.changelog')) return;
@@ -2090,7 +2089,7 @@ function convCablingC() {
       [CAB_NEW, CAB_REUSE].forEach(function (o) {
         var sel = STATE.cabling === o;
         g.appendChild(el('button', { type: 'button', class: 'choice', role: 'radio', 'aria-checked': sel ? 'true' : 'false', onclick: function () {
-          if (o === CAB_NEW) ackPopup('New Xplore Cabling', ACK_NEW, function () { set(CAB_NEW, true); });
+          if (o === CAB_NEW) set(CAB_NEW, true);   // 1.20.168 (Curtis): only reusing asks for a confirmation
           else ackPopup('Reusing Existing Cabling', ACK_REUSE, function () { set(CAB_REUSE, true); }, function () { set(CAB_REUSE, 'other'); });
         } }, [el('span', { class: 'mark', text: sel ? '✓' : '' }), el('span', { text: o })]));
       });
@@ -2104,7 +2103,7 @@ function convCablingC() {
     check: function (need) { need('cabling', 'Cabling', this.done(), STATE.cabling_ack === 'other' ? "Type why the cabling was reused." : 'Choose an answer.'); },
     out: function (m) {
       if (!this.done()) return ['Cabling: ' + m('cabling', 'Cabling')];
-      if (STATE.cabling === CAB_NEW) return ['Cabling: Installed new Xplore-supplied cabling (tech confirmed no aftermarket cabling used)'];
+      if (STATE.cabling === CAB_NEW) return ['Cabling: Installed new Xplore-supplied cabling'];
       if (STATE.cabling_ack === true) return ['Cabling: Reused existing Xplore-supplied cabling, tech confirmed it was thoroughly inspected, meets Xplore standards and is negotiating at least 1,000 Mbps'];
       return ['Cabling: Reused existing cabling that does not meet Xplore standards, ' + cap(STATE.cabling_other)];
     }
