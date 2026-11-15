@@ -1899,6 +1899,7 @@ function cpeAccessC(repair) {
       var post = /^(Wood(en)? Post|Steel Pole)$/.test(STATE.mount_into || '');   // 1.20.147/148 (Curtis): no roof on a wood post or steel pole
       if (post) delete STATE.cpe_roof;
       var c = post ? [] : [miniCheck('cpe_roof', 'Stepping onto roof required')];
+      if (STATE.job_plat === 'Satellite' && STATE.mount_into === 'Roof') c.push(miniCheck('mount_nprm', 'Mounted to NPRM'));   // 1.20.177 (Curtis): under the roof tick
       if (repair) c.push(miniCheck('cpe_tower', 'Tower climb required'));
       if (!c.length) return el('div', { 'data-field-id': 'cpe_access', hidden: '' });
       var w = fieldWrap('cpe_access', null, false, null, c); w.classList.add('access-ticks'); return w;
@@ -1976,7 +1977,6 @@ function nprmSurface() {
   base.render = function () {
     if (STATE.mount_into !== 'Roof') delete STATE.mount_nprm;
     var w = r0.call(base);
-    if (STATE.mount_into === 'Roof') w.insertBefore(miniCheck('mount_nprm', 'Mounted to NPRM'), w.querySelector('.field-error-msg'));
     return w;
   };
   base.out = function (m) { var l = o0.call(base, m); if (STATE.mount_into === 'Roof' && STATE.mount_nprm === true && l.length) l[0] += ', mounted to NPRM'; return l; };
