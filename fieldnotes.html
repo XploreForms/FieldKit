@@ -1851,13 +1851,16 @@ function cpeAccessC(repair) {
   return {
     id: 'cpe_access',
     render: function () {   // 1.20.145 (Curtis): small tick boxes right under Mounting Surface, no label
-      var c = [miniCheck('cpe_roof', 'Stepping onto roof required')];
+      var post = /^Wood(en)? Post$/.test(STATE.mount_into || '');   // 1.20.147 (Curtis): no roof on a wood post
+      if (post) delete STATE.cpe_roof;
+      var c = post ? [] : [miniCheck('cpe_roof', 'Stepping onto roof required')];
       if (repair) c.push(miniCheck('cpe_tower', 'Tower climb required'));
+      if (!c.length) return el('div', { 'data-field-id': 'cpe_access', hidden: '' });
       var w = fieldWrap('cpe_access', null, false, null, c); w.classList.add('access-ticks'); return w;
     },
     check: function () {},
     out: function () {
-      var r = STATE.cpe_roof === true, t = repair && STATE.cpe_tower === true;
+      var r = STATE.cpe_roof === true && !/^Wood(en)? Post$/.test(STATE.mount_into || ''), t = repair && STATE.cpe_tower === true;
       var v = r && t ? 'Stepping onto roof and tower climb required' : r ? 'Stepping onto roof required' : t ? 'Tower climb required'
         : STATE.cpe_access === 'Other' && str(STATE.cpe_access_other) ? cap(STATE.cpe_access_other) : 'Serviceable from ladder';
       return ['CPE Access: ' + v];
