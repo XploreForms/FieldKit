@@ -15,7 +15,7 @@ async def main():
         out = "buildOutput(false).split('\\n').filter(l=>/^(Outdoor Cable|Indoor Cable|Surge|Grounding):/.test(l))"
         await pg.locator('[data-field-id=cab_out]').get_by_text('Installed New').click(); await pg.wait_for_timeout(200)
         await pg.locator('[data-field-id=surge]').get_by_text('Reused Existing').click(); await pg.wait_for_timeout(200)
-        await pg.locator('[data-field-id=cab_in]').get_by_text('Reused Existing').click(); await pg.wait_for_timeout(300); await pg.get_by_role('button', name='I Confirm').click(); await pg.wait_for_timeout(200)
+        await pg.locator('[data-field-id=cab_in]').get_by_text('Reused Existing').click(); await pg.wait_for_timeout(300); print('popup on repair:', await pg.locator('.ack-card').count())
         await pg.locator('[data-field-id=grounding]').get_by_text('Reused Existing').click(); await pg.wait_for_timeout(200)
         print('   ', await pg.evaluate(out))
         print('errors', errs); await b.close()

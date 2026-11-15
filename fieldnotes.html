@@ -2085,7 +2085,7 @@ var CAB_NEW = 'Installed New Xplore Cabling', CAB_REUSE = 'Reused Existing Cabli
    and inspected (or Other: type why). */
 var SEGS = { cab_out: { label: 'Outdoor Cable (Radio to Surge)', out: 'Outdoor Cable', name: 'outdoor cable' },
              cab_in: { label: 'Indoor Cable (Surge to Power Supply)', out: 'Indoor Cable', name: 'indoor cable' } };
-function segC(key) {
+function segC(key, repair) {   // repair (1.20.173, Curtis): no confirmation when reusing
   var sg = SEGS[key];
   function set(v, ack) { STATE[key] = v; STATE[key + '_ack'] = ack; if (ack !== 'other') delete STATE[key + '_other']; else PENDING_FOCUS = key; changed(key, true); }
   return {
@@ -2095,7 +2095,7 @@ function segC(key) {
       [['New', 'Installed New'], ['Reused', 'Reused Existing']].forEach(function (o) {
         var sel = STATE[key] === o[0];
         g.appendChild(el('button', { type: 'button', class: 'choice', role: 'radio', 'aria-checked': sel ? 'true' : 'false', onclick: function () {
-          if (o[0] === 'New') set('New', true);
+          if (o[0] === 'New' || repair) set(o[0], true);
           else ackPopup('Reusing the ' + cap(sg.name), 'I confirm the existing ' + sg.name + ' is Xplore-supplied and I inspected the full run, including all connectors.',
             function () { set('Reused', true); }, function () { set('Reused', 'other'); });
         } }, [el('span', { class: 'mark', text: sel ? '✓' : '' }), el('span', { text: o[1] })]));
@@ -2109,6 +2109,7 @@ function segC(key) {
     out: function (m) {
       if (!this.done()) return [sg.out + ': ' + m(key, sg.out)];
       if (STATE[key] === 'New') return [sg.out + ': Installed new Xplore-supplied cable'];
+      if (repair) return [sg.out + ': Reused existing cable'];
       if (STATE[key + '_ack'] === true) return [sg.out + ': Reused existing Xplore-supplied cable, tech inspected the full run including all connectors'];
       return [sg.out + ': Reused existing cable that does not meet Xplore standards, ' + cap(STATE[key + '_other'])];
     }
@@ -2133,9 +2134,9 @@ function convCabling(repair) {
     whyLabel: 'Why was a new surge not installed?', otherOut: function (r) { return 'New surge protector not installed, ' + r; } });
   if (!repair) { var r0 = surge.render; surge.render = function () { var w = r0.call(surge); w.classList.add('conv-surge'); return w; }; }
   return [
-    segC('cab_out'),
+    segC('cab_out', repair),
     surge,
-    segC('cab_in'),
+    segC('cab_in', repair),
     choiceC({ id: 'grounding', label: 'Grounding', cols: 2, out: 'Grounding', options: [
       ['Installed New', 'Installed new grounding'], ['Reused Existing', 'Reused existing grounding']] }),   // 1.20.171: same short buttons as the cable runs
     groundSourceC()
