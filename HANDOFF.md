@@ -226,7 +226,7 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 
 - (1.20.149) Drop Route (Curtis): out of **MPT Strand** the span is always Aerial (filled in, no type buttons) and lands on **Pole** or **Midspan** (new stop, `nextStops()`); out of a Midspan it's Aerial too (Pole or Structure). The first span MPT Strand > Midspan **never** needs flaggers: no Flaggers Needed tick on it, and a tick made before Midspan was picked is dropped (`noFlags`, 1.20.151; 1.20.150 had it backwards). Comment: `MPT (Strand) > Aerial > Midspan > Aerial > Structure`. Test: `dev/tests/tstrand.py`.
 
-- (1.20.152) Drop Route: Flower Pot is greyed for Buried; it's only reached by Duct (Curtis). The run out of a flower pot to the structure is still filled in as Buried.
+- (1.20.152) Drop Route: Flower Pot and (1.20.153) Vault are greyed for Buried; they're only reached by Duct (Curtis). The run out of a flower pot to the structure is still filled in as Buried.
 
 **Things only a real phone can confirm** (the test browser has no camera or GPS)
 - Compass on Android (with and without the Compass web app installed; if Android shows an "open with" chooser instead of going straight in, adjust).

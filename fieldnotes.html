@@ -1747,7 +1747,7 @@ function routeC(dropOnly) {
           addSpan(t, o);
           if (ticked && (t === 'Aerial' || t === 'Buried')) STATE['span' + k + (t === 'Aerial' ? '_flag' : '_temp')] = true;   // the tick moves onto the drawn span
           delete STATE.route_next; delete STATE.route_next_flag;
-        }, function (o) { return !t || (t === 'Aerial' && AERIAL_TO.indexOf(o) < 0 && o !== 'Midspan') || (t === 'Buried' && o === 'Flower Pot'); });   // 1.20.152 (Curtis): a flower pot is only reached by duct
+        }, function (o) { return !t || (t === 'Aerial' && AERIAL_TO.indexOf(o) < 0 && o !== 'Midspan') || (t === 'Buried' && (o === 'Flower Pot' || o === 'Vault')); });   // 1.20.152/153 (Curtis): a flower pot or a vault is only reached by duct
         if (fx && !fx.typeOnly) gh.classList.add('rt-fresh');
         box.appendChild(gh);
         if (dropOnly && n) box.appendChild(el('p', { class: 'rt-note', text: 'Partial run? Leave it here.' }));
