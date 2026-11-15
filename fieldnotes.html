@@ -1783,7 +1783,7 @@ function reuseMountC(list, noTick) {   // noTick: repairs, where a reused mount 
   var fw = list === FW_MOUNTS;
   var base = choiceC({ id: 'mount', label: 'Mount Type', options: list, cols: 2, out: false, otherLabel: 'Other Mount',
     afterChange: function (o) {
-      if (o === 'Tower') { STATE.mount_into = 'Tower'; STATE.mount_pos = 'Tower'; }   // a tower mount is on a tower
+      if (o === 'Tower') { STATE.mount_into = 'Tower'; STATE.mount_pos = 'Tower'; STATE.mount_reused = undefined; }   // a tower mount is on a tower
       if (fw) { STATE.mount_pole = FW_POLE.indexOf(o) >= 0 ? true : undefined; if (FW_STAYS.indexOf(o) < 0) STATE.mount_stays = undefined; }
     } });
   function reusable() { return !!STATE.mount && STATE.mount !== 'Tower'; }   // a tower is never new or reused
@@ -1793,7 +1793,7 @@ function reuseMountC(list, noTick) {   // noTick: repairs, where a reused mount 
       var wrap = base.render(), at = wrap.querySelector('.field-error-msg');
       if (fw && FW_STAYS.indexOf(STATE.mount) >= 0) wrap.insertBefore(miniCheck('mount_stays', 'Side stays'), at);
       if (fw && FW_POLE.indexOf(STATE.mount) >= 0) wrap.insertBefore(miniCheck('mount_pole', '10ft pole'), at);
-      if (!noTick) wrap.insertBefore(miniCheck('mount_reused', 'Reused existing mount'), at);
+      if (!noTick && STATE.mount !== 'Tower') wrap.insertBefore(miniCheck('mount_reused', 'Reused existing mount'), at);   // 1.20.125: not for a tower (Curtis)
       return wrap;
     },
     check: function (need, issues) { base.check(need, issues); },
@@ -2046,7 +2046,7 @@ function recoveryComps() {
 /* ---------- the jobs ---------- */
 function S(title, items, heading) { return { title: title, heading: heading === undefined ? title.toUpperCase() : heading, items: items }; }
 function vasSection() { return S('Value Added Services', vasComps()); }
-function commentsSection() { return { title: 'Additional Comments', heading: 'ADDITIONAL COMMENTS', optional: true, items: [commentsC()] }; }
+function commentsSection() { return { title: 'Additional Comments', heading: 'ADDITIONAL COMMENTS', optional: true, showTitle: true, items: [commentsC()] }; }
 
 
 /* ---------- cannot complete (same form for every job type and platform, from the Cannot Complete JotForm) ---------- */
@@ -2477,7 +2477,7 @@ function jobSection() {
 function ghostSections() {
   function bars(n) { var a = []; for (var i = 0; i < n; i++) a.push(el('span', { class: 'ghost-bar' + (i % 3 === 2 ? ' short' : '') })); return a; }
   function pills(n) { var a = []; for (var i = 0; i < n; i++) a.push(el('span', { class: 'ghost-pill' })); return a; }
-  function sec(title, body) { return el('div', { class: 'ghost-sec' }, [el('div', { class: 'ghost-title', text: title })].concat(body)); }
+  function sec(title, body) { return el('div', { class: 'ghost-sec' }, body); }   // 1.20.125: no section labels
   return el('div', { class: 'ghost-form', 'aria-hidden': 'true', 'data-sec': 'Ghost' }, [
     el('p', { class: 'ghost-note', text: 'Pick the job to begin. Your questions will load here.' }),
     sec('Structure - Outdoor', [el('div', { class: 'ghost-pills' }, pills(3)), el('div', { class: 'ghost-bars' }, bars(2))]),
@@ -2549,9 +2549,10 @@ function render() {
   currentSections().forEach(function (sec) {
     var items = sec.items.filter(visible);
     if (!items.length) return;
-    var s = el('section', { class: 'form-section', 'data-sec': sec.title }, [
+    // 1.20.125 (Curtis): no section labels (SIGNAL, MOUNT, INDOOR…); each question has its own label. Additional Comments keeps its title (its box has no label).
+    var s = el('section', { class: 'form-section' + (sec.showTitle ? '' : ' untitled'), 'data-sec': sec.title }, sec.showTitle ? [
       el('h2', { class: 'form-section-title' }, [sec.title, sec.optional ? el('span', { class: 'opt', text: ' (optional)' }) : null])
-    ]);
+    ] : []);
     items.forEach(function (c) { s.appendChild(c.render()); });
     mount.appendChild(s);
   });

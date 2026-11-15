@@ -204,6 +204,8 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 - Field Notes' Cannot Complete reason list still has "Temp Drop Required" (from the Cannot Complete JotForm). Should it go?
 - Fibre Drop Only photo rules (MPT, Drop Route); whether Install Overview should be alone on Fibre Existing Drop; whether the SA summary header should use the truck icon.
 
+- (1.20.125) Comments: no section labels on the form (SIGNAL, MOUNT, INDOOR…; also gone from the loading placeholders); each question has its own label. Additional Comments keeps its title. The copied FSL comment keeps its headings. Mount Type = Tower hides (and clears) Reused existing mount. Test: `dev/tests/ttower.py`.
+
 **Things only a real phone can confirm** (the test browser has no camera or GPS)
 - Compass on Android (with and without the Compass web app installed; if Android shows an "open with" chooser instead of going straight in, adjust).
 - A real scan from the SA page returning correctly, and a real photo ticking its SN tile.
