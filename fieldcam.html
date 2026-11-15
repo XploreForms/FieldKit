@@ -2977,7 +2977,7 @@ function renderTop() {
   document.documentElement.classList.toggle("fc-quick", isQuick(j));
   let sh = "";
   if (j) {
-    const base = isQuick(j) ? "Field Cam" : `${byId(JOB_TYPES, j.work).name} · ${platShort(j.plat, j)}`;
+    const base = isQuick(j) ? "Field Cam" : `${byId(JOB_TYPES, j.work).name} · ${j.tech || platShort(j.plat, j)}`;   // 1.20.136 (Curtis): the technology (FWN, HJ3, FTX) instead of FW / Sat / Fibre
     sh = esc(base);   // 1.20.135 (Curtis): no outcome here (it was cut off); it's on the outcome chip on the picture
   }
   $("jobRef").textContent = j && j.ref ? j.ref : ""; $("jobRef").hidden = !(j && j.ref);   // 1.20.31: the back arrow no longer shows the SA-#, so the bar does   // in a Field Kit job the SA-# is on the back button
