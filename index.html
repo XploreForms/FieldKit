@@ -363,6 +363,7 @@ details.grp .btn{margin-bottom:12px}
   <div class="banner" id="gsWarn" hidden><div><b>Google backup is off</b></div><button class="btn primary" type="button" data-open-backup>Connect</button></div>
 
   <h2 class="eyebrow sr-only" id="moreH">Tools</h2><!-- 1.20.57: no visible Tools heading (Curtis); kept for screen readers -->
+  <ul class="quick" id="quick" aria-label="Other sites"></ul>
   <ul class="tiles" id="links" aria-labelledby="moreH"></ul>
 
   <section id="jobArea"></section>
@@ -516,10 +517,10 @@ details.grp .btn{margin-bottom:12px}
   var RESTART = svg('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>', 2.2);
   // Home screen tiles: the tools, then Field Cam for photos without an SA (2 across; they share the screen's height)
   var TILE = { stock: ["Field Stock", "Receive, deploy, transfer and RMA"], "Manual Order Request": ["Manual Order", "When you can't order in the portal"],
-    "Inventory": ["Inventory", "Xplore Dealer Portal"], "RMA Request": ["RMA", "Request an RMA number"], "Compass": ["Compass", "eCoverage Intelligence"] };
+    "Inventory": ["Dealer Portal", "Order stock"], "RMA Request": ["RMA Request", "Request an RMA number"], "Compass": ["Compass", "eCoverage Intelligence"] };   // 1.20.178: Inventory is "Dealer Portal" (Curtis)
   function paintTools() {
     var prog = inProgress(), OUT = svg('<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>');
-    var all = LINKS.concat([{ id: "cam", name: "Field Cam", desc: "Only for photos that aren't for an SA", href: TOOLS[0].href, icon: TOOLS[0].icon, quiet: true }]);
+    var all = LINKS.concat([{ id: "cam", name: "Field Cam", desc: "Photos without an SA", href: TOOLS[0].href, icon: TOOLS[0].icon, quiet: true }]);
     // tile order, 2 across (Curtis, 1.20.45): Compass · Inventory / RMA · Manual Order / Field Cam · Field Stock (bottom, nearest the thumb)
     var ORDER = ["Compass", "Inventory", "RMA Request", "Manual Order Request", "Field Cam", "Field Stock"];
     var items = all.slice().sort(function (a, b) { var i = ORDER.indexOf(a.name), j = ORDER.indexOf(b.name); return (i < 0 ? 99 : i) - (j < 0 ? 99 : j); });
@@ -535,10 +536,19 @@ details.grp .btn{margin-bottom:12px}
         '<small>' + pill + esc(desc) + '</small>' + (busy && !restart ? '<em class="live">In progress</em>' : '') + '</a>' };
     }
     var byName = {}; items.forEach(function (l) { byName[l.name] = l; });
+    // 1.20.178 (Curtis): the outside sites (Compass, Percipio, Dealer Portal, RMA) are a small row of links under the header;
+    // the tiles are just Field Kit's own tools: Manual Order across the top, Field Cam and Field Stock nearest the thumb
+    var QUICK = ["Compass", "Percipio", "Inventory", "RMA Request"];
+    $("quick").innerHTML = QUICK.map(function (n) { return byName[n]; }).filter(Boolean).map(function (l) {
+      var t = TILE[l.name] || [l.name], viaApp = l.app && ANDROID;
+      return '<li><a href="' + esc(viaApp ? appHref(l.href) : l.href) + '"' + (l.out && !viaApp ? ' target="_blank" rel="noopener"' : '') + '>' + svg(l.icon) +
+        '<span>' + esc(t[0]) + '</span>' + (l.out ? '<span class="out" aria-hidden="true">' + OUT + '</span><span class="sr-only"> (opens in a new tab)</span>' : '') + '</a></li>';
+    }).join("");
+    items = items.filter(function (l) { return QUICK.indexOf(l.name) < 0; }); paired = {}; PAIR = {};
     $("links").innerHTML = items.filter(function (l) { return !paired[l.name]; }).map(function (l) {
       var x = tileA(l), mate = PAIR[l.name] && byName[PAIR[l.name]];
       if (mate) return '<li class="tile split">' + x.html + tileA(mate).html + '</li>';
-      return '<li class="tile' + (l.quiet ? " quiet" : "") + (x.busy ? " busy" : "") + '">' + x.html + x.restart + '</li>';
+      return '<li class="tile' + (l.quiet ? " quiet" : "") + (x.busy ? " busy" : "") + (l.name === "Manual Order Request" ? " wide" : "") + '">' + x.html + x.restart + '</li>';
     }).join("");    placeNew();   // every repaint (including the 4 s reset after one tap) puts New back over the camera icon's mirror spot
   }
   /* Compass is installed on the phone as its own web app. On Android the link goes out as a "view this address" request to the
@@ -754,7 +764,7 @@ details.grp .btn{margin-bottom:12px}
       $("jobArea").innerHTML = '<div class="jobwrap busy"><button class="job" type="button" id="jobGo"><i aria-hidden="true">' +
         svg('<path d="M4 17H2V5h12v12"/><path d="M8 17h7"/><path d="M19 17h3v-4.5L18.5 8H14"/><circle cx="6" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 9h6M5 12.5h4"/>', 2.2) +   // truck roll with its work order
         '</i><div><b>' + esc(a.sa || "New SA") + ' <em class="live">' + (a.status === "complete" ? "Reopened" : "In progress") + '</em></b><span>' + esc(a.base || (a.title ? a.title.split(" · ").slice(0, 2).join(" · ") : "SA details not set yet")) + '</span></div><em class="chev" aria-hidden="true">›</em>' + jobProgress(a) + '</button>' +
-        '<div class="jacts"><button class="btn primary" type="button" data-open-sa>Open SA</button><button class="newbtn" type="button" id="jobNew" aria-label="Replace with a new SA. This one stays in SA history." title="Start over with a new SA">' + RESTART + '<span>New</span></button></div></div>';
+        '<div class="jacts"><button class="btn primary" type="button" data-open-sa>Open SA</button><button class="newbtn" type="button" id="jobNew" aria-label="Replace with a new SA. This one stays in SA history." title="Start over with a new SA">' + PLUS + '<span>New SA</span></button></div></div>';   // 1.20.178 (Curtis): "+ New SA" (the circular arrow read as undo)
     }
     var act = a ? a.id : "", hist = J.list().filter(function (j) { return j.id !== act; });
     var shown = hist;
@@ -784,7 +794,7 @@ details.grp .btn{margin-bottom:12px}
     if (e.target.closest("#jobGo") || e.target.closest("[data-open-sa]")) { if (J.active()) openLobby(); return; }   // always the SA home, not the tool it was last in
     var nb = e.target.closest("#jobNew");
     if (nb) {
-      if (!nb.classList.contains("sure")) { nb.classList.add("sure"); nb.innerHTML = RESTART + "<span>Tap again</span>"; nb.setAttribute("aria-label", "Tap again to replace it with a new SA. This one stays in SA history."); clearTimeout(jobSureT); jobSureT = setTimeout(paintJobs, 4000); return; }
+      if (!nb.classList.contains("sure")) { nb.classList.add("sure"); nb.innerHTML = PLUS + "<span>Tap again</span>"; nb.setAttribute("aria-label", "Tap again to replace it with a new SA. This one stays in SA history."); clearTimeout(jobSureT); jobSureT = setTimeout(paintJobs, 4000); return; }
       J.setActive(null); paintJobs(); newJob(); return;   // 1.20.49: cleared now, even if New SA is backed out of (it stays in SA history)
     }
     var h = e.target.closest("[data-job]");
@@ -1594,7 +1604,20 @@ details.grp .btn{margin-bottom:12px}
 #menu.home .iconbtn{flex:none}
 #menu.home .banner{padding:8px 8px 8px 14px}#menu.home .banner b{margin:0}
 #menu.home .eyebrow{margin:4px 2px -4px}
-.tiles{flex:1;min-height:0;list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:10px;overflow:hidden}
+.tiles{flex:1;min-height:0;list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:10px;overflow:hidden}
+.tiles .tile.wide{grid-column:1 / -1}   /* 1.20.178: Manual Order across the top */
+html body #menu .tiles .tile.wide a{grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto;justify-items:stretch;column-gap:14px;row-gap:4px}
+html body #menu .tiles .tile.wide i{grid-row:1 / span 2;grid-column:1}
+html body #menu .tiles .tile.wide b{grid-row:1;grid-column:2;align-self:end}
+html body #menu .tiles .tile.wide small{grid-row:2;grid-column:2;align-self:start}
+/* 1.20.178 (Curtis): the outside sites as a small 2 x 2 row of links under the header */
+.quick{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;flex:none}
+.quick a{display:flex;align-items:center;gap:8px;height:40px;padding:0 10px;border-radius:12px;background:var(--surface);box-shadow:var(--shadow);color:var(--fg);text-decoration:none;font-weight:600;font-size:.9rem;min-width:0}
+.quick a:active{background:var(--surface-2)}
+.quick a > svg{width:18px;height:18px;flex:none;color:var(--accent)}
+.quick a > span:not(.out):not(.sr-only){flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.quick .out{display:flex;flex:none;opacity:.55}.quick .out svg{width:13px;height:13px}
+#menu.fit-c1 .quick a,#menu.fit-c2 .quick a{height:36px;font-size:.85rem}
 /* 1.20.32: description always shown; icon beside the title so every tile fits its share of the height (never grows the page) */
 .tiles .tile{position:relative;min-height:0;min-width:0;overflow:hidden;border-radius:16px}
 .tiles .tnew{position:absolute;top:10px;right:12px;z-index:1;width:36px;height:36px;padding:0;display:grid;place-items:center;border:0;border-radius:10px;background:var(--surface-2);color:var(--fg);cursor:pointer}   /* 1.20.42: icon only, top right; placeNew() matches it to the tile's icon */
@@ -1663,7 +1686,7 @@ html body #menu .tiles .tile.split small{display:none}
 #menu.home .jacts .btn{grid-column:span 2;min-width:0;min-height:50px;font-size:1.05rem}
 #menu.home .jacts .newbtn{width:auto;min-width:0;margin:0;height:50px;padding:0 6px;gap:6px;justify-content:center;white-space:nowrap}
 #menu.home .jacts .newbtn.sure{font-size:.85rem}
-#menu.home .foot{margin:-4px 0 0;font-size:.7rem}
+#menu.home .foot{display:none}   /* 1.20.178 (Curtis): the version is in Settings */
 #histView .hist{margin:0}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}</style>
 
