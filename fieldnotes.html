@@ -232,6 +232,15 @@ input:focus, textarea:focus, .choice:focus-visible, .link-btn:focus-visible, but
 .neg-wrap .neg-in { position: absolute; top: 50%; right: calc(50% + 0.95em); transform: translateY(-52%); font-size: 1.05rem; font-weight: 400; color: var(--xp-carmanah); opacity: 0.55; pointer-events: none; line-height: 1; }
 /* the minus shows in an empty box, so techs see they only type the digits */
 .unit-row input.light-input { flex: 0 0 6rem; width: 6rem; text-align: center; font-size: 1.05rem; font-weight: 400; padding: 0.85rem 0.4rem; }
+/* 1.20.120 (Curtis, option A): RSRP, SINR and CPE Height as three equal boxes across, each unit small inside its box */
+.field-pair.trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 0.55rem; }
+.field-pair.trio > .field { min-width: 0; }
+.field-pair.trio .q { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.field-pair.trio .unit-row { position: relative; display: block; }
+.field-pair.trio .unit-row .neg-wrap, .field-pair.trio .unit-row > input.light-input { display: flex; flex: none !important; width: 100% !important; min-width: 0 !important; box-sizing: border-box; }
+.field-pair.trio .unit-row input.light-input { padding-right: 2.3em; padding-left: 0.5em; }
+.field-pair.trio .unit-row input.light-input.has-neg { padding-left: 0.85em; }
+.field-pair.trio .unit-row .suffix { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 0.8rem; font-weight: 600; opacity: 0.6; pointer-events: none; }
 
 .warn {
   margin-top: 0.7rem; background: var(--xp-carmanah); border-left: 0.4rem solid var(--xp-orange);
@@ -2282,7 +2291,7 @@ var FORMS = {
   'New Install|Fibre (Drop Only)': function () { return [S('Drop', dropComps(true)), commentsSection()]; },
   'New Install|Fixed Wireless': function () {
     return [
-      S('Signal', [pairC(towerC(), fwPlatC()), pairC(pairC(rsrpC(), sinrC(), 'tight mini'), heightC()), cpeTypeC(true)]),   // 1.20.119: CPE Height beside RSRP and SINR (Curtis)
+      S('Signal', [pairC(towerC(), fwPlatC()), pairC(rsrpC(), sinrC(), 'trio', heightC()), cpeTypeC(true)]),   // 1.20.119: CPE Height beside RSRP and SINR (Curtis)
       S('Mount', [fwMountC()].concat(mountPlaceComps(), [cpeAccessC()])),
       S('Cabling and Grounding', [
         tickC({ id: 'cabling', text: 'Installed all new Xplore standard cabling', yes: ['New Xplore Standard Cabling', 'Installed all new Xplore standard cabling'], out: 'Cabling',
@@ -2297,7 +2306,7 @@ var FORMS = {
     return [
       S('Conversion', [choiceC({ id: 'conv_type', label: 'Conversion Type', cols: 2, out: 'Conversion', afterChange: convPlatform, options: [
         ['LTE to FWN, Same Tower', 'LTE to FWN to same tower'], ['LTE to FWN, New Tower', 'LTE to FWN to new tower'], ['SAT to FWN', 'SAT to FWN'], ['SAT to LTE', 'SAT to LTE'], ['Move Conversion', 'Move conversion']] })]),
-      S('Signal', [pairC(towerC(), fwPlatC()), pairC(pairC(rsrpC(), sinrC(), 'tight mini'), heightC()), cpeTypeC(true)]),   // 1.20.119: CPE Height beside RSRP and SINR (Curtis)
+      S('Signal', [pairC(towerC(), fwPlatC()), pairC(rsrpC(), sinrC(), 'trio', heightC()), cpeTypeC(true)]),   // 1.20.119: CPE Height beside RSRP and SINR (Curtis)
       S('Mount', [fwMountC()].concat(mountPlaceComps(), [cpeAccessC()])),
       S('Cabling and Grounding', fwSwapCabling()),
       S('Indoor', [powerC(), routerC()]),
