@@ -1838,13 +1838,13 @@ function positionC(sat) {
 function mountPlaceComps(sat) {   // sat: no tower or wooden post for a dish
   return [
     choiceC({ id: 'structure', label: 'Structure', options: ['House', 'Garage', 'Shop', 'Barn', 'Trailer', 'Other'], cols: 3, otherLabel: 'Other Structure' }),
-    choiceC({ id: 'mount_into', label: 'Mounting Surface', options: ['Roof', 'Fascia', 'Wall'].concat(sat ? [] : ['Tower', ['Wooden Post', 'Wooden post']], [['Steel Pole', 'Steel pole'], 'Other']), cols: 2, out: 'Mounting Surface', otherLabel: 'Other Surface' }),
+    choiceC({ id: 'mount_into', label: 'Mounting Surface', options: ['Roof', 'Fascia', 'Wall'].concat(sat ? [['Steel Pole', 'Steel pole']] : ['Tower', ['Wood Post', 'Wood post']], ['Other']), cols: 2, out: 'Mounting Surface', otherLabel: 'Other Surface' }),
     // 1.20.110 (Curtis): Side and Position removed (mountSideC / positionC no longer asked)
   ];
 }
 /* which side of the structure, standing with your back to the road (the front faces the road) */
 /* a wall, post, pole or tower already says where the mount is: no Position needed */
-function posNeeded() { return ['Wall', 'Wooden Post', 'Steel Pole', 'Tower'].indexOf(STATE.mount_into) < 0; }
+function posNeeded() { return ['Wall', 'Wood Post', 'Wooden Post', 'Steel Pole', 'Tower'].indexOf(STATE.mount_into) < 0; }
 function mountSideC() {
   return choiceC({ id: 'mount_side', label: 'Side', out: 'Mount Side', options: ['Front', 'Back', 'Left', 'Right', 'Other'], cols: 3, otherLabel: 'Other Side' });
 }
@@ -2387,6 +2387,7 @@ function currentSections() { var k = jobKey(); return k ? FORMS[k]() : []; }
 function visible(c) { return !c.show || c.show(); }
 /* jobs saved by older versions used one Job Type and a Service */
 function migrateJob(st) {
+  if (st && st.mount_into === 'Wooden Post') st.mount_into = 'Wood Post';   // 1.20.115: renamed
   if (!st || !st.job_svc) return st;
   var s = st.job_svc, f = /^Fibre \((.+)\)$/.exec(s);
   st.job_type = st.job_type === 'New Install' ? 'Install' : st.job_type;
