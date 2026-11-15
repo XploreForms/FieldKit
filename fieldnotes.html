@@ -278,6 +278,12 @@ input:focus, textarea:focus, .choice:focus-visible, .link-btn:focus-visible, but
 .device-body .light-block { margin: 0.9rem 0 0; padding: 0; }
 .device-body .light-block.has-error { padding-left: 0.4rem; margin-left: -0.9rem; margin-top: 0.9rem; }
 .field.device-card.has-error { border-left: 0.5rem solid var(--xp-orange); padding-left: 0; margin-left: 0; }
+/* 1.20.127: location cards: no side bar or Floor/Room labels, the two button groups stacked */
+.device-card.loc-card { border-left: 0; }
+.device-card.loc-card .device-head, .device-card.loc-card .device-body { padding-left: 0; padding-right: 0; }
+.device-card.loc-card .device-body > .choices + .choices { margin-top: 0.5rem; }
+.field.device-card.loc-card.has-error { border-left: 0.4rem solid var(--xp-orange); padding-left: 0.4rem; margin-left: -0.8rem; }
+.router-beside { margin-top: -1rem; margin-bottom: 1.4rem; }
 
 /* discreet tick box (own router, splice already done, reused patch) */
 .mini-check-wrap { margin-top: 0.2rem; padding-top: 0; }   /* 1.20.118 (Curtis): tighter to the buttons above (was 1rem + .2rem; applies to every small tick under a question) */
@@ -981,8 +987,9 @@ function fieldWrap(id, label, optional, hint, controls) {
   return wrap;
 }
 
-function choiceGroup(key, options, cols, fieldId, afterChange, off) {
+function choiceGroup(key, options, cols, fieldId, afterChange, off, aria) {
   var group = el('div', { class: 'choices' + (cols ? ' cols-' + cols : ''), role: 'radiogroup' });
+  if (aria) group.setAttribute('aria-label', aria);
   options.forEach(function (o) {
     var selected = STATE[key] === o;
     var btn = el('button', {
@@ -1031,20 +1038,25 @@ function miniCheck(key, label, anim) {
 function locationField(id, key, label, rooms, extra) {
   rooms = rooms || ROOM_OPTIONS;
   var e = errFor(id);
-  var card = el('div', { class: 'field device-card' + (e ? ' has-error' : ''), 'data-field-id': id });
+  // 1.20.127 (Curtis, option 2): no side bar or Floor/Room labels; floor row, then rooms 3 across; "X Location"
+  label = String(label).replace(' Installation Location', ' Location');
+  var card = el('div', { class: 'field device-card loc-card' + (e ? ' has-error' : ''), 'data-field-id': id });
   card.appendChild(el('div', { class: 'device-head' }, [el('span', { class: 'q', text: label })]));
   var body = el('div', { class: 'device-body' }, [
-    el('p', { class: 'sub-q', style: 'margin-top:0', text: 'Floor' }),
-    choiceGroup(key + '_floor', FLOOR_OPTIONS, 3, id),
-    el('hr', { class: 'device-rule' }),
-    el('p', { class: 'sub-q', style: 'margin-top:0.9rem', text: 'Room' }),
-    choiceGroup(key, rooms, 2, id)
+    choiceGroup(key + '_floor', FLOOR_OPTIONS, 3, id, null, null, 'Floor'),
+    choiceGroup(key, rooms, rooms.length % 3 === 0 ? 3 : 2, id, null, null, 'Room')
   ]);
   if (STATE[key] === 'Other') body.appendChild(otherInput(key + '_other', id, 'Room Name'));
   if (extra) body.appendChild(extra());
   if (e) body.appendChild(el('div', { class: 'field-error-msg', text: e.msg }));
   card.appendChild(body);
   return card;
+}
+/* the device the router can sit beside on this form (power supply, modem or ONT), or null */
+function routerPartner() {
+  var ids = {};
+  try { currentSections().forEach(function (sec) { sec.items.forEach(function (c) { ids[c.id] = true; }); }); } catch (err) { return null; }
+  return ids.ont ? { key: 'ont', name: 'ONT' } : ids.modem ? { key: 'modem', name: 'modem' } : ids.power ? { key: 'power', name: 'power supply' } : null;
 }
 /* Small optional tick: only used when the customer insists on their own router. Off = Xplore router. */
 function ownRouterCheck() { return miniCheck('own_router', 'Customer using their own router'); }
@@ -1543,12 +1555,19 @@ function ontC(withLight) {
 function routerC() {
   return {
     id: 'router',
-    render: function () { return locationField('router', 'router', 'Router Installation Location', ROOM_OPTIONS, ownRouterCheck); },
-    check: function (need) { need('router', 'Router Installation Location', locationDone('router'), 'Choose the floor and the room.'); },
+    // 1.20.127 (Curtis): "Router is beside the power supply / modem / ONT" skips the router's floor and room
+    render: function () {
+      var p = routerPartner(), frag = document.createDocumentFragment();
+      if (p) frag.appendChild(el('div', { class: 'field router-beside', 'data-field-id': 'router_beside' }, [miniCheck('router_beside', 'Router is beside the ' + p.name)]));
+      if (p && STATE.router_beside === true) frag.appendChild(el('div', { class: 'field router-beside', 'data-field-id': 'router' }, [ownRouterCheck()]));
+      else frag.appendChild(locationField('router', 'router', 'Router Installation Location', ROOM_OPTIONS, ownRouterCheck));
+      return frag;
+    },
+    check: function (need) { var p = routerPartner(); need('router', 'Router Location', (p && STATE.router_beside === true) || locationDone('router'), 'Choose the floor and the room.'); },
     out: function (m) {
-      var l = [];
+      var l = [], p = routerPartner();
       if (STATE.own_router === true) l.push('Router Used: Customer using their own router');
-      l.push('Router Location: ' + locationText('router', m));
+      l.push('Router Location: ' + (p && STATE.router_beside === true ? locationText(p.key, m) : locationText('router', m)));
       return l;
     }
   };

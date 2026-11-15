@@ -208,6 +208,8 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 
 - (1.20.126) Comments: Fixed Wireless and Satellite repairs ask Structure and Mounting Surface (buttons, same as installs) instead of a typed Mount Location; FW repair readings are the install row (RSRP, SINR, CPE Height with units inside the boxes; Cell ID on its own row) and the comment says RSRP/SINR (no "Final"). Additional Comments has a normal label with the bullet hint above the box like the others, and is always last on the form (the copied comment keeps its old order).
 
+- (1.20.127, Curtis picked option 2) Location questions (ONT, power supply, modem, router, XWH/XTV units): no side bar or Floor/Room sub-labels, labels say "X Location", floor row then rooms 3 across (TV rooms 2 across). Under the ONT/modem/power supply: **"Router is beside the ONT / modem / power supply"** tick (`router_beside`, off by default); ticked skips the router's floor and room (own-router tick stays) and the comment's Router Location copies that device's location (`routerPartner()`). Test: `dev/tests/tbeside.py`.
+
 **Things only a real phone can confirm** (the test browser has no camera or GPS)
 - Compass on Android (with and without the Compass web app installed; if Android shows an "open with" chooser instead of going straight in, adjust).
 - A real scan from the SA page returning correctly, and a real photo ticking its SN tile.
