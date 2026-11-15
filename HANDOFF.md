@@ -238,6 +238,8 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 
 - (1.20.162) Pictures inside an SA (Curtis): the outcome chip only shows the outcome (no ▾; a tap says "Change the outcome on the SA page."), and the This SA sheet hides the job type and outcome pickers. Saving with no outcome says to set it on the SA page. Field Cam on its own is unchanged. Test: `dev/tests/tcamout.py`.
 
+- (1.20.163) Pictures: optional **Recovered SN** photo label on every Conversion and Repair (Complete outcome) (Curtis).
+
 **Things only a real phone can confirm** (the test browser has no camera or GPS)
 - Compass on Android (with and without the Compass web app installed; if Android shows an "open with" chooser instead of going straight in, adjust).
 - A real scan from the SA page returning correctly, and a real photo ticking its SN tile.
