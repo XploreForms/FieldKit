@@ -571,6 +571,12 @@ details.grp .btn{margin-bottom:12px}
     if (t >= today.getTime() - 864e5) return "Yesterday " + time;
     return d.toLocaleDateString("en-CA", { weekday: "short", month: "short", day: "numeric" }) + " " + time;
   }
+  // 1.20.133 (Curtis): start and finish times; the finish is just the time when it's the same day
+  function span(j) {
+    if (j.status !== "complete" || !j.completedAt) return "Started " + when(j.created);
+    var s = new Date(j.created), f = new Date(j.completedAt), same = s.toDateString() === f.toDateString();
+    return when(j.created) + " – " + (same ? f.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : when(j.completedAt));
+  }
   function jobName(j) { return j.title || "SA details not set yet"; }
   function goStep(j) { if (STEP_URL[j.step]) FK.go(STEP_URL[j.step]); else openLobby(); }
   /* ---- new job: SA-# and job details here, then Field Cam opens straight into the camera ---- */
@@ -744,7 +750,7 @@ details.grp .btn{margin-bottom:12px}
     $("hist").innerHTML = shown.map(function (j) {
       var done = j.status === "complete";
       return '<li><button type="button" data-job="' + esc(j.id) + '"><span style="min-width:0"><b>' + esc(j.sa || "No SA-#") + '</b><small><span class="st' + (done ? "" : " open") + '">' + (done ? "Completed" : "Not completed") + '</span> · ' +
-        esc(when(done ? j.completedAt : j.created)) + '</small><small class="wrap">' + esc(jobName(j)) + '</small></span><em class="chev" aria-hidden="true">›</em></button></li>';
+        esc(span(j)) + '</small><small class="wrap">' + esc(jobName(j)) + '</small></span><em class="chev" aria-hidden="true">›</em></button></li>';
     }).join("");
   }
   // SA history: its own page (the clock at the top of the home screen)
@@ -922,6 +928,7 @@ details.grp .btn{margin-bottom:12px}
     $("lbHelp").textContent = j.status === "complete" ? "This SA is in SA history for 7 days from its last change." : ""; $("lbHelp").hidden = j.status !== "complete";
     lobbySure = false; $("lbWarn").innerHTML = ""; lobbyState.photosReady = false;
     $("lbStart").innerHTML = svg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', 2) + '<span class="lsl">Started</span><span class="lst">' + esc(when(j.created)) + '</span>'; $("lbStart").innerHTML = '<div class="lout">' + $("lbStart").innerHTML + '</div>';
+    if (j.status === "complete" && j.completedAt) $("lbStart").innerHTML += '<div class="lout" style="margin-top:10px">' + svg('<circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.5 2.5L16 9.5"/>', 2) + '<span class="lsl">Finished</span><span class="lst">' + esc(when(j.completedAt)) + '</span></div>';   // 1.20.133
     paintLobbyOut(j); paintLobbyPhotos(j); paintLobbyNotes(j); paintLobbyGear(j); paintNext(j);
   }
   function openLobby() {

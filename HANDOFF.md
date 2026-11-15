@@ -214,6 +214,8 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 
 - (1.20.131) **Change SA** (Curtis): a "Change" button on the right of the SA page header opens the New SA screen in change mode (title Change SA, SA-# locked, Type/Platform/Technology prefilled, required **Reason for Change**). `J.changeJob(job, to, reason)` keeps `job.changes` [{from, to, reason, at…}], updates the SA, its Field Cam job (restamp) and Comments' job questions (other answers kept; a copied comment goes stale), and re-syncs deploys. Comments prints `JOB CHANGED / Original SA: Repair - Satellite - HJ3 / Reason for change: …` under the title line. Test: `dev/tests/tchange.py`.
 
+- (1.20.133) SA history shows start – finish (`span()`: "Today 8:24 PM – 9:59 PM"; finish date only when it's another day); a completed SA's page has a Finished row under Started. Test: `dev/tests/tfinish.py`.
+
 **Things only a real phone can confirm** (the test browser has no camera or GPS)
 - Compass on Android (with and without the Compass web app installed; if Android shows an "open with" chooser instead of going straight in, adjust).
 - A real scan from the SA page returning correctly, and a real photo ticking its SN tile.
