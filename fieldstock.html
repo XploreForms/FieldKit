@@ -532,8 +532,7 @@ header.top.fk-row .who{display:none}
         <label for="toIn">Transferred To Dealer</label>
         <input type="text" id="toIn" autocomplete="off" placeholder="Dealer name">
         <label for="toEmail" style="margin-top:6px">Receiving Tech's Email</label>
-        <input type="email" id="toEmail" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="toEmailEx">
-        <small class="ex" id="toEmailEx">The tech getting these items. They're copied on the email to inventory.</small>
+        <input type="email" id="toEmail" autocomplete="off" autocapitalize="off" spellcheck="false">
         <label for="fromEmail" style="margin-top:6px">Your Email</label>
         <input type="email" id="fromEmail" autocomplete="email" autocapitalize="off" spellcheck="false" aria-describedby="fromEmailEx">
         <small class="ex" id="fromEmailEx">From Your Details. You're copied on the email too.</small>
@@ -542,7 +541,7 @@ header.top.fk-row .who{display:none}
           <button class="t-count" type="button" data-how="ship" aria-pressed="false">Shipping it</button>
         </div>
         <input type="text" id="trackIn" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Tracking number (optional)" class="mono" hidden>
-        <div class="note warn">You're sending these items, so you're responsible for emailing the transfer to the inventory team. Field Stock drafts the email after you log it, with you and the receiving tech copied, so both of you have a record.</div>
+        <div class="note warn">You're sending these items, so you're responsible for emailing the transfer to the inventory team.</div>
       </div>
       <div class="field" id="rmaBlock" hidden>
         <label for="rmaIn">RMA Number</label>
@@ -840,7 +839,7 @@ const HELP = {
     steps:["Click <b>Export to Excel</b>. The file goes to your Downloads folder."],
     home:"",
     restore:"Click Choose Excel File and pick the file you exported.",
-    loc:"Location is off. Allow location for this site in your browser settings.",
+    loc:"Location is off.",
     cam:"Camera is blocked. Allow the camera for this site in your browser settings."
   }
 }[PLAT];
