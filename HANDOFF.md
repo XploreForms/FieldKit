@@ -228,6 +228,8 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 
 - (1.20.152) Drop Route: Flower Pot and (1.20.153) Vault are greyed for Buried; they're only reached by Duct (Curtis). The run out of a flower pot to the structure is still filled in as Buried.
 
+- (1.20.154) Drop Route: an Aerial span off a Pole also offers **Midspan** (listed last; greyed for Buried/Duct), only if the route has no midspan yet (Curtis).
+
 **Things only a real phone can confirm** (the test browser has no camera or GPS)
 - Compass on Android (with and without the Compass web app installed; if Android shows an "open with" chooser instead of going straight in, adjust).
 - A real scan from the SA page returning correctly, and a real photo ticking its SN tile.

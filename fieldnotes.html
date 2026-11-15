@@ -1604,7 +1604,12 @@ function nextTypes() {
   return !at || at === 'Structure' ? [] : ['Aerial', 'Buried', 'Duct'];
 }
 /* where the next span can land: off the MPT strand, a pole or a midspan (1.20.149); otherwise the usual stops */
-function nextStops() { var n = spanCount(); return !n && STATE.mpt === 'Strand' ? ['Pole', 'Midspan'] : BURIED_TO; }
+function nextStops() {
+  var n = spanCount(); if (!n && STATE.mpt === 'Strand') return ['Pole', 'Midspan'];
+  // 1.20.154 (Curtis): an aerial span off a pole can also go to a midspan, once per route
+  var had = false; for (var i = 1; i <= n; i++) if (STATE['span' + i + '_to'] === 'Midspan') had = true;
+  return n && STATE['span' + n + '_to'] === 'Pole' && !had ? BURIED_TO.concat(['Midspan']) : BURIED_TO;
+}
 function addSpan(type, to) {
   var n = spanCount() + 1;
   if (n > MAX_SPANS) return;
@@ -1747,7 +1752,7 @@ function routeC(dropOnly) {
           addSpan(t, o);
           if (ticked && (t === 'Aerial' || t === 'Buried')) STATE['span' + k + (t === 'Aerial' ? '_flag' : '_temp')] = true;   // the tick moves onto the drawn span
           delete STATE.route_next; delete STATE.route_next_flag;
-        }, function (o) { return !t || (t === 'Aerial' && AERIAL_TO.indexOf(o) < 0 && o !== 'Midspan') || (t === 'Buried' && (o === 'Flower Pot' || o === 'Vault')); });   // 1.20.152/153 (Curtis): a flower pot or a vault is only reached by duct
+        }, function (o) { return !t || (t === 'Aerial' && AERIAL_TO.indexOf(o) < 0 && o !== 'Midspan') || (t === 'Buried' && (o === 'Flower Pot' || o === 'Vault')) || (o === 'Midspan' && t !== 'Aerial'); });   // 1.20.152/153 (Curtis): a flower pot or a vault is only reached by duct
         if (fx && !fx.typeOnly) gh.classList.add('rt-fresh');
         box.appendChild(gh);
         if (dropOnly && n) box.appendChild(el('p', { class: 'rt-note', text: 'Partial run? Leave it here.' }));
