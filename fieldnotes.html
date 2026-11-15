@@ -2253,7 +2253,7 @@ var FORMS = {
         choiceC({ id: 'cabling', label: 'Cabling', options: [['New Xplore Standard Cabling', 'Installed new Xplore standard cabling'], 'Other'], cols: 2,
           otherLabel: 'Why Were Xplore Standards Not Met', otherOut: function (r) { return 'Xplore standards not met, ' + r; } }),
         choiceC({ id: 'surge', label: 'Surge Suppressor', options: [['Installed New', 'Installed new surge suppressor'], 'Other'], cols: 2, out: 'Surge',
-          otherLabel: 'Why Was a New One Not Installed', otherOut: function (r) { return 'New surge suppressor not installed, ' + r; } }),
+          otherLabel: 'Why was a new surge not installed?', otherOut: function (r) { return 'New surge suppressor not installed, ' + r; } }),
         groundSourceC()]),
       S('Indoor', [powerC(), routerC()]), vasSection(), commentsSection(),
       S('Confirmations', [xapC(FW_XAP), lawnC(LAWN_REASONS_FW)])];
