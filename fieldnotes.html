@@ -785,6 +785,7 @@ html:root[data-fn-theme] .sub-q{color:var(--fk-muted);font-size:.88rem}
 .tick-box{width:24px;height:24px;flex:none;border-radius:7px;display:grid;place-items:center;font-size:15px;box-shadow:inset 0 0 0 2px var(--fk-line,#b9c4c0);color:var(--fk-accent-ink,#012929)}
 .tick-row[aria-checked="true"] .tick-box{background:var(--fk-accent,#5CBC5D);box-shadow:none}
 [data-field-id="cabling"] + [data-field-id="surge"], [data-field-id="cabling"] + [data-field-id="ground_block"]{margin-top:-0.6rem}
+[data-field-id="cpe_access"] .tick-row + .tick-row{margin-top:8px}   /* 1.20.144: roof and tower ticks on a repair */
 html:root[data-fn-theme] .choices:not(.settings-panel .choices){gap:4px;padding:4px;border-radius:12px;background:var(--fk-surface);box-shadow:inset 0 0 0 1px var(--fk-line)}
 html:root[data-fn-theme] .choices:not(.settings-panel .choices) .choice{background:transparent;box-shadow:none;color:var(--fk-ink);border-radius:9px;min-height:44px;padding:10px 6px;font-size:.88rem;line-height:1.15}
 html:root[data-fn-theme] .choices.cols-list .choice,html:root[data-fn-theme] .choices:not([class*="cols-"]) .choice{padding:10px 12px}
@@ -1840,8 +1841,35 @@ function cpeTypeC(withPlat, repair) { if (/^(First|Next) Gen High Gain$/.test(ST
   return choiceC({ id: 'cpe', label: 'CPE Type', options: CPE_TYPES, cols: 2, out: 'CPE', off: withPlat ? (repair ? cpeRepairOff : cpeOff) : null }); }
 /* how the tech gets to the CPE (fixed wireless and satellite) */
 /* repair: a radio already on a tower may need a climb; installs and conversions never climb */
-function cpeAccessC(repair) { return choiceC({ id: 'cpe_access', label: 'CPE Access', cols: 2, otherLabel: 'Other Access', options:
-  [['Serviceable from Ladder', 'Serviceable from ladder'], ['Stepping onto Roof Required', 'Stepping onto roof required']].concat(repair ? [['Tower Climb', 'Tower climb required']] : []).concat(['Other']) }); }
+/* 1.20.144 (Curtis): serviceable from ladder is the default; the tech ticks only when stepping onto the roof (or, on a
+   repair, a tower climb) is required. Safety: the tick says "required" in full. */
+function cpeAccessC(repair) {
+  // answers saved with the old buttons
+  if (STATE.cpe_access === 'Stepping onto Roof Required') STATE.cpe_roof = true;
+  if (STATE.cpe_access === 'Tower Climb') STATE.cpe_tower = true;
+  if (STATE.cpe_access && STATE.cpe_access !== 'Other') delete STATE.cpe_access;
+  function tick(key, text) {
+    var on = STATE[key] === true;
+    return el('button', { type: 'button', class: 'tick-row', role: 'checkbox', 'aria-checked': on ? 'true' : 'false',
+      onclick: function () { STATE[key] = on ? undefined : true; changed('cpe_access', true); } },
+      [el('span', { class: 'tick-box', 'aria-hidden': 'true', text: on ? '✓' : '' }), el('span', { text: text })]);
+  }
+  return {
+    id: 'cpe_access',
+    render: function () {
+      var c = [tick('cpe_roof', 'Stepping onto roof required')];
+      if (repair) c.push(tick('cpe_tower', 'Tower climb required'));
+      return fieldWrap('cpe_access', 'CPE Access', false, 'Leave unticked if it was serviceable from a ladder.', c);
+    },
+    check: function () {},
+    out: function () {
+      var r = STATE.cpe_roof === true, t = repair && STATE.cpe_tower === true;
+      var v = r && t ? 'Stepping onto roof and tower climb required' : r ? 'Stepping onto roof required' : t ? 'Tower climb required'
+        : STATE.cpe_access === 'Other' && str(STATE.cpe_access_other) ? cap(STATE.cpe_access_other) : 'Serviceable from ladder';
+      return ['CPE Access: ' + v];
+    }
+  };
+}
 /* 1.20.141 (Curtis): only the conversion types that end on the SA's technology (FWN or LTE); Move Conversion always */
 var CONV_TYPES = [['LTE to FWN - Same Tower', 'LTE to FWN to same tower'], ['LTE to FWN - New Tower', 'LTE to FWN to new tower'],   // 1.20.142: " - " (was ", ")
   ['SAT to FWN', 'SAT to FWN'], ['SAT to LTE', 'SAT to LTE'], ['Move Conversion', 'Move conversion']];
