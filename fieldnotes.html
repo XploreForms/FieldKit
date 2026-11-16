@@ -2474,7 +2474,7 @@ var FORMS = {
       S('Confirmations', [xapC(FIBRE_XAP), lawnC()])];
   },
   'Conversion|Fibre (Existing Drop)': function () {
-    return [S('Structure - Outdoor', [nidC(), connectorC()]), S('Indoor', [ontC(), routerC()]), vasSection(), commentsSection(),
+    return [S('Structure - Outdoor', [nidC(), connectorC()]), S('Indoor', [ontC(), routerC()]), oldGearSection(), vasSection(), commentsSection(),
       S('Confirmations', [lawnC()])];
   },
   'New Install|Fibre (Drop Required)': function () {
@@ -2482,7 +2482,7 @@ var FORMS = {
       S('Confirmations', [xapC(FIBRE_XAP), lawnC()])];
   },
   'Conversion|Fibre (Drop Required)': function () {
-    return [S('Drop', dropComps()), S('Structure - Outdoor', [nidC('Installed New'), connectorC()]), S('Indoor', [ontC(), routerC()]), vasSection(), commentsSection(),
+    return [S('Drop', dropComps()), S('Structure - Outdoor', [nidC('Installed New'), connectorC()]), S('Indoor', [ontC(), routerC()]), oldGearSection(), vasSection(), commentsSection(),
       S('Confirmations', [lawnC()])];
   },
   'New Install|Fibre (Drop Only)': function () { return [S('Drop', dropComps(true)), commentsSection()]; },
@@ -2506,8 +2506,7 @@ var FORMS = {
       S('Mount', [fwMountC()].concat(mountPlaceComps(), [cpeAccessC()])),
       S('Cabling and Grounding', convCabling()),
       S('Indoor', [powerC(), routerC()]),
-      S('Old Equipment', [choiceC({ id: 'recovery', label: 'Original CPE', cols: 0, out: 'Recovery', otherLabel: 'Recovery Details', options: [
-        ['Recovered for RMA', 'Recovered original CPE for RMA'], ['Recovered to Be Recycled', 'Recovered original CPE to be recycled'], ['Not Recovered, No RMA', 'Did not recover original CPE, no RMA'], 'Other'] })]),
+      oldGearSection(),
       vasSection(), commentsSection(),
       S('Confirmations', [lawnC()])];
   },
@@ -2548,6 +2547,12 @@ var FORMS = {
   },
   'Recovery|Fibre': recoveryForm, 'Recovery|Fixed Wireless': recoveryForm, 'Recovery|Satellite': recoveryForm, 'Recovery|VAS': recoveryForm
 };
+/* conversions: what happened to the original equipment (Fixed Wireless: the old CPE; Fibre, 1.20.196 Curtis: the old fixed wireless or satellite equipment) */
+function oldGearSection() {
+  var fw = STATE.job_plat === 'Fixed Wireless', what = fw ? 'original CPE' : 'original equipment';
+  return S('Old Equipment', [choiceC({ id: 'recovery', label: fw ? 'Original CPE' : 'Original Equipment', cols: 0, out: 'Recovery', otherLabel: 'Recovery Details', options: [
+    ['Recovered for RMA', 'Recovered ' + what + ' for RMA'], ['Recovered to Be Recycled', 'Recovered ' + what + ' to be recycled'], ['Not Recovered, No RMA', 'Did not recover ' + what + ', no RMA'], 'Other'] })]);
+}
 function recoveryForm() { return [S('Recovery', recoveryComps()), commentsSection(), S('Confirmations', [lawnC()])]; }
 function satForm(install) {
   var conf = [lawnC()];

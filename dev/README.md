@@ -30,3 +30,4 @@ Not an organised suite: grab the ones near what you changed.
 - `thistspace`: SA history kept until photos are cleared for space (1.20.191)
 - `tniddrop`: Comments, NID on Drop Required starts Installed New (1.20.194)
 - `tvasrep`: Comments VAS repair, location of the SA's Technology only (1.20.195)
+- `toldgear`: Comments, Old Equipment on Fibre and Fixed Wireless conversions (1.20.196)

@@ -292,3 +292,5 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 - (1.20.194, Curtis) Comments: Fibre **Drop Required** (install and conversion) asks **NID** too, starting on **Installed New** (`nidC('Installed New')`; the tech can change it, and Pre-Installed brings the Pre-Spliced tick like Existing Drop). That starting answer alone doesn't count as answers when switching jobs (`answersBesidesJob`). Test: `dev/tests/tniddrop.py`.
 
 - (1.20.195, Curtis) Comments, VAS repair: no Equipment picker (XWR / XWH / XTV ticks). It asks only the location of the SA's Technology (`vasRepairComps()`, shown by `job_tech`); the comment no longer has an Equipment Serviced line. Test: `dev/tests/tvasrep.py`.
+
+- (1.20.196, Curtis) Comments: Fibre conversions (Existing Drop and Drop Required) ask **Original Equipment** after Indoor: Recovered for RMA / Recovered to Be Recycled / Not Recovered, No RMA / Other (comment `Recovery: Recovered original equipment for RMA`). Shared with Fixed Wireless's Original CPE as `oldGearSection()`. Test: `dev/tests/toldgear.py`.
