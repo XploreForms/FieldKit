@@ -2260,7 +2260,7 @@ var CC_DROP = ['Aerial Drop Required', 'Buried Drop Required', 'Temp Drop Requir
    where they mean the same thing; any other reason is printed as named on the SA. */
 var SA_CC = { 'Customer No Show': 'Unable to Contact Customer / Customer Not Home', 'Flagging Required': 'Flaggers Required', 'Unsafe Work Conditions': 'Weather / Unsafe Work Conditions',   // SA names before 1.20.199 (now the same list)
   'No Light at NID': 'Network Issue (FDH/MPT/ONT)', 'No Light at MPT': 'Network Issue (FDH/MPT/ONT)', 'CCO Ticket': 'Network Issue (FDH/MPT/ONT)', 'Drop Required': 'Aerial Drop Required', 'Drop Installation Issue': 'Install Issue' };
-var SA_NR = { 'No Serviceable Signal': 'NLOS - No Serviceable Signal', 'NLOS': 'NLOS - No Clear Line of Sight', 'Installation Objection': 'Equipment / Install Objection' };
+var SA_NR = { 'No Serviceable Signal': 'NLOS - No serviceable signal', 'Installation Objection': 'Equipment/Install Objection' };   // SA names before 1.20.200 (now the same list)
 function saJob() { try { return WIP_IN_SA ? FieldKit.job.active() : null; } catch (err) { return null; } }
 function saReason() { var j = saJob(); return j && j.reason ? j.reason : ''; }
 function goSaOutcome() {
@@ -2332,15 +2332,19 @@ function cannotCompleteForm() {
 }
 
 /* ---------- not required: the customer cancelled and we're never going back (from the Not Required JotForm) ---------- */
-var NR_REASONS = ['Landlord Permission Declined', 'Equipment / Install Objection', 'Refused Long Drop Charges', 'Customer Has Further Sales Questions',
-  'Competitor & Retention - Price', 'Competitor & Retention - Speed', 'Competitor Contract', 'Customer Cancelled - Refused to Provide Reason'];
-var NR_SRNM = 'Signal Requirements Not Met', NR_FW_NLOS = 'NLOS - No Serviceable Signal', NR_SAT_NLOS = 'NLOS - No Clear Line of Sight';
-function nrAttempt() { return STATE.job_type === 'Install' || STATE.job_type === 'Conversion'; }
+/* 1.20.200 (Curtis): Not Required reasons per platform, every job type (same names on the SA page and in Pictures) */
+var NR_COMMON = ['Landlord Permission Declined', 'Equipment/Install Objection', 'Customer Has Further Sales Questions', 'Competitor & Retention - Price',
+  'Competitor & Retention - Speed', 'Competitor Contract', 'Cx Cancelled – Refused to provide reason', 'No Longer Required'];
+var NR_SRNM = 'Signal Requirements Not Met', NR_FW_NLOS = 'NLOS - No serviceable signal', NR_SAT_NLOS = 'NLOS';
+var NR_OLD = { 'Equipment / Install Objection': 'Equipment/Install Objection', 'Customer Cancelled - Refused to Provide Reason': 'Cx Cancelled – Refused to provide reason',
+  'NLOS - No Serviceable Signal': NR_FW_NLOS, 'NLOS - No Clear Line of Sight': NR_SAT_NLOS };   // answers saved before 1.20.200
 function nrReasons() {
-  var extra = [];
-  if (nrAttempt() && STATE.job_plat === 'Fixed Wireless') extra = [[NR_SRNM, 'Signal requirements not met - QOI met for a lower speed plan but customer refused'], [NR_FW_NLOS, 'NLOS - No serviceable signal found for any package to any panel']];
-  if (nrAttempt() && STATE.job_plat === 'Satellite') extra = [[NR_SAT_NLOS, 'NLOS - No viable installation options with clear LOS to an open satellite beam']];
-  return extra.concat(NR_REASONS);
+  if (NR_OLD[STATE.nr_reason]) STATE.nr_reason = NR_OLD[STATE.nr_reason];
+  var p = STATE.job_plat;
+  if (p === 'Fibre') return ['Not in Coverage Area', 'Landlord Permission Declined', 'Refused Long Drop Charges'].concat(NR_COMMON.slice(1));
+  if (p === 'Fixed Wireless') return [[NR_FW_NLOS, 'NLOS - No serviceable signal found for any package to any panel'], [NR_SRNM, 'Signal requirements not met - QOI met for a lower speed plan but customer refused']].concat(NR_COMMON);
+  if (p === 'Satellite') return [[NR_SAT_NLOS, 'NLOS - No viable installation options with clear LOS to an open satellite beam']].concat(NR_COMMON);
+  return NR_COMMON;
 }
 function nrFwSignal() { return STATE.nr_reason === NR_SRNM || STATE.nr_reason === NR_FW_NLOS; }
 function nrSatNlos() { return STATE.nr_reason === NR_SAT_NLOS; }

@@ -67,6 +67,13 @@
       if (ch) set(k, a);
     }
     fix(null, K.jobs, true); fix(null, "fieldcam.jobs", false);
+    // 1.20.200: Not Required too
+    OLD = { "No Serviceable Signal": "NLOS - No serviceable signal", "Installation Objection": "Equipment/Install Objection" };
+    [[K.jobs, true], ["fieldcam.jobs", false]].forEach(function (x) {
+      var a = get(x[0], {}) || {}, ch = false;
+      Object.keys(a).forEach(function (id) { var j = a[id]; if (j && j.outcome === "NR" && OLD[j.reason]) { if (x[1] && j.title) j.title = j.title.replace(j.reason, OLD[j.reason]); j.reason = OLD[j.reason]; if (j.notes && j.notes.comment) j.notes.stale = true; ch = true; } });
+      if (ch) set(x[0], a);
+    });
   })();
 
   var jobMode = /^#job\b/.test(location.hash) && !!active();

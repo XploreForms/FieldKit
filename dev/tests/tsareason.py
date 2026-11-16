@@ -19,7 +19,7 @@ async def main():
         print([l for l in (await pg.evaluate("buildOutput(false)")).split('\n') if l.startswith('Reason')])
         await pg.locator('#form-mount').get_by_text('Complete', exact=True).first.click(); await pg.wait_for_timeout(1500)
         print('went to:', pg.url.split('/')[-1], '| outcome list open:', await pg.locator('.olist2').count())
-        await pg.locator('[data-out=NR][data-r="No Serviceable Signal"]').click(); await pg.wait_for_timeout(1800)
+        await pg.locator('[data-out=NR][data-r="NLOS - No serviceable signal"]').click(); await pg.wait_for_timeout(1800)
         print('back to:', pg.url.split('/')[-1], '| outcome:', await pg.evaluate("STATE.job_outcome"), '| reason row:', (await pg.locator('[data-field-id=nr_reason]').inner_text()).replace('\n',' | '))
         print([l for l in (await pg.evaluate("buildOutput(false)")).split('\n') if l.startswith('Reason')], '| towers asked:', await pg.locator('[data-field-id=towers]').count())
         print('errors', errs); await b.close()
