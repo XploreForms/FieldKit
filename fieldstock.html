@@ -16,6 +16,7 @@
 .isheet-row.on{background:var(--accent);color:var(--accent-ink)}.isheet-row.on small,.isheet-row.on em{color:var(--accent-ink);opacity:.8}
 .isheet-none{color:var(--muted);text-align:center;padding:20px 0}
 html.isheet-on,html.isheet-on body{overflow:hidden}
+#skuSel,#dItemSel,select[data-lsel]{pointer-events:none}   /* 1.20.216: taps reach the page; see iselAt() */
 </style>
 <title>Field Stock</title>
 <link rel="icon" type="image/svg+xml" href="icon.svg">
@@ -1116,10 +1117,11 @@ function openItemSheet(sel){
 let ITEM_SHEET=null;
 function closeItemSheet(fromBack){ if(!ITEM_SHEET) return; ITEM_SHEET.w.remove(); document.documentElement.classList.remove("isheet-on"); ITEM_SHEET=null; if(!fromBack && history.state && history.state.isheet) try{ history.back(); }catch(e){} }
 addEventListener("popstate",()=>{ if(ITEM_SHEET) closeItemSheet(true); });
-// stop the phone's own list from opening; open the sheet instead (touch, mouse and keyboard)
-["touchstart","pointerdown","mousedown"].forEach(ev=>document.addEventListener(ev,e=>{ const s=e.target.closest&&e.target.closest(ISEL); if(!s||s.disabled) return; e.preventDefault(); },{capture:true, passive:false}));
-document.addEventListener("click",e=>{ const s=e.target.closest&&e.target.closest(ISEL); if(!s||s.disabled) return; e.preventDefault(); openItemSheet(s); },true);
-document.addEventListener("touchend",e=>{ const s=e.target.closest&&e.target.closest(ISEL); if(!s||s.disabled) return; e.preventDefault(); openItemSheet(s); },{capture:true, passive:false});
+/* 1.20.216 (Curtis): a scroll that starts on the field no longer opens it. The selects take no touches at all
+   (pointer-events:none in CSS), so a swipe scrolls the page as usual; a real tap (a click) on the spot where a
+   select sits opens the sheet. The phone's own list can't open since the select never gets the touch. */
+function iselAt(x,y){ return [...document.querySelectorAll(ISEL)].find(s=>{ if(s.disabled || !s.offsetParent) return false; const r=s.getBoundingClientRect(); return x>=r.left && x<=r.right && y>=r.top && y<=r.bottom; }); }
+document.addEventListener("click",e=>{ if(ITEM_SHEET) return; const s=iselAt(e.clientX,e.clientY); if(!s) return; e.preventDefault(); e.stopPropagation(); openItemSheet(s); },true);
 document.addEventListener("keydown",e=>{ const s=e.target.closest&&e.target.closest(ISEL); if(!s||s.disabled) return; if([" ","Enter","ArrowDown","ArrowUp"].includes(e.key)){ e.preventDefault(); openItemSheet(s); } },true);
 document.addEventListener("keydown",e=>{ if(ITEM_SHEET && e.key==="Escape") closeItemSheet(); });
 const lineMode=()=>true;
