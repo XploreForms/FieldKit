@@ -736,8 +736,8 @@ header.app-header .header-top img.yawn { transform-origin: 50% 100%; animation: 
 .rt-tools { display: flex; gap: 0.5rem; margin-top: 0.8rem; padding-top: 0.6rem; border-top: 1px solid #E3EEE7; }
 .rt-tool { flex: 1 1 0; min-height: 2.5rem; font-family: var(--xp-font); font-weight: 600; font-size: 0.85rem; border: 0; border-radius: 0.6rem; background: #EEF5F0; color: var(--xp-dark); cursor: pointer; }
 .rt-tool:active { background: var(--xp-green); }
-.sa-reason{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.sa-reason b{font-size:1rem}
+.sa-reason{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.sa-reason b{font-size:1rem;flex:1;min-width:0;line-height:1.3}
 .sa-reason .sa-reason-btn{flex:none;width:auto;min-height:44px;padding:0 14px}
 </style>
 <link rel="preload" href="fonts/Barlow-Regular.woff" as="font" type="font/woff" crossorigin>
@@ -2709,6 +2709,21 @@ function jobSection() {
       g.appendChild(b);
     });
     return g;
+  }
+  // 1.20.204 (Curtis): inside an SA the job is already picked: show it in one line each, with Change (job: Change SA; outcome: the SA page's Change Outcome)
+  if (WIP_IN_SA && jobKey()) {
+    var jobLine = [STATE.job_type, platLabel(), STATE.job_tech && !techOff() ? STATE.job_tech : ''].filter(Boolean).join(' · ');
+    var goChange = function () {
+      try { sessionStorage.setItem('fieldkit.changeFrom', JSON.stringify({ ret: 'fieldnotes.html#job' })); } catch (err) {}
+      wipSaveNow();
+      if (window.FieldKit && FieldKit.go) FieldKit.go('index.html#job-change'); else location.href = 'index.html#job-change';
+    };
+    var row = function (label, value, onTap, aria) {
+      return [el('p', { class: 'sub-q' + (label === 'Job' ? ' first' : ''), text: label }),
+        el('div', { class: 'sa-reason' }, [el('b', { text: value }), el('button', { type: 'button', class: 'choice sa-reason-btn', onclick: onTap, 'aria-label': aria }, [el('span', { text: 'Change' })])])];
+    };
+    row('Job', jobLine, goChange, 'Change the job type or platform on the SA page').concat(row('Outcome', STATE.job_outcome, goSaOutcome, 'Change the outcome on the SA page')).forEach(function (n) { wrap.appendChild(n); });
+    return el('section', { class: 'form-section job-section', 'data-sec': 'Job' }, [wrap]);
   }
   wrap.appendChild(el('p', { class: 'sub-q first', text: 'Job Type' }));
   wrap.appendChild(group('job_type', PICK_TYPES, 4));
