@@ -2195,32 +2195,15 @@ function fwSwapCabling(conv) {
   ];
 }
 
-/* value added services repair: tick each piece of equipment serviced, then its floor and room */
+/* value added services repair: the floor and room of the SA's Technology (the piece serviced) */
 var VAS_GEAR = [['XWR', ROOM_OPTIONS], ['XWH', XWH_ROOMS], ['XTV', TV_ROOMS]];
 function gearOn(g) { return STATE.vas_gear && STATE.vas_gear[g] === true; }
 function vasRepairComps() {
-  var pick = {
-    id: 'vas_gear',
-    render: function () {
-      var g = el('div', { class: 'choices cols-3', role: 'group', 'data-multi': '1' });
-      VAS_GEAR.forEach(function (v) {
-        var k = v[0], on = gearOn(k);
-        g.appendChild(el('button', { type: 'button', class: 'choice', role: 'checkbox', 'aria-checked': on ? 'true' : 'false',
-          onclick: function () { var t = Object.assign({}, STATE.vas_gear || {}); t[k] = !on; STATE.vas_gear = t; changed('vas_gear', true); } },
-          [el('span', { class: 'mark', text: on ? '✓' : '' }), el('span', { text: k })]));
-      });
-      return fieldWrap('vas_gear', 'Equipment', false, 'Tick each one you serviced.', [g]);
-    },
-    check: function (need) { need('vas_gear', 'Equipment', VAS_GEAR.some(function (v) { return gearOn(v[0]); }), 'Tick at least one.'); },
-    out: function (m) {
-      var on = VAS_GEAR.filter(function (v) { return gearOn(v[0]); }).map(function (v) { return v[0]; });
-      return ['Equipment Serviced: ' + (on.length ? on.join(', ') : m('vas_gear', 'XWR, XWH or XTV'))];
-    }
-  };
-  return [pick].concat(VAS_GEAR.map(function (v) {
+  // 1.20.195 (Curtis): no Equipment picker; the equipment serviced is the SA's Technology (XWR, XWH or XTV), so just its location
+  return VAS_GEAR.map(function (v) {
     var k = v[0];
-    return locationC({ id: k.toLowerCase() + '_loc', label: k + ' Location', rooms: v[1], show: function () { return gearOn(k); } });
-  }));
+    return locationC({ id: k.toLowerCase() + '_loc', label: k + ' Location', rooms: v[1], show: function () { return STATE.job_tech === k; } });
+  });
 }
 
 /* ---------- recovery: what came back, where it's going, and the site left tidy ---------- */
