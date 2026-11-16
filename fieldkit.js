@@ -160,18 +160,19 @@ if (!window.__fkFraming) (function () {
 
   /* ---------- appearance ---------- */
   // theme: light | dark | black (black = true black for OLED screens), the same in every tool. grid: Field Cam grid lines.
-  var THEMES = ["light", "dark", "black"];
+  var THEMES = ["light", "dark", "black"], HIST_WEEKS = [1, 2, 4, 8];   // histWeeks: how long SA history is kept (1.20.187, default 4)
   function prefs() {
     var p = get(K.prefs, null);
-    if (p) { p = Object.assign({ theme: "light", grid: false }, p); if (THEMES.indexOf(p.theme) < 0) p.theme = "light"; return p; }
+    if (p) { p = Object.assign({ theme: "light", grid: false, histWeeks: 4 }, p); if (THEMES.indexOf(p.theme) < 0) p.theme = "light"; if (HIST_WEEKS.indexOf(+p.histWeeks) < 0) p.histWeeks = 4; p.histWeeks = +p.histWeeks; return p; }
     // first launch: light, no grid lines (changed in Settings). Keeps what Field Stock already had on this phone.
     var t = raw("techstock.theme");
-    return { theme: /^(light|dark|black)$/.test(t) ? t : "light", grid: false };
+    return { theme: /^(light|dark|black)$/.test(t) ? t : "light", grid: false, histWeeks: 4 };
   }
   function setPrefs(p) {
     p = Object.assign(prefs(), p || {});
     if (THEMES.indexOf(p.theme) < 0) p.theme = "light";
-    set(K.prefs, { theme: p.theme, grid: !!p.grid });
+    if (HIST_WEEKS.indexOf(+p.histWeeks) < 0) p.histWeeks = 4;
+    set(K.prefs, { theme: p.theme, grid: !!p.grid, histWeeks: +p.histWeeks });
     setRaw("techstock.theme", p.theme);                                   // Field Stock: light | dark | black
     var cam = get("fieldcam.settings", {}); cam.theme = p.theme; set("fieldcam.settings", cam);   // Field Cam: same (grid lines are set in Field Cam itself)
     setRaw("xplore_fsl_theme", p.theme === "light" ? "light" : "dark");   // Field Notes: black is dark with OLED on

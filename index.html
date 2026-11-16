@@ -110,7 +110,7 @@ h3{margin:0;font:700 1.1rem/1.2 var(--f-display)}
 .jobwrap .newbtn:active{filter:brightness(.95)}
 .jobwrap .newbtn.sure{background:var(--warn-bg);color:var(--warn)}
 .live{display:inline-block;padding:3px 6px;border-radius:99px;background:var(--btn);color:var(--btn-ink);font:600 .62rem/1 var(--f-body);font-style:normal;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
-/* job history: last 7 days, quieter than the tools */
+/* job history: last N weeks (Settings, default 4), quieter than the tools */
 .hist{list-style:none;margin:8px 0 0;padding:0;border-radius:var(--r);background:var(--surface);box-shadow:var(--shadow);overflow:hidden}
 .hist li+li{border-top:1px solid var(--line)}
 .hist button{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;width:100%;border:0;background:none;text-align:left;padding:10px 14px;min-height:56px;cursor:pointer}
@@ -322,6 +322,7 @@ html:not(.fk-slim) .lhead.fk-row .njtitle{font-size:1.2rem!important}
 /* segmented choices */
 .seg{display:grid;grid-template-columns:repeat(var(--n,4),minmax(0,1fr));gap:4px;padding:4px;border-radius:12px;background:var(--surface-2)}
 .seg button{border:0;border-radius:9px;padding:10px 4px;background:transparent;color:var(--muted);font-weight:600;font-size:.9rem;cursor:pointer}
+#sHist .seg button{white-space:nowrap;padding:10px 2px;min-height:44px;font-size:min(.9rem,3.7vw)}   /* 1.20.187: "2 weeks" on one line on small phones */
 .seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 
 /* setup */
@@ -463,6 +464,10 @@ details.grp .btn{margin-bottom:12px}
     <h3 id="sLookH">Appearance</h3>
     <div id="sLook"></div>
   </section>
+  <section class="card" aria-labelledby="sHistH">
+    <h3 id="sHistH">SA history</h3>
+    <div id="sHist"></div>
+  </section>
   <section class="card" id="backup" aria-labelledby="sGsH">
     <div class="gs-line"><h3 id="sGsH" style="flex:1">Google Sheets backup</h3><span class="pill" id="gsPill"></span></div>
     <div id="sGs"></div>
@@ -555,7 +560,7 @@ details.grp .btn{margin-bottom:12px}
     // 1.20.182 (Curtis): planned tool, left of Manual Order: greyed out, Coming Soon, does nothing yet
     $("links").insertAdjacentHTML("afterbegin", '<li class="tile planned"><a role="link" aria-disabled="true" tabindex="-1" data-soon="flha" aria-label="FLHA, Field Level Hazard Assessment, coming soon">' +
       '<i aria-hidden="true">' + svg('<path d="M12 3 4.5 6v5.5c0 4.6 3.1 8.2 7.5 9.5 4.4-1.3 7.5-4.9 7.5-9.5V6L12 3z"/><path d="m8.5 12 2.5 2.5 4.5-5"/>') + '</i><b>FLHA</b>' +
-      '<small>Field level hazard assessment</small><em class="live">Coming soon</em></a></li>');    placeNew();   // every repaint (including the 4 s reset after one tap) puts New back over the camera icon's mirror spot
+      '<small>Field Level Hazard Assessment</small><em class="live">Coming soon</em></a></li>');    placeNew();   // every repaint (including the 4 s reset after one tap) puts New back over the camera icon's mirror spot
   }
   /* Compass is installed on the phone as its own web app. On Android the link goes out as a "view this address" request to the
      phone itself (not an in-app browser tab): the installed Compass app takes it if it's there, otherwise the phone's normal
@@ -762,6 +767,7 @@ details.grp .btn{margin-bottom:12px}
     } catch (e) {}
     return '<div class="jprog">' + out.join("") + '</div>';
   }
+  function histSpan() { var w = J.keepWeeks ? J.keepWeeks() : 4; return w === 1 ? "week" : w + " weeks"; }
   function paintJobs() {
     var a = J.active();
     if (!a) {
@@ -774,7 +780,7 @@ details.grp .btn{margin-bottom:12px}
     }
     var act = a ? a.id : "", hist = J.list().filter(function (j) { return j.id !== act; });
     var shown = hist;
-    $("histCount").textContent = hist.length ? hist.length + " SA" + (hist.length === 1 ? "" : "s") + " in the last 7 days. Tap one to open it." : "No other SAs in the last 7 days.";
+    $("histCount").textContent = hist.length ? hist.length + " SA" + (hist.length === 1 ? "" : "s") + " in the last " + histSpan() + ". Tap one to open it." : "No other SAs in the last " + histSpan() + ".";
     $("hist").hidden = !hist.length;
     $("hist").innerHTML = shown.map(function (j) {
       var done = j.status === "complete";
@@ -975,7 +981,7 @@ details.grp .btn{margin-bottom:12px}
     $("lbRef").textContent = j.sa || "New job";
     $("lbSub").textContent = (j.base || jobName(j)) + (j.status === "complete" ? " · Completed " + when(j.completedAt) : "");
     $("lbDone").textContent = j.status === "complete" ? "Close SA" : "Complete SA";
-    $("lbHelp").textContent = j.status === "complete" ? "This SA is in SA history for 7 days from its last change." : ""; $("lbHelp").hidden = j.status !== "complete";
+    $("lbHelp").textContent = j.status === "complete" ? "This SA is in SA history for " + histSpan() + " from its last change." : ""; $("lbHelp").hidden = j.status !== "complete";
     lobbySure = false; $("lbWarn").innerHTML = ""; lobbyState.photosReady = false;
     $("lbStart").innerHTML = svg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', 2) + '<span class="lsl">Started</span><span class="lst">' + esc(when(j.created)) + '</span>'; $("lbStart").innerHTML = '<div class="lout">' + $("lbStart").innerHTML + '</div>';
     if (j.status === "complete" && j.completedAt) $("lbStart").innerHTML += '<div class="lout" style="margin-top:10px">' + svg('<circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.5 2.5L16 9.5"/>', 2) + '<span class="lsl">Finished</span><span class="lst">' + esc(when(j.completedAt)) + '</span></div>';   // 1.20.133
@@ -1288,6 +1294,19 @@ details.grp .btn{margin-bottom:12px}
     return '<div class="field"><span class="lbl">Theme</span>' + seg("theme", [["light", "Light"], ["dark", "Dark"], ["black", "Black"]], pr.theme) +
       '<small class="hint">Used in Field Kit, Field Cam, Field Stock and Field Notes. Black uses true black, which saves battery on most iPhones.</small></div>';   // grid lines: in Field Cam's own settings
   }
+  /* 1.20.187 (Curtis): how long SA history is kept, default 4 weeks (fieldkit.prefs.histWeeks; fieldkit-jobs.js clears older SAs when a page opens) */
+  function histHTML() {
+    var cur = FK.prefs().histWeeks || 4, o = [[1, "1 week"], [2, "2 weeks"], [4, "4 weeks"], [8, "8 weeks"]];
+    return '<div class="field"><span class="lbl">Keep SAs for</span><div class="seg" style="--n:4" role="group" aria-label="Keep SAs for">' +
+      o.map(function (x) { return '<button type="button" data-hist-weeks="' + x[0] + '" aria-pressed="' + (x[0] === cur) + '">' + x[1] + '</button>'; }).join("") +
+      '</div><small class="hint">Completed SAs are removed from SA history this long after their last change. The SA in progress is always kept.</small></div>';
+  }
+  $("sHist").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-hist-weeks]"); if (!b) return;
+    FK.setPrefs({ histWeeks: +b.getAttribute("data-hist-weeks") });
+    b.parentNode.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+    toast("SA history keeps " + histSpan());
+  });
   function applyTheme(t) { document.documentElement.setAttribute("data-theme", t); }
   function wireLook(box, pre) {
     box.addEventListener("click", function (e) {
@@ -1473,7 +1492,7 @@ details.grp .btn{margin-bottom:12px}
     $("sAbout").innerHTML = ABOUT.map(function (k) { return fieldHTML("a", k); }).join("");
     $("sAcct").innerHTML = ACCT.map(function (k) { return fieldHTML("a", k); }).join("");
     fill("a", keysOf(ABOUT.concat(ACCT)));
-    $("sLook").innerHTML = lookHTML("a"); $("sErr").innerHTML = "";
+    $("sLook").innerHTML = lookHTML("a"); $("sHist").innerHTML = histHTML(); $("sErr").innerHTML = "";
     paintSettingsGoogle();
     $("sVer").textContent = verLine();
     showView("settings");
