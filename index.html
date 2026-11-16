@@ -180,6 +180,11 @@ html:not(.fk-slim) .njtitle{font-family:var(--f-display)!important;font-size:1.5
 .ogrp2{display:flex;flex-direction:column;gap:6px}
 .ogrp2.has{background:var(--surface-2);padding:10px;border-radius:12px}
 .ogrp2.has h4{padding:0 2px 2px}
+.ogrp2.has{padding:0}.ogrp2.has.open{padding:0 10px 10px}
+.olist2 .ogrp2.has .ohead{background:transparent;box-shadow:none;color:var(--fg)}
+.ogrp2.has.open .ohead{margin:0 -10px;width:calc(100% + 20px)}
+.ohead span{flex:1;min-width:0}.ohead small{display:block;font-weight:400;font-size:.82rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ohead .ochev{font-style:normal;color:var(--muted);font-size:.85rem}
 .ogrp2.has button{background:var(--surface);box-shadow:inset 0 0 0 1px var(--line)}
 .ogrp2.has button[aria-pressed="true"]{background:var(--btn);box-shadow:none}
 .olist2 h4{margin:0;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
@@ -884,7 +889,7 @@ details.grp .btn{margin-bottom:12px}
   }
   /* ---- outcome: change it here, or in Field Cam (tap the outcome next to New Job) ---- */
   var OUT_DEFAULT = [{ id: "OK", name: "Complete", reasons: [] }, { id: "CC", name: "Cannot Complete", reasons: [] }, { id: "NR", name: "Not Required", reasons: [] }];
-  var outOpen = false;
+  var outOpen = false, outGrp = null;
   /* 1.20.134 (Curtis): the outcome reasons come from Field Cam's own setup (SETUP in fieldcam.html, the one list), so Change
      Outcome asks for a reason before Pictures has ever been opened. Read once from the cached page. */
   var setupP = null;
@@ -914,13 +919,19 @@ details.grp .btn{margin-bottom:12px}
       html += '<div class="olist2">' + (j.outcomeOpts || OUT_DEFAULT).map(function (o) {
         var row = function (r, label) { var on = j.outcome === o.id && (j.reason || "") === (r || ""); return '<button type="button" data-out="' + esc(o.id) + '" data-r="' + esc(r || "") + '" aria-pressed="' + on + '"><i class="odot o-' + esc(o.id) + '" aria-hidden="true"></i>' + esc(label) + '</button>'; };
         // each outcome is its own group, so an outcome without reasons never looks like part of the one above
-        return '<div class="ogrp2' + (o.reasons && o.reasons.length ? " has" : "") + '">' + (o.reasons && o.reasons.length ? '<h4>' + esc(o.name) + '</h4>' + o.reasons.map(function (r) { return row(r, r); }).join("") : row("", o.name)) + '</div>';
+        if (!(o.reasons && o.reasons.length)) return '<div class="ogrp2">' + row("", o.name) + '</div>';
+        // 1.20.208 (Curtis): an outcome with reasons starts collapsed (one tap opens its list, closing the other), so Not Required isn't a long scroll away
+        var open = outGrp === o.id, cur = j.outcome === o.id && j.reason;
+        return '<div class="ogrp2 has' + (open ? " open" : "") + '"><button type="button" class="ohead" data-ogrp="' + esc(o.id) + '" aria-expanded="' + open + '"><i class="odot o-' + esc(o.id) + '" aria-hidden="true"></i><span>' + esc(o.name) +
+          (cur && !open ? '<small>' + esc(j.reason) + '</small>' : "") + '</span><em class="ochev" aria-hidden="true">' + (open ? "▴" : "▾") + '</em></button>' + (open ? o.reasons.map(function (r) { return row(r, r); }).join("") : "") + '</div>';
       }).join("") + '</div><p class="help">Changes the photo list, the comments and what\'s logged in Field Stock.</p>';
     }
     $("lbOut").innerHTML = html;
   }
   document.addEventListener("click", function (e) {
-    if (e.target.closest("#lbOutBtn")) { outOpen = !outOpen; paintLobbyOut(J.active()); return; }
+    if (e.target.closest("#lbOutBtn")) { outOpen = !outOpen; outGrp = null; paintLobbyOut(J.active()); return; }
+    var gh = e.target.closest("[data-ogrp]");
+    if (gh) { var g = gh.getAttribute("data-ogrp"); outGrp = outGrp === g ? null : g; paintLobbyOut(J.active()); var og = document.querySelector('[data-ogrp="' + g + '"]'); if (og && outGrp) og.scrollIntoView({ block: "nearest" }); return; }
     var b = e.target.closest("[data-out]"); if (!b) return;
     var j = J.active(); if (!j) return;
     J.setOutcome(j, b.getAttribute("data-out"), b.getAttribute("data-r"));

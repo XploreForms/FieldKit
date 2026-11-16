@@ -312,3 +312,5 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 - (1.20.205, Curtis) Comments in an SA: Job / Outcome / reason lines evenly spaced (`.job-section.sa-rows`: no collapsed field margin) and a lower-profile Change button (36px tall, smaller text).
 
 - (1.20.206, Curtis picked option B) Home SA card: the pill beside the SA-# shows the **outcome** (In progress or Reopened while the outcome is Complete (Curtis, same release) / Cannot Complete warn tint / Not Required grey, same colours as the SA page's dots) instead of In progress / Reopened. Test: `dev/tests/tcardout.py`.
+
+- (1.20.208, Curtis) SA page **Change Outcome**: Cannot Complete and Not Required start **collapsed** (a header row with its dot, the current reason under it if that outcome is picked, and ▾); tapping one opens its reasons and closes the other (`outGrp`, `data-ogrp`). Complete stays one row. Test: `dev/tests/toutgrp.py`.

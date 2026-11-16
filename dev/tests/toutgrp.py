@@ -1,0 +1,28 @@
+import asyncio, json
+from playwright.async_api import async_playwright
+exec(open('dev/tests/tm2.py').read().split('async def main')[0])
+# 1.20.208: Change Outcome's reason lists start collapsed; one tap opens a group (and closes the other)
+async def main():
+    async with async_playwright() as p:
+        b = await p.chromium.launch(); ctx = await b.new_context(viewport={'width':360,'height':780}, device_scale_factor=2, has_touch=True, is_mobile=True)
+        await ctx.add_init_script("(s=>{for(const k in s) if(!localStorage.getItem(k)) localStorage.setItem(k,s[k]);})(%s)" % json.dumps(SEED))
+        pg = await ctx.new_page(); errs=[]; pg.on('pageerror', lambda e: errs.append(str(e)))
+        await pg.goto(B+'index.html'); await pg.wait_for_timeout(1200)
+        await pg.get_by_text('Start New SA').first.click(); await pg.wait_for_timeout(300)
+        await pg.locator('#njRef').fill('1111111'); await pg.get_by_role('button', name='Install').first.click(); await pg.locator('[data-nj=fam][data-v="Fibre"]').click(); await pg.locator('[data-nj=tech][data-v=FTX]').click()
+        await pg.locator('#newjob').get_by_text('Existing Drop', exact=True).first.click()
+        await pg.get_by_role('button', name='Start SA').first.click(); await pg.wait_for_timeout(1800)
+        await pg.locator('#lbOutBtn').click(); await pg.wait_for_timeout(300)
+        print('collapsed rows:', await pg.locator('[data-out]').count(), '| heads:', await pg.locator('[data-ogrp]').all_inner_texts())
+        await pg.locator('#lbOut').screenshot(path='/tmp/og1.png')
+        await pg.locator('[data-ogrp=NR]').click(); await pg.wait_for_timeout(300)
+        print('NR open rows:', await pg.locator('[data-out=NR]').count(), '| CC rows:', await pg.locator('[data-out=CC]').count())
+        await pg.locator('[data-ogrp=CC]').click(); await pg.wait_for_timeout(300)
+        print('CC open rows:', await pg.locator('[data-out=CC]').count(), '| NR rows:', await pg.locator('[data-out=NR]').count())
+        await pg.locator('[data-out=CC][data-r="Reschedule"]').click(); await pg.wait_for_timeout(500)
+        print('picked:', await pg.evaluate("FieldKit.job.active().reason"))
+        await pg.locator('#lbOutBtn').click(); await pg.wait_for_timeout(300)
+        print('reopened heads:', [t.replace('\n',' / ') for t in await pg.locator('[data-ogrp]').all_inner_texts()])
+        await pg.locator('#lbOut').screenshot(path='/tmp/og2.png')
+        print('errors', errs); await b.close()
+asyncio.run(main())
