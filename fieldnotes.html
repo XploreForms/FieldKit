@@ -738,7 +738,10 @@ header.app-header .header-top img.yawn { transform-origin: 50% 100%; animation: 
 .rt-tool:active { background: var(--xp-green); }
 .sa-reason{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .sa-reason b{font-size:1rem;flex:1;min-width:0;line-height:1.3}
-.sa-reason .sa-reason-btn{flex:none;width:auto;min-height:36px;height:36px;padding:0 12px;border-radius:10px;font-size:.85rem}   /* 1.20.205: lower profile (Curtis) */
+.sa-reason .sa-reason-btn{flex:none;width:auto;min-height:32px;height:32px;padding:0 12px;border-radius:9px;font-size:.85rem}
+/* 1.20.210 (Curtis): Job / Outcome / reason lines tighter, label close to its line */
+.job-section.sa-rows .sub-q{margin:10px 0 0!important}.job-section.sa-rows .sub-q.first{margin-top:0!important}
+.sa-row-field>.q{margin-bottom:0!important}.sa-row-field{padding-top:0!important}   /* 1.20.205: lower profile (Curtis) */
 html:root[data-fn-theme] .job-section.sa-rows,.job-section.sa-rows{margin-bottom:0} .job-section.sa-rows>.field{margin-bottom:9px!important}   /* 1.20.205: the reason line below sits as close as the Job / Outcome lines */
 </style>
 <link rel="preload" href="fonts/Barlow-Regular.woff" as="font" type="font/woff" crossorigin>
@@ -2277,8 +2280,9 @@ function saReasonC(base, key, map) {
   return {
     id: key,
     render: function () {
-      return fieldWrap(key, base.label || 'Reason', false, null, [el('div', { class: 'sa-reason' }, [el('b', { text: name }),
+      var w = fieldWrap(key, base.label || 'Reason', false, null, [el('div', { class: 'sa-reason' }, [el('b', { text: name }),
         el('button', { type: 'button', class: 'choice sa-reason-btn', onclick: goSaOutcome, 'aria-label': 'Change the reason on the SA page' }, [el('span', { text: 'Change' })])])]);
+      w.classList.add('sa-row-field'); return w;
     },
     check: function () {},
     out: function (m) { var opt = optFind(base.opts || [], STATE[key]); return [(base.outName || 'Reason') + ': ' + (opt ? optOut(opt) : STATE[key])]; }

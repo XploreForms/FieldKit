@@ -316,3 +316,5 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 - (1.20.208, Curtis) SA page **Change Outcome**: Cannot Complete and Not Required start **collapsed** (a header row with its dot, the current reason under it if that outcome is picked, and ▾); tapping one opens its reasons and closes the other (`outGrp`, `data-ogrp`). Complete stays one row. Test: `dev/tests/toutgrp.py`.
 
 - (1.20.209, Curtis) SA page: removed the help lines "Changes the photo list, the comments and what's logged in Field Stock." (under Change Outcome) and "Deployed inventory is synced with Field Stock." (Equipment).
+
+- (1.20.210, Curtis) Comments in an SA: Job / Outcome / reason lines tighter (label right on its line, 10px between lines, Change 32px tall; `.sa-row-field` on the reason).
