@@ -794,7 +794,7 @@ details.grp .btn{margin-bottom:12px}
     } else {
       $("jobArea").innerHTML = '<div class="jobwrap busy"><button class="job" type="button" id="jobGo"><i aria-hidden="true">' +
         svg('<path d="M4 17H2V5h12v12"/><path d="M8 17h7"/><path d="M19 17h3v-4.5L18.5 8H14"/><circle cx="6" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 9h6M5 12.5h4"/>', 2.2) +   // truck roll with its work order
-        '</i><div><b>' + esc(a.sa || "New SA") + ' <em class="live o-' + esc(a.outcome || "OK") + '">' + esc(({ OK: "Complete", CC: "Cannot Complete", NR: "Not Required" })[a.outcome] || "Complete") + '</em></b><span>' + esc(a.base || (a.title ? a.title.split(" · ").slice(0, 2).join(" · ") : "SA details not set yet")) + '</span></div><em class="chev" aria-hidden="true">›</em>' + jobProgress(a) + '</button>' +
+        '</i><div><b>' + esc(a.sa || "New SA") + ' <em class="live o-' + esc(a.outcome || "OK") + '">' + esc(({ CC: "Cannot Complete", NR: "Not Required" })[a.outcome] || (a.status === "complete" ? "Reopened" : "In progress")) + '</em></b><span>' + esc(a.base || (a.title ? a.title.split(" · ").slice(0, 2).join(" · ") : "SA details not set yet")) + '</span></div><em class="chev" aria-hidden="true">›</em>' + jobProgress(a) + '</button>' +
         '<div class="jacts"><button class="btn primary" type="button" data-open-sa>Continue SA</button><button class="newbtn" type="button" id="jobNew" aria-label="Replace with a new SA. This one stays in SA history." title="Start over with a new SA"><span>New SA</span></button></div></div>';   // 1.20.178 (Curtis): "+ New SA" (the circular arrow read as undo)
     }
     var act = a ? a.id : "", hist = J.list().filter(function (j) { return j.id !== act; });
