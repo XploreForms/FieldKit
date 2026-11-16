@@ -3052,13 +3052,15 @@ function clearSel() { S.sel = []; S.fresh = false; if (current) { current.sel = 
 /* Photos that are always on their own, or only go together with certain others. Picking a label that can't go with
    what's already picked starts a fresh pick with it (and says why).
    - Fixed Wireless and Satellite: Install Overview, Line of Sight, CPE & Mount, Dish & Mount, Indoor Cable Run are each their own photo.
-   - Fibre (Existing Drop): Indoor Cable Run is its own photo; ONT Placement and Router Placement only go with each other.
-   - Fibre (Drop Required): MPT, Install Overview, Drop Route and Indoor Cable Run are each their own photo; ONT and Router Placement only go with each other. */
+   - Fibre (Existing Drop): Install Overview (1.20.184) and Indoor Cable Run are each their own photo; ONT Placement and Router Placement only go with each other.
+   - Fibre (Drop Required): MPT, Install Overview, Drop Route and Indoor Cable Run are each their own photo; ONT and Router Placement only go with each other.
+   - Fibre (Drop Only) (1.20.184, Curtis): MPT and Drop Route are each their own photo, as on Drop Required. */
 const PHOTO_RULES = {
   "Fixed Wireless": { solo: ["Install Overview", "Line of Sight", "CPE & Mount", "Indoor Cable Run"] },
   "Satellite": { solo: ["Install Overview", "Line of Sight", "Dish & Mount", "Indoor Cable Run"] },
-  "Fibre (Existing Drop)": { solo: ["Indoor Cable Run", "Temp Drop Form"], pairs: [["ONT Placement", "Router Placement"]] },
-  "Fibre (Drop Required)": { solo: ["MPT", "Install Overview", "Drop Route", "Indoor Cable Run", "Temp Drop Form"], pairs: [["ONT Placement", "Router Placement"]] }
+  "Fibre (Existing Drop)": { solo: ["Install Overview", "Indoor Cable Run", "Temp Drop Form"], pairs: [["ONT Placement", "Router Placement"]] },
+  "Fibre (Drop Required)": { solo: ["MPT", "Install Overview", "Drop Route", "Indoor Cable Run", "Temp Drop Form"], pairs: [["ONT Placement", "Router Placement"]] },
+  "Fibre (Drop Only)": { solo: ["MPT", "Drop Route", "Temp Drop Form"] }
 };
 /* serial number photos (ONT SN, XWR SN…) are always their own photo, and picking one opens the barcode scanner */
 const SN_LABELS = ["ONT SN", "CPE SN", "Modem SN", "TRIA SN", "XWR SN", "XWH SN", "XTV SN"];

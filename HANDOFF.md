@@ -201,8 +201,7 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 - **Google Sheets backup is skippable "for now"** (see Profile and setup). Make it required again at final rollout.
 
 **To confirm with Curtis**
-- Field Notes' Cannot Complete reason list still has "Temp Drop Required" (from the Cannot Complete JotForm). Should it go?
-- Fibre Drop Only photo rules (MPT, Drop Route); whether Install Overview should be alone on Fibre Existing Drop; whether the SA summary header should use the truck icon.
+- (Answered Nov 15, 1.20.184) Comments' Cannot Complete keeps "Temp Drop Required" (Curtis). Fibre Drop Only: MPT and Drop Route are each their own photo; Fibre Existing Drop: Install Overview is its own photo (`PHOTO_RULES`); the SA summary header tile is the truck icon (same as home's SA card).
 
 - (1.20.125) Comments: no section labels on the form (SIGNAL, MOUNT, INDOOR…; also gone from the loading placeholders); each question has its own label. Additional Comments keeps its title. The copied FSL comment keeps its headings. Mount Type = Tower hides (and clears) Reused existing mount. Test: `dev/tests/ttower.py`.
 
