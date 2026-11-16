@@ -2378,6 +2378,11 @@ function multiC(o) {
   };
 }
 var SPEEDS = ['25x3', '50x5', '50x10', '100x5', '100x10', '250x25', '500x50'];
+/* 1.20.201 (Curtis): Signal Requirements Not Met = serviceable signal for a package, but not the faster one the customer wanted.
+   Asked inside the Best Option Found card: the fastest package the signal meets QOI for, and the package the customer wanted (faster). */
+function srnmOn() { return STATE.nr_reason === NR_SRNM; }
+function qoiC() { return choiceC({ id: 'nr_qoi', label: 'QOI Met For', options: SPEEDS.slice(0, 6), cols: 3, afterChange: function () { if (SPEEDS.indexOf(STATE.nr_min) <= SPEEDS.indexOf(STATE.nr_qoi)) delete STATE.nr_min; } }); }
+function wantC() { var i = SPEEDS.indexOf(STATE.nr_qoi); return choiceC({ id: 'nr_min', label: 'Speed Customer Wanted', options: SPEEDS.slice(Math.max(1, i + 1)), cols: 3 }); }
 var STRUCTURE_TYPES = ['Single Story Home', 'Two Story Home', 'Trailer', 'Steel Outbuilding', 'Apartment / Condo Building', 'Commercial Building', 'Other'];
 var ROOF_TYPES = ['Asphalt Shingle', 'Steel', 'Fibreglass Trailer', 'Flat', 'Other'];
 function nrStructureComps(show) {
@@ -2430,6 +2435,7 @@ function towerTestsC() {
         if (!noSig(i)) {
           card.appendChild(el('div', { class: 'field-pair' }, [p.cell.render(), el('div', { class: 'field-pair tight mini' }, [p.rsrp.render(), p.sinr.render()])]));
           card.appendChild(miniCheck(k(i, 'stopsell'), 'Serviceable signal found, but panel is on stop sell'));
+          if (i === 1 && srnmOn()) { card.appendChild(qoiC().render()); if (STATE.nr_qoi) card.appendChild(wantC().render()); }
         }
         var notes = p.notes.render(); notes.querySelector('.q').appendChild(el('span', { class: 'opt', text: ' (optional)' }));
         card.appendChild(notes);
@@ -2444,6 +2450,7 @@ function towerTestsC() {
         var p = parts(i);
         p.tower.check(need, issues); p.plat.check(need, issues);
         if (!noSig(i)) { p.cell.check(need, issues); p.rsrp.check(need, issues); p.sinr.check(need, issues); }
+        if (i === 1 && !noSig(1) && srnmOn()) { qoiC().check(need, issues); wantC().check(need, issues); }
       }
     },
     out: function (m) {
@@ -2455,6 +2462,7 @@ function towerTestsC() {
           ', RSRP ' + (str(STATE[k(i, 'rsrp')]) ? '-' + str(STATE[k(i, 'rsrp')]) + ' dBm' : m(k(i, 'rsrp'), 'RSRP')) +
           ', SINR ' + (str(STATE[k(i, 'sinr')]) ? str(STATE[k(i, 'sinr')]) + ' dB' : m(k(i, 'sinr'), 'SINR'));
         if (!noSig(i) && STATE[k(i, 'stopsell')] === true) sig += ', serviceable signal found but panel is on stop sell';
+        if (i === 1 && !noSig(1) && srnmOn() && !outOfCoverage()) sig += ', QOI met for ' + (STATE.nr_qoi || m('nr_qoi', 'QOI Met For')) + ' but customer wanted ' + (STATE.nr_min || m('nr_min', 'Speed Customer Wanted'));
         var note = str(STATE[k(i, 'notes')]);
         l.push('- ' + (i === 1 && !outOfCoverage() ? 'Best option found: ' : '') + cap(t) + ' (' + pl + '): ' + sig + (note ? ' - ' + note : ''));
       }
@@ -2469,8 +2477,6 @@ function notRequiredForm() {
       saReasonC(Object.assign({ id: 'nr_reason', render: function () { return choiceC({ id: 'nr_reason', label: 'Not Required Reason', options: nrReasons(), cols: 'list', out: 'Reason', gap: 'Reason' }).render(); },
         check: function (need, issues) { choiceC({ id: 'nr_reason', label: 'Not Required Reason', options: nrReasons(), out: 'Reason', gap: 'Reason' }).check(need, issues); },
         out: function (m) { return choiceC({ id: 'nr_reason', label: 'Not Required Reason', options: nrReasons(), out: 'Reason', gap: 'Reason' }).out(m); } }, { label: 'Not Required Reason', opts: nrReasons() }), 'nr_reason', SA_NR),
-      choiceC({ id: 'nr_qoi', label: 'QOI Met For', options: SPEEDS.slice(0, 6), cols: 3, show: srnm }),
-      choiceC({ id: 'nr_min', label: 'Minimum Speed Customer Will Accept', out: 'Minimum Speed Accepted', options: SPEEDS.slice(1), cols: 3, show: srnm }),
       { id: 'nr_desc', show: function () { return !nrFwSignal(); },
         render: function () { var w = textC({ id: 'nr_desc', label: nrSatNlos() ? 'Comments' : 'Detailed Description', multi: true }).render();
           if (nrSatNlos()) { var h = w.querySelector('.hint'); if (h) h.textContent = 'Which satellite platforms and beams were tested, what is blocking clear LOS, mounting challenges, anything else relevant.'; }

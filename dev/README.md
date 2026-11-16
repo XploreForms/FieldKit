@@ -35,3 +35,4 @@ Not an organised suite: grab the ones near what you changed.
 - `tsareason`: Comments takes outcome and reason from the SA page (1.20.198)
 - `tccreasons`: Cannot Complete reasons per platform, SA page + Comments (1.20.199)
 - `tnrreasons`: Not Required reasons per platform (1.20.200)
+- `tsrnm`: Signal Requirements Not Met speeds in Best Option Found (1.20.201)
