@@ -27,3 +27,4 @@ Not an organised suite: grab the ones near what you changed.
 | Other | `tchk.py` (prints page errors on load), `tsv.py` (checks every barcode on the test-serials page scans), `tsb.py`, `tsb2.py` (runs the preview in a sandboxed frame), `tnm.py`–`tnm3.py` (the old stock-names tool, obsolete), `tstate.py`, `shotset.py` |
 
 - `thistwk`: Settings > SA history length (1.20.187)
+- `tstore`: Settings > Space used on this phone (1.20.189)

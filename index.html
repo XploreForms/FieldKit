@@ -322,6 +322,10 @@ html:not(.fk-slim) .lhead.fk-row .njtitle{font-size:1.2rem!important}
 /* segmented choices */
 .seg{display:grid;grid-template-columns:repeat(var(--n,4),minmax(0,1fr));gap:4px;padding:4px;border-radius:12px;background:var(--surface-2)}
 .seg button{border:0;border-radius:9px;padding:10px 4px;background:transparent;color:var(--muted);font-weight:600;font-size:.9rem;cursor:pointer}
+.store{margin-top:12px;padding-top:10px;border-top:1px solid var(--line, rgba(0,0,0,.08))}
+.store .lbl{display:block;margin-bottom:4px}
+.store dl{display:grid;grid-template-columns:1fr auto;gap:4px 12px;margin:0;font-size:.9rem}
+.store dt{color:var(--muted)} .store dd{margin:0;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
 #sHist .seg button{white-space:nowrap;padding:10px 2px;min-height:44px;font-size:min(.9rem,3.7vw)}   /* 1.20.187: "2 weeks" on one line on small phones */
 .seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 
@@ -467,6 +471,7 @@ details.grp .btn{margin-bottom:12px}
   <section class="card" aria-labelledby="sHistH">
     <h3 id="sHistH">SA history</h3>
     <div id="sHist"></div>
+    <div class="store" id="sStore" aria-live="polite"></div>
   </section>
   <section class="card" id="backup" aria-labelledby="sGsH">
     <div class="gs-line"><h3 id="sGsH" style="flex:1">Google Sheets backup</h3><span class="pill" id="gsPill"></span></div>
@@ -1301,6 +1306,42 @@ details.grp .btn{margin-bottom:12px}
       o.map(function (x) { return '<button type="button" data-hist-weeks="' + x[0] + '" aria-pressed="' + (x[0] === cur) + '">' + x[1] + '</button>'; }).join("") +
       '</div><small class="hint">Completed SAs are removed from SA history this long after their last change. The SA in progress is always kept.</small></div>';
   }
+  /* 1.20.189 (Curtis): how much space Field Kit uses on this phone. Photos are Field Cam's copies in IndexedDB
+     ("fieldcam" > photos: stamped photo + thumbnail, plus the clean copy kept until a set is finished);
+     everything else (SAs, Comments, Field Stock, settings) is saved text in localStorage. */
+  function mb(b) { return b < 1048576 ? Math.max(1, Math.round(b / 1024)) + " KB" : b < 1073741824 ? (b / 1048576).toFixed(b < 10485760 ? 1 : 0) + " MB" : (b / 1073741824).toFixed(1) + " GB"; }
+  function photoBytes() {
+    return new Promise(function (done) {
+      if (!window.indexedDB) return done(null);
+      var r; try { r = indexedDB.open("fieldcam", 1); } catch (e) { return done(null); }
+      r.onupgradeneeded = function () { r.result.createObjectStore("photos", { keyPath: "id" }); };   // same as Field Cam
+      r.onerror = function () { done(null); };
+      r.onsuccess = function () {
+        var db = r.result, n = 0, bytes = 0;
+        try {
+          var q = db.transaction("photos", "readonly").objectStore("photos").openCursor();
+          q.onsuccess = function () { var c = q.result; if (!c) { db.close(); return done({ n: n, bytes: bytes }); } var v = c.value || {}; n++; ["blob", "thumb", "raw"].forEach(function (k) { if (v[k] && v[k].size) bytes += v[k].size; }); c.continue(); };
+          q.onerror = function () { db.close(); done(null); };
+        } catch (e) { db.close(); done(null); }
+      }
+    });
+  }
+  function textBytes(test) { var b = 0; try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (test(k)) b += (k.length + (localStorage.getItem(k) || "").length) * 2; } } catch (e) {} return b; }
+  function paintStore() {
+    var box = $("sStore"); box.innerHTML = '<span class="lbl">Space used on this phone</span><p class="help">Checking…</p>';
+    var sas = J.list().length, saB = textBytes(function (k) { return k === "fieldkit.jobs" || k === "fieldkit.notesInJob" || k === "fieldkit.camInJob"; }), allB = textBytes(function () { return true; });
+    Promise.all([photoBytes(), navigator.storage && navigator.storage.estimate ? navigator.storage.estimate().catch(function () { return null; }) : Promise.resolve(null)]).then(function (r) {
+      var ph = r[0], est = r[1], rows = [];
+      rows.push(["Photos" + (ph ? " (" + ph.n + ")" : ""), ph ? mb(ph.bytes) : "Can't check"]);
+      rows.push(["SA records (" + sas + ")", mb(saB)]);
+      rows.push(["Field Stock, Comments and settings", mb(Math.max(0, allB - saB))]);
+      var tot = (ph ? ph.bytes : 0) + allB;
+      rows.push(["Total", mb(tot)]);
+      if (est && est.quota && est.quota > tot) rows.push(["Room left for Field Kit", mb(est.quota - Math.max(tot, est.usage || 0))]);
+      box.innerHTML = '<span class="lbl">Space used on this phone</span><dl>' + rows.map(function (x) { return "<dt>" + esc(x[0]) + "</dt><dd>" + x[1] + "</dd>"; }).join("") + '</dl>' +
+        '<small class="hint">Almost all of it is photos. Field Cam clears its copies of saved photos after 14 days; they stay in your Photos or Files.</small>';
+    });
+  }
   $("sHist").addEventListener("click", function (e) {
     var b = e.target.closest("[data-hist-weeks]"); if (!b) return;
     FK.setPrefs({ histWeeks: +b.getAttribute("data-hist-weeks") });
@@ -1492,7 +1533,7 @@ details.grp .btn{margin-bottom:12px}
     $("sAbout").innerHTML = ABOUT.map(function (k) { return fieldHTML("a", k); }).join("");
     $("sAcct").innerHTML = ACCT.map(function (k) { return fieldHTML("a", k); }).join("");
     fill("a", keysOf(ABOUT.concat(ACCT)));
-    $("sLook").innerHTML = lookHTML("a"); $("sHist").innerHTML = histHTML(); $("sErr").innerHTML = "";
+    $("sLook").innerHTML = lookHTML("a"); $("sHist").innerHTML = histHTML(); paintStore(); $("sErr").innerHTML = "";
     paintSettingsGoogle();
     $("sVer").textContent = verLine();
     showView("settings");
