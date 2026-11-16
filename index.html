@@ -770,7 +770,7 @@ details.grp .btn{margin-bottom:12px}
       $("jobArea").innerHTML = '<div class="jobwrap busy"><button class="job" type="button" id="jobGo"><i aria-hidden="true">' +
         svg('<path d="M4 17H2V5h12v12"/><path d="M8 17h7"/><path d="M19 17h3v-4.5L18.5 8H14"/><circle cx="6" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 9h6M5 12.5h4"/>', 2.2) +   // truck roll with its work order
         '</i><div><b>' + esc(a.sa || "New SA") + ' <em class="live">' + (a.status === "complete" ? "Reopened" : "In progress") + '</em></b><span>' + esc(a.base || (a.title ? a.title.split(" · ").slice(0, 2).join(" · ") : "SA details not set yet")) + '</span></div><em class="chev" aria-hidden="true">›</em>' + jobProgress(a) + '</button>' +
-        '<div class="jacts"><button class="btn primary" type="button" data-open-sa>Open SA</button><button class="newbtn" type="button" id="jobNew" aria-label="Replace with a new SA. This one stays in SA history." title="Start over with a new SA">' + PLUS + '<span>New SA</span></button></div></div>';   // 1.20.178 (Curtis): "+ New SA" (the circular arrow read as undo)
+        '<div class="jacts"><button class="btn primary" type="button" data-open-sa>Continue SA</button><button class="newbtn" type="button" id="jobNew" aria-label="Replace with a new SA. This one stays in SA history." title="Start over with a new SA">' + PLUS + '<span>New SA</span></button></div></div>';   // 1.20.178 (Curtis): "+ New SA" (the circular arrow read as undo)
     }
     var act = a ? a.id : "", hist = J.list().filter(function (j) { return j.id !== act; });
     var shown = hist;
@@ -1692,7 +1692,7 @@ html body #menu .tiles .tile.split small{display:none}
 .sabar .sago{flex:1 1 54%;min-width:0;border:0;background:transparent;color:var(--btn-ink);font:700 clamp(1rem,4.6vw,1.25rem) var(--f-display);cursor:pointer;white-space:nowrap;padding:0 4px;border-radius:12px}
 .gobig:active{filter:brightness(.95)}
 #menu.home .jobwrap.busy .job{min-height:0;padding:12px 14px 4px}
-/* 1.20.100 (Curtis): lined up with the chips above: Open SA spans Pictures + Comments, New sits under Equip. */
+/* 1.20.100 (Curtis): lined up with the chips above: Continue SA (was Open SA) spans Pictures + Comments, New sits under Equip. */
 #menu.home .jacts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:8px 14px 14px}
 #menu.home .jacts .btn{grid-column:span 2;min-width:0;min-height:50px;font-size:1.05rem}
 #menu.home .jacts .newbtn{width:auto;min-width:0;margin:0;height:50px;padding:0 6px;gap:6px;justify-content:center;white-space:nowrap}

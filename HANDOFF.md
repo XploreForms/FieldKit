@@ -275,4 +275,4 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 - Manual Order intro: "through the portal" (was Salesforce).
 - New SA: no JOB heading; "Type" (was Job Type); questions bottom-aligned above Start SA; Drop invisible until Fibre (space kept so nothing moves).
 - SA summary: Started row above the outcome; Pictures shows "x of y taken · n not saved" once started, no captions on Pictures/Comments; **one green button at a time** = the next step (Pictures → Comments → Equipment → Complete SA, `paintNext`); Complete SA grey (`.idle`) until all done but still tappable (second-tap warning); Complete SA no longer floats: it ends the page, at the Start New SA spot/size when scrolled down.
-- Home SA card: chips equal width (grid); Open SA spans Pictures+Comments, New sits under Equip.
+- Home SA card: chips equal width (grid); Continue SA (1.20.185, was Open SA) spans Pictures+Comments, New sits under Equip.
