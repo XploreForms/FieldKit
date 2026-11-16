@@ -1,4 +1,22 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:var(--fk-sa-top,env(safe-area-inset-top,0px));padding-bottom:var(--fk-sa-bottom,env(safe-area-inset-bottom,0px))}html{scroll-padding-top:var(--fk-sa-top,env(safe-area-inset-top,0px))}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:var(--fk-sa-top,env(safe-area-inset-top,0px));padding-bottom:var(--fk-sa-bottom,env(safe-area-inset-bottom,0px))}html{scroll-padding-top:var(--fk-sa-top,env(safe-area-inset-top,0px))}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}.isheet-wrap{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;justify-content:flex-end}
+.isheet-scrim{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+.isheet{position:relative;max-height:88vh;max-height:88dvh;display:flex;flex-direction:column;background:var(--surface);color:var(--ink);border-radius:20px 20px 0 0;padding:6px 14px calc(12px + env(safe-area-inset-bottom,0px));box-shadow:0 -6px 24px rgba(0,0,0,.25);max-width:var(--fk-max,560px);width:100%;margin:0 auto;box-sizing:border-box}
+.isheet-grab{width:40px;height:4px;border-radius:9px;background:var(--line);margin:4px auto 8px}
+.isheet-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.isheet-top b{font:700 1.1rem var(--f-display)}
+.isheet-x{width:36px;height:36px;border:0;border-radius:50%;background:var(--surface-2);color:var(--muted);font-size:1rem;cursor:pointer}
+.isheet-q{height:42px;border:0;border-radius:12px;background:var(--surface-2);color:var(--ink);padding:0 12px;font:inherit;font-size:1rem;margin-bottom:4px;width:100%;box-sizing:border-box}
+.isheet-list{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-bottom:4px}
+.isheet-cat{font:600 .72rem/1 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:14px 2px 6px}
+.isheet-row{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:0;border-radius:12px;background:var(--surface-2);color:var(--ink);padding:8px 12px;min-height:48px;margin-bottom:6px;cursor:pointer;font:inherit}
+.isheet-row .isheet-t{flex:1;min-width:0}
+.isheet-row b{display:block;font-weight:700;font-size:.98rem;line-height:1.25}
+.isheet-row small{display:block;color:var(--muted);font-size:.8rem;line-height:1.25;margin-top:1px}
+.isheet-row em{font-style:normal;font-size:.7rem;color:var(--muted);white-space:nowrap}
+.isheet-row.on{background:var(--accent);color:var(--accent-ink)}.isheet-row.on small,.isheet-row.on em{color:var(--accent-ink);opacity:.8}
+.isheet-none{color:var(--muted);text-align:center;padding:20px 0}
+html.isheet-on,html.isheet-on body{overflow:hidden}
+</style>
 <title>Field Stock</title>
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -1066,6 +1084,44 @@ const SERIAL_ITEMS_OPTS = `<option value="">Pick the item…</option>` + GROUPS.
   const items=window.FK_CATALOG.firstOfName(SKUS.filter(s=>s.group===g && s.serial && !s.hidden));
   return items.length ? `<optgroup label="${esc(g)}">`+items.map(s=>`<option value="${esc(s.id)}">${esc(s.short||s.name)}</option>`).join("")+`</optgroup>` : "";
 }).join("");
+/* ---------- item sheet (1.20.214, Curtis picked option 2) ----------
+   The item pick lists (Log form's Item, Deploy/Receive/Transfer's add-an-item, and a serial's "which item")
+   open Field Kit's own sheet instead of the phone's list: category headings, a bold name with a small second
+   line (pick[] or famName), Serial / Qty, a search box. The <select> stays underneath and keeps its value and
+   change handlers: picking sets its value and fires "change". */
+const ISEL='#skuSel, #dItemSel, select[data-lsel]';
+function itemLine(id, text){ const s=SKU[id]; if(!s) return [text, ""]; const p=s.pick; return p ? [p[0], p[1]] : [s.name, s.famName && s.famName!==s.name ? s.famName : ""]; }
+function openItemSheet(sel){
+  closeItemSheet();
+  const groups=[]; [...sel.children].forEach(n=>{ if(n.tagName==="OPTGROUP") groups.push({label:n.label, opts:[...n.children]}); else if(n.value) groups.push({label:"", opts:[n]}); });
+  const title=(sel.querySelector('option[value=""]')||{}).textContent||"Pick an item";
+  const w=document.createElement("div"); w.className="isheet-wrap"; w.innerHTML=`<div class="isheet-scrim"></div><div class="isheet" role="dialog" aria-modal="true" aria-label="${esc(title.replace(/…$/,""))}"><div class="isheet-grab" aria-hidden="true"></div><div class="isheet-top"><b>${esc(title.replace(/…$/,""))}</b><button type="button" class="isheet-x" aria-label="Close">✕</button></div><input class="isheet-q" type="search" placeholder="Search items" aria-label="Search items" autocomplete="off" enterkeyhint="search"><div class="isheet-list"></div></div>`;
+  document.body.appendChild(w); document.documentElement.classList.add("isheet-on");
+  const list=w.querySelector(".isheet-list"), q=w.querySelector(".isheet-q");
+  const paint=()=>{ const k=q.value.trim().toLowerCase(); let h="";
+    groups.forEach(g=>{ const rows=g.opts.filter(o=>o.value).filter(o=>{ if(!k) return true; const s=SKU[o.value]||{}; return [o.textContent,s.name,s.famName,s.id,(s.pick||[]).join(" "),g.label].join(" ").toLowerCase().includes(k); });
+      if(!rows.length) return; if(g.label) h+=`<div class="isheet-cat">${esc(g.label)}</div>`;
+      rows.forEach(o=>{ const [a,b]=itemLine(o.value,o.textContent), s=SKU[o.value]; h+=`<button type="button" class="isheet-row${o.value===sel.value?" on":""}" data-iv="${esc(o.value)}"><span class="isheet-t"><b>${esc(a)}</b>${b?`<small>${esc(b)}</small>`:""}</span>${s?`<em>${s.serial?"Serial":"Qty"}</em>`:""}</button>`; }); });
+    list.innerHTML=h||`<p class="isheet-none">No items match “${esc(q.value.trim())}”.</p>`; };
+  paint(); q.addEventListener("input",paint);
+  w.addEventListener("click",e=>{
+    if(e.target.closest(".isheet-x")||e.target.classList.contains("isheet-scrim")){ closeItemSheet(); return; }
+    const r=e.target.closest("[data-iv]"); if(!r) return;
+    sel.value=r.dataset.iv; closeItemSheet(); sel.dispatchEvent(new Event("change",{bubbles:true}));
+  });
+  ITEM_SHEET={w, sel};
+  const on=list.querySelector(".on"); if(on) on.scrollIntoView({block:"center"});
+  try{ history.pushState({isheet:1},""); }catch(e){}
+}
+let ITEM_SHEET=null;
+function closeItemSheet(fromBack){ if(!ITEM_SHEET) return; ITEM_SHEET.w.remove(); document.documentElement.classList.remove("isheet-on"); ITEM_SHEET=null; if(!fromBack && history.state && history.state.isheet) try{ history.back(); }catch(e){} }
+addEventListener("popstate",()=>{ if(ITEM_SHEET) closeItemSheet(true); });
+// stop the phone's own list from opening; open the sheet instead (touch, mouse and keyboard)
+["touchstart","pointerdown","mousedown"].forEach(ev=>document.addEventListener(ev,e=>{ const s=e.target.closest&&e.target.closest(ISEL); if(!s||s.disabled) return; e.preventDefault(); },{capture:true, passive:false}));
+document.addEventListener("click",e=>{ const s=e.target.closest&&e.target.closest(ISEL); if(!s||s.disabled) return; e.preventDefault(); openItemSheet(s); },true);
+document.addEventListener("touchend",e=>{ const s=e.target.closest&&e.target.closest(ISEL); if(!s||s.disabled) return; e.preventDefault(); openItemSheet(s); },{capture:true, passive:false});
+document.addEventListener("keydown",e=>{ const s=e.target.closest&&e.target.closest(ISEL); if(!s||s.disabled) return; if([" ","Enter","ArrowDown","ArrowUp"].includes(e.key)){ e.preventDefault(); openItemSheet(s); } },true);
+document.addEventListener("keydown",e=>{ if(ITEM_SHEET && e.key==="Escape") closeItemSheet(); });
 const lineMode=()=>true;
 const multi=()=>F.type!=="deploy";
 /* why a scanned serial can't go on the list, or "" if it can */

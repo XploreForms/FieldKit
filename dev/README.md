@@ -41,3 +41,4 @@ Not an organised suite: grab the ones near what you changed.
 - `toutgrp`: Change Outcome groups start collapsed (1.20.208)
 - `tsakeys`: New SA bar above the keyboard (simulated) (1.20.211)
 - `tcatorder`: Field Stock item picker order and categories (1.20.212)
+- `tisheet`: Field Stock item sheet (1.20.214)
