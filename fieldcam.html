@@ -2771,15 +2771,24 @@ $("snList").addEventListener("click", e => {
    the app (the saved copies in Photos / Files are never touched). Unsaved photos and the current job's
    photos are always kept. Runs when the app opens and when a job is finished. */
 const CLEAN_DAYS = 14;
+const pBytes = p => (p.blob ? p.blob.size : 0) + (p.thumb ? p.thumb.size : 0) + (p.raw ? p.raw.size : 0);
 async function autoCleanup() {
   const cutoff = Date.now() - CLEAN_DAYS * 864e5, cur = current && current.id;
   const old = S.photos.filter(p => p.downloaded && (p.savedAt || p.created) < cutoff && p.sessionId !== cur);
+  /* 1.20.190 (Curtis): Settings > Space limit (fieldkit.prefs.maxGB, default 2 GB). Over the limit, the oldest
+     saved photos go first (never unsaved ones or the open set's); their copies stay in Photos / Files. */
+  let lim = 2; try { lim = (FieldKit.prefs().maxGB || 2) * 1073741824; } catch {}
+  let used = S.photos.reduce((a, p) => a + pBytes(p), 0) - old.reduce((a, p) => a + pBytes(p), 0), over = 0;
+  if (used > lim) for (const p of S.photos.filter(p => p.downloaded && p.sessionId !== cur && !old.includes(p)).sort((a, b) => (a.savedAt || a.created) - (b.savedAt || b.created))) {
+    if (used <= lim) break; old.push(p); used -= pBytes(p); over++;
+  }
   if (!old.length) return 0;
   const bytes = old.reduce((a, p) => a + (p.blob ? p.blob.size : 0) + (p.thumb ? p.thumb.size : 0) + (p.raw ? p.raw.size : 0), 0);
   await removePhotos(old.map(p => p.id));
   for (const id of Object.keys(jobs)) if (id !== cur && !S.photos.some(p => p.sessionId === id)) delete jobs[id];   // jobs with nothing left
   save();
-  toast(`Cleared ${plural(old.length, "saved photo")} older than ${CLEAN_DAYS} days (${kb(bytes)}). They’re still in your Photos / Files.`, 4200);
+  toast(over ? `Cleared ${plural(old.length, "older saved photo")} (${kb(bytes)}) to stay under your space limit. They’re still in your Photos / Files.`
+             : `Cleared ${plural(old.length, "saved photo")} older than ${CLEAN_DAYS} days (${kb(bytes)}). They’re still in your Photos / Files.`, 4200);
   return old.length;
 }
 async function removePhotos(ids) {
