@@ -1,6 +1,6 @@
 /* Field Kit item catalogue: every stock item, its plain-language name and family, and how serial numbers identify it.
    Built from Curtis's FieldKit_Equipment_Catalogue.xlsx and FieldKit_Serial_Lookup.xlsx (inventory exports 2026-11-09).
-   id = the SKU (never change an id: entries already logged use it). name = what techs see. desc = the system description.
+   id = the SKU (never change an id: entries already logged use it). name = what techs see. short (1.20.213) = the name in Field Stock's pick lists, where a long name wraps awkwardly on Android. desc = the system description.
    fam = the system Product Family; famName = its plain name (manual orders go by family). Items with the same name are one
    item to techs (e.g. the three Nokia XS-010X ONTs). Shared by Field Stock, Field Cam and Field Kit SAs. Edit here only. */
 (function () {
@@ -12,19 +12,19 @@ var SKUS = [
   {"id": "WAP6804-MT", "name": "Zyxel WAP6804-MT", "desc": "Metroloop Zyxel Mesh", "fam": "MESH", "famName": "Mesh extender", "group": "Wi-Fi", "serial": true, "platforms": ["MWH"]},
   {"id": "EVOFORCE1", "name": "EVO FORCE 1", "desc": "Android TV Streaming Player (IPA2112HDW)", "fam": "STB", "famName": "TV box", "group": "TV", "serial": true, "platforms": ["XTV"]},
   {"id": "9988030065MFG", "name": "Kamai 7XM", "desc": "STB KAMAI 7XM W/NOVA REMOTE", "fam": "STB", "famName": "TV box", "group": "TV", "serial": true, "platforms": ["MTV"]},
-  {"id": "XTV LEAVE BEHIND", "name": "XTV Quick Start Guide (Bundle of 50)", "desc": "XTV Quick Start Guide (bundle of 50)", "fam": "", "famName": "", "group": "TV", "serial": false, "platforms": [], "extra": true, "noOrder": true},
+  {"id": "XTV LEAVE BEHIND", "name": "XTV Quick Start Guide (Bundle of 50)", "desc": "XTV Quick Start Guide (bundle of 50)", "fam": "", "famName": "", "group": "TV", "serial": false, "platforms": [], "extra": true, "noOrder": true, "short": "XTV Quick Start Guide (50)"},
   {"id": "3FE49328AA", "name": "Nokia XS-010X", "desc": "XGS PON Indoor ONT,US Power adaptor", "fam": "ONT", "famName": "ONT", "group": "Fibre", "serial": true, "platforms": ["FTX"]},
   {"id": "3TN00665AA", "name": "Nokia XS-010X", "desc": "Nokia XGSPON ONT XS-010X-R", "fam": "ONT", "famName": "ONT", "group": "Fibre", "serial": true, "platforms": ["FTX"]},
   {"id": "3TN01554AA", "name": "Nokia XS-010X", "desc": "Nokia ONT XS-010X-D", "fam": "ONT", "famName": "ONT", "group": "Fibre", "serial": true, "platforms": ["FTX"]},
   {"id": "1287987F1", "name": "Adtran 601qv", "desc": "2.5GbE GPON ONT with VOIP 601qv", "fam": "ONT", "famName": "ONT", "group": "Fibre", "serial": true, "platforms": ["ATX", "MTX"]},
   {"id": "1287835F1", "name": "Adtran 424", "desc": "Adtran 424 ONT", "fam": "ONT", "famName": "ONT", "group": "Fibre", "serial": true, "platforms": ["MTV"]},
   {"id": "FTH602A010XP", "name": "NID", "desc": "NID - HSG,FTH-602,1 SCAPC,NOGP,HEX,STD", "fam": "NID", "famName": "NID", "group": "Fibre", "serial": false, "platforms": ["FTX", "ATX", "CTX", "MTX"]},
-  {"id": "00D101EB49R100MP", "name": "Drop - 100m - Evolv Dielectric Drop PushLok Tech", "desc": "100M Evolv Dielectric Drop PushLok Tech", "fam": "DROP CABLE", "famName": "Drop cable", "group": "Fibre", "serial": false, "platforms": ["FTX", "ATX"]},
-  {"id": "00D101EB49R200MP", "name": "Drop - 200m - Evolv Dielectric Drop PushLok Tech", "desc": "200M Evolv Dielectric Drop PushLok Tech", "fam": "DROP CABLE", "famName": "Drop cable", "group": "Fibre", "serial": false, "platforms": ["FTX", "ATX"]},
-  {"id": "00D101EB49R300MP", "name": "Drop - 300m - Evolv Dielectric Drop PushLok Tech", "desc": "300M Evolv Dielectric Drop PushLok Tech", "fam": "DROP CABLE", "famName": "Drop cable", "group": "Fibre", "serial": false, "platforms": ["FTX", "ATX"]},
-  {"id": "00D101EB49R500MP", "name": "Drop - 500m - Evolv Dielectric Drop PushLok Tech", "desc": "500M Evolv Dielectric Drop PushLok Tech", "fam": "DROP CABLE", "famName": "Drop cable", "group": "Fibre", "serial": false, "platforms": ["FTX", "ATX"]},
-  {"id": "00D101EB49R750MP", "name": "Drop - 750m - Evolv Dielectric Drop PushLok Tech", "desc": "750M Evolv Dielectric Drop PushLok Tech", "fam": "DROP CABLE", "famName": "Drop cable", "group": "Fibre", "serial": false, "platforms": ["FTX", "ATX"]},
-  {"id": "FK-DROP1000", "name": "Drop - 1000m - Evolv Dielectric Drop PushLok Tech", "desc": "1000M Evolv Dielectric Drop PushLok Tech", "fam": "DROP CABLE", "famName": "Drop cable", "group": "Fibre", "serial": false, "platforms": [], "extra": true, "noOrder": true},
+  {"id": "00D101EB49R100MP", "name": "Drop - 100m - Evolv Dielectric Drop PushLok Tech", "desc": "100M Evolv Dielectric Drop PushLok Tech", "fam": "DROP CABLE", "famName": "Drop cable", "group": "Fibre", "serial": false, "platforms": ["FTX", "ATX"], "short": "Drop - 100m"},
+  {"id": "00D101EB49R200MP", "name": "Drop - 200m - Evolv Dielectric Drop PushLok Tech", "desc": "200M Evolv Dielectric Drop PushLok Tech", "fam": "DROP CABLE", "famName": "Drop cable", "group": "Fibre", "serial": false, "platforms": ["FTX", "ATX"], "short": "Drop - 200m"},
+  {"id": "00D101EB49R300MP", "name": "Drop - 300m - Evolv Dielectric Drop PushLok Tech", "desc": "300M Evolv Dielectric Drop PushLok Tech", "fam": "DROP CABLE", "famName": "Drop cable", "group": "Fibre", "serial": false, "platforms": ["FTX", "ATX"], "short": "Drop - 300m"},
+  {"id": "00D101EB49R500MP", "name": "Drop - 500m - Evolv Dielectric Drop PushLok Tech", "desc": "500M Evolv Dielectric Drop PushLok Tech", "fam": "DROP CABLE", "famName": "Drop cable", "group": "Fibre", "serial": false, "platforms": ["FTX", "ATX"], "short": "Drop - 500m"},
+  {"id": "00D101EB49R750MP", "name": "Drop - 750m - Evolv Dielectric Drop PushLok Tech", "desc": "750M Evolv Dielectric Drop PushLok Tech", "fam": "DROP CABLE", "famName": "Drop cable", "group": "Fibre", "serial": false, "platforms": ["FTX", "ATX"], "short": "Drop - 750m"},
+  {"id": "FK-DROP1000", "name": "Drop - 1000m - Evolv Dielectric Drop PushLok Tech", "desc": "1000M Evolv Dielectric Drop PushLok Tech", "fam": "DROP CABLE", "famName": "Drop cable", "group": "Fibre", "serial": false, "platforms": [], "extra": true, "noOrder": true, "short": "Drop - 1000m"},
   {"id": "O5M-NA", "name": "First Gen 5G", "desc": "5G NR Rel 15 Outdoor CPE with 1Gbps 2.5G", "fam": "5G CPE", "famName": "5G CPE", "group": "Fixed Wireless", "serial": true, "platforms": ["FWN"]},
   {"id": "O5-100M1", "name": "Next Gen 5G", "desc": "5G Next Generation Outdoor CPE", "fam": "5G CPE", "famName": "5G CPE", "group": "Fixed Wireless", "serial": true, "platforms": ["FWN"]},
   {"id": "FWCAT12-2.5M", "name": "Gemtek CAT12 LTE 2.5GHz", "desc": "2.5GHz CAT12 LTE Band 42/43 M MIMO", "fam": "CAT12 2.5GHZ", "famName": "LTE CPE – CAT12 2.5 GHz", "group": "Fixed Wireless", "serial": true, "platforms": ["LTE"]},

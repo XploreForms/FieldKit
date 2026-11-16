@@ -1046,25 +1046,25 @@ document.addEventListener("click",e=>{
 /* ---------- log form ---------- */
 const F = {type:"receive", serials:[]};
 $("skuSel").innerHTML = `<option value="">Choose an item…</option>` + GROUPS.map(g=>
-  `<optgroup label="${esc(g)}">`+window.FK_CATALOG.firstOfName(SKUS.filter(s=>s.group===g && !s.hidden)).map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("")+`</optgroup>`).join("");
+  `<optgroup label="${esc(g)}">`+window.FK_CATALOG.firstOfName(SKUS.filter(s=>s.group===g && !s.hidden)).map(s=>`<option value="${s.id}">${esc(s.short||s.name)}</option>`).join("")+`</optgroup>`).join("");
 
 /* Deploy is one job: one account, a few different pieces (radio + router, or drop + NID + router) */
 F.lines=[];
 $("dItemSel").innerHTML = `<option value="">Non-Serialized</option>` + GROUPS.map(g=>{
   const items=window.FK_CATALOG.firstOfName(SKUS.filter(s=>s.group===g && !s.serial && !s.hidden));
-  return items.length ? `<optgroup label="${esc(g)}">`+items.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join("")+`</optgroup>` : "";
+  return items.length ? `<optgroup label="${esc(g)}">`+items.map(s=>`<option value="${esc(s.id)}">${esc(s.short||s.name)}</option>`).join("")+`</optgroup>` : "";
 }).join("");
 /* Deploy, Receive and Transfer can pick any item by hand (serialized ones too: the serial is then typed, or for Deploy/Transfer tapped from this phone's stock) */
 const ALL_ITEMS_OPTS = `<option value="">Pick an item…</option>` + GROUPS.map(g=>{
   const items=window.FK_CATALOG.firstOfName(SKUS.filter(s=>s.group===g && !s.hidden));
-  return items.length ? `<optgroup label="${esc(g)}">`+items.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join("")+`</optgroup>` : "";
+  return items.length ? `<optgroup label="${esc(g)}">`+items.map(s=>`<option value="${esc(s.id)}">${esc(s.short||s.name)}</option>`).join("")+`</optgroup>` : "";
 }).join("");
 const NOSERIAL_OPTS = $("dItemSel").innerHTML;
 const anyByHand=()=>["deploy","receive","transfer"].includes(F.type);
 function fillItemSel(){ $("dItemSel").innerHTML = anyByHand() ? ALL_ITEMS_OPTS : NOSERIAL_OPTS; $("dItemSel").setAttribute("aria-label", anyByHand() ? "Pick an item" : "Pick an item without a serial"); }
 const SERIAL_ITEMS_OPTS = `<option value="">Pick the item…</option>` + GROUPS.map(g=>{
   const items=window.FK_CATALOG.firstOfName(SKUS.filter(s=>s.group===g && s.serial && !s.hidden));
-  return items.length ? `<optgroup label="${esc(g)}">`+items.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join("")+`</optgroup>` : "";
+  return items.length ? `<optgroup label="${esc(g)}">`+items.map(s=>`<option value="${esc(s.id)}">${esc(s.short||s.name)}</option>`).join("")+`</optgroup>` : "";
 }).join("");
 const lineMode=()=>true;
 const multi=()=>F.type!=="deploy";
