@@ -924,7 +924,7 @@ details.grp .btn{margin-bottom:12px}
         var open = outGrp === o.id, cur = j.outcome === o.id && j.reason;
         return '<div class="ogrp2 has' + (open ? " open" : "") + '"><button type="button" class="ohead" data-ogrp="' + esc(o.id) + '" aria-expanded="' + open + '"><i class="odot o-' + esc(o.id) + '" aria-hidden="true"></i><span>' + esc(o.name) +
           (cur && !open ? '<small>' + esc(j.reason) + '</small>' : "") + '</span><em class="ochev" aria-hidden="true">' + (open ? "▴" : "▾") + '</em></button>' + (open ? o.reasons.map(function (r) { return row(r, r); }).join("") : "") + '</div>';
-      }).join("") + '</div><p class="help">Changes the photo list, the comments and what\'s logged in Field Stock.</p>';
+      }).join("") + '</div>';   // 1.20.209: no help line under the list (Curtis)
     }
     $("lbOut").innerHTML = html;
   }
@@ -987,7 +987,7 @@ details.grp .btn{margin-bottom:12px}
         }
       });
       var g = get("techstock.gs", null);
-      if (dep.length) html += '<p class="help">Deployed inventory is synced with Field Stock.</p>';   // 1.20.65: Curtis's wording; shown whenever something was deployed
+      // 1.20.209 (Curtis): no "Deployed inventory is synced with Field Stock." line
     } else html += '<p class="help">Scan each serial number. They\'re logged in Field Stock as deployed on this SA-#.</p>';
     html += '<a class="btn" data-next="3" href="fieldcam.html#job" data-scanret="many">' + (m.has || m.extras.length || m.recovered.length ? "Scan More" : "Scan Serials") + '</a>';
     $("lbGear").innerHTML = html; paintNext(j);
