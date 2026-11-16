@@ -57,6 +57,18 @@
     if (changed) set(K.jobs, a);
   })();
 
+  /* 1.20.199 (Curtis): Cannot Complete reasons renamed to the Cannot Complete JotForm list; SAs and Field Cam jobs saved with the old names move over once */
+  (function migrateCC() {
+    var OLD = { "Customer No Show": "Unable to Contact Customer / Customer Not Home", "Flagging Required": "Flaggers Required", "Unsafe Work Conditions": "Weather / Unsafe Work Conditions",
+      "No Light at NID": "Network Issue (FDH/MPT/ONT)", "No Light at MPT": "Network Issue (FDH/MPT/ONT)", "CCO Ticket": "Network Issue (FDH/MPT/ONT)", "Drop Required": "Aerial Drop Required", "Drop Installation Issue": "Install Issue" };
+    function fix(store, k, titled) {
+      var a = get(k, {}) || {}, ch = false;
+      Object.keys(a).forEach(function (id) { var j = a[id]; if (j && j.outcome === "CC" && OLD[j.reason]) { if (titled && j.title) j.title = j.title.replace(j.reason, OLD[j.reason]); j.reason = OLD[j.reason]; if (j.notes && j.notes.comment) j.notes.stale = true; ch = true; } });
+      if (ch) set(k, a);
+    }
+    fix(null, K.jobs, true); fix(null, "fieldcam.jobs", false);
+  })();
+
   var jobMode = /^#job\b/.test(location.hash) && !!active();
 
   /* ---------- Field Cam's work swapped in and out ---------- */

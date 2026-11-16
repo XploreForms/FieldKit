@@ -894,14 +894,15 @@ details.grp .btn{margin-bottom:12px}
     return setupP;
   }
   function fillOutcomes(j, force) {
-    if (!j || !j.work || !j.plat || (j.outcomeOpts && !force)) return;
+    if (!j || !j.work || !j.plat) return;   // 1.20.199: always checked against Field Cam's current lists (saved SAs kept old reason lists)
     var id = j.id;
     camSetup().then(function (S) {
       var a = J.active(); if (!S || !a || a.id !== id) return;
       var s = (S[a.work] || {})[a.plat === "VAS" && a.vas ? "VAS · " + a.vas : a.plat]; if (!s) return;
-      a.outcomeOpts = [["OK", "Complete"], ["CC", "Cannot Complete"], ["NR", "Not Required"]].filter(function (o) { return !s[o[0]] || s[o[0]].on; })
+      var opts = [["OK", "Complete"], ["CC", "Cannot Complete"], ["NR", "Not Required"]].filter(function (o) { return !s[o[0]] || s[o[0]].on; })
         .map(function (o) { return { id: o[0], name: o[1], reasons: ((s[o[0]] || {}).reasons || []).slice() }; });
-      J.save(a); paintLobbyOut(a);
+      if (JSON.stringify(a.outcomeOpts) === JSON.stringify(opts)) return;
+      a.outcomeOpts = opts; J.save(a); paintLobbyOut(a);
     });
   }
   function outName(j) { var o = (j.outcomeOpts || OUT_DEFAULT).filter(function (x) { return x.id === j.outcome; })[0]; return o ? o.name : ({ OK: "Complete", CC: "Cannot Complete", NR: "Not Required" })[j.outcome] || "Not set"; }
