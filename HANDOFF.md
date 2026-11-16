@@ -286,3 +286,5 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 - (1.20.191, Curtis) **Space limit is a slider**, 0.5–10 GB in 0.5 steps (default 2; `gbOk()` in fieldkit.js). **"Keep SAs for" is gone**: SA history and photos depend only on space. Field Cam no longer clears saved photos after 14 days (`CLEAN_DAYS` removed); `autoCleanup()` only clears the oldest saved photos while over the limit. The job store's purge (fieldkit-jobs.js) removes a completed SA once all its photos are cleared (its Field Cam jobs are gone from `fieldcam.jobs` and `photos > 0`); SAs without photos stay; safety cap: newest 300 (`MAX_SAS`). Settings card renamed **Storage**. `fieldkit.prefs.histWeeks` is left over and unused. Tests: `thistspace.py`, `tstore.py` (replaces `thistwk.py`).
 
 - (1.20.192) Space limit slider restyled (Curtis): no input box, thick rounded track filled to the thumb (`--p`, `limPct()`), big white thumb with a green ring.
+
+- (1.20.193) Home SA card chip says **Equipment** (was Equip.); under 380px wide the chips use slightly smaller text so "Pictures 14/14" and "Equipment 6/6" still fit.
