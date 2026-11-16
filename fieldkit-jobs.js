@@ -187,6 +187,7 @@
       deployedCount: rows.filter(function (r) { return r.kind === "serial" ? !!r.item : r.value && r.value !== "Not Needed" && r.value !== "Reused existing" && r.value !== "No new mount"; }).length + extras.length, has: ids.length > 0 };
   }
   // mount answers saved before the mount slot changed (and Field Notes' Mount Type names)
+  var MOUNT_SHOW = { "Bipod": "Bi-pod" };   // 1.20.218 (Curtis): shown as in Field Stock; the saved value stays "Bipod"
   var MOUNT_OLD = { "J-arm": "J-Arm", "J-Arm + Side Stays": "J-Arm", "Bi-pod": "Bipod", "Bipod + 5ft Pole": "Bipod", "Gable mount + 10ft pole": "Gable Mount + 10ft Pole",
     "Tripod + 10ft pole": "Tripod + 10ft Pole", "Tower": "No new mount", "Tower Leg": "No new mount", "Not Needed": "No new mount", "No": "No new mount" };
   // the items a job's choice slots deploy: [{slot, sku}]
@@ -251,13 +252,13 @@
         // once answered it folds to one line, like Surge; tap it to change (opened stays open until the answer changes)
         if (r.value && OPEN_SLOT[r.id] !== r.value)
           return '<div class="fkj-slot fkj-row"><div class="fkj-sh">' + tick + '<b>' + esc(r.name) + '</b></div><button type="button" class="fkj-change" data-slot-open="' + esc(r.id) + '" data-v="' + esc(r.value) + '" aria-label="Change mount">' +
-            '<span class="fkj-val">' + esc(none ? "New mount not required" : base + (pole ? " + 10ft pole" : "")) + '</span><span class="fkj-chev" aria-hidden="true">▾</span></button></div>';
+            '<span class="fkj-val">' + esc(none ? "New mount not required" : (MOUNT_SHOW[base] || base) + (pole ? " + 10ft pole" : "")) + '</span><span class="fkj-chev" aria-hidden="true">▾</span></button></div>';
         // "New mount not required" (reused existing, or on a tower: nothing to log) sits under the buttons, like the pole tick (1.20.181, Curtis)
         var mh = '<div class="fkj-slot"><div class="fkj-sh">' + (r.done ? tick : r.optional ? '<i class="fkj-need fkj-maybe" aria-hidden="true"></i>' : dot) + '<b>' + esc(r.name) + '</b></div>' +
           '<div class="fkj-seg' + (none ? ' fkj-off' : '') + '" role="group" aria-label="Mount type">' + M.types.map(function (t) {
             var v = M.poles.indexOf(t) >= 0 ? t + " + 10ft Pole" : t;   // a gable mount or tripod starts with its pole ticked
             if (t === base) v = r.value;                                   // tapping the picked one keeps the pole answer
-            return '<button type="button" style="grid-column:span 3" data-slot-set="mount" data-v="' + esc(v) + '" aria-pressed="' + (t === base) + '">' + esc(t) + '</button>';
+            return '<button type="button" style="grid-column:span 3" data-slot-set="mount" data-v="' + esc(v) + '" aria-pressed="' + (t === base) + '">' + esc(MOUNT_SHOW[t] || t) + '</button>';
           }).join("") + '</div>';
         if (M.poles.indexOf(base) >= 0)
           mh += '<label class="fkj-chk"><input type="checkbox" data-slot-set="mount" data-v="' + esc(pole ? base : base + " + 10ft Pole") + '"' + (pole ? " checked" : "") + '><span>Deployed 10ft pole</span></label>';
@@ -629,7 +630,7 @@
   /* Answers in Field Notes that are also equipment slots: the drop length and the mount type.
      A slot follows Field Notes whenever that answer changes there; picking the slot by hand afterwards still sticks. */
   // Field Notes' Mount Type -> the mount slot (side stays aren't tracked; a tower or a reused mount means no new mount)
-  var NOTES_MOUNT = { "J-Arm": "J-Arm", "Gable Mount": "Gable Mount", "Bipod": "Bipod", "Tripod": "Tripod", "Tower": "No new mount", "Tower Leg": "No new mount",
+  var NOTES_MOUNT = { "J-Arm": "J-Arm", "Gable Mount": "Gable Mount", "Bipod": "Bipod", "Bi-pod": "Bipod", "Tripod": "Tripod", "Tower": "No new mount", "Tower Leg": "No new mount",
     // older Field Notes names
     "J-Arm + Side Stays": "J-Arm", "Gable Mount + 10ft Pole": "Gable Mount + 10ft Pole", "Bipod + 5ft Pole": "Bipod", "Tripod + 10ft Pole": "Tripod + 10ft Pole" };
   function notesToSlots(j, st) {

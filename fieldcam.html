@@ -604,7 +604,7 @@ html.fc-fs .fsctl::after{content:"";width:44px;height:44px}
   <div class="top">
     <a class="fk-back" id="fkHome" href="index.html" aria-label="Back to Field Kit"><span class="fk-chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4.5 7.5 12l7.5 7.5"/></svg></span></a>
     <span class="fk-tile qtile" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h4l2-3h6l2 3h4v12H3z"/><circle cx="12" cy="13" r="4"/></svg></span>
-    <button class="pill jobpill" id="jobBtn" aria-label="Job details"><b class="jref" id="jobRef" hidden></b><b id="jobTxt">No job</b><i class="needout" id="jobNeed" hidden>Outcome?</i><span id="jobProg"></span><i class="chev" aria-hidden="true">▾</i></button>
+    <button class="pill jobpill" id="jobBtn" aria-label="SA details"><b class="jref" id="jobRef" hidden></b><b id="jobTxt">No SA</b><i class="needout" id="jobNeed" hidden>Outcome?</i><span id="jobProg"></span><i class="chev" aria-hidden="true">▾</i></button>
     <div class="pill gps" id="gpsChip" title="GPS" aria-label="GPS"><i class="dot"></i><span id="gpsTxt">GPS…</span></div>
     <button class="iconbtn" id="setBtn" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
   </div>
@@ -623,7 +623,7 @@ html.fc-fs .fsctl::after{content:"";width:44px;height:44px}
       <div class="zoomread" id="zoomRead">1×</div>
       <div class="focusring" id="focusRing"></div>
       <div class="live" id="live"></div>
-      <div class="sidewarn" id="sideWarn"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="15" y="5" width="18" height="32" rx="3.5"/><path d="M22 32h4"/><path d="M38 19a14 14 0 0 1-3 17"/><path d="m37.5 31.5-2.5 4.5-4.7-1.6"/></svg><b>Turn your phone upright</b><span>Field Cam photos are taken with the phone upright so every job looks the same.</span><span>Need a different shot? Take it with the Camera app, then import it here.</span><button class="btn sm" id="sideImport">Import from photo library</button></div>
+      <div class="sidewarn" id="sideWarn"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="15" y="5" width="18" height="32" rx="3.5"/><path d="M22 32h4"/><path d="M38 19a14 14 0 0 1-3 17"/><path d="m37.5 31.5-2.5 4.5-4.7-1.6"/></svg><b>Turn your phone upright</b><span>Field Cam photos are taken with the phone upright so every photo looks the same.</span><span>Need a different shot? Take it with the Camera app, then import it here.</span><button class="btn sm" id="sideImport">Import from photo library</button></div>
     </div>
     <div class="vfctl">
       <button class="hq" id="hqBtn" aria-pressed="false" aria-label="Full quality">HQ</button>
@@ -640,10 +640,10 @@ html.fc-fs .fsctl::after{content:"";width:44px;height:44px}
   </div>
 
   <div class="deck">
-    <div class="lhead"><button class="btn sm warn" id="toLabelBtn" hidden></button><button class="btn sm newbtn" id="newBtn" aria-label="New job or start over">New Job</button></div>
+    <div class="lhead"><button class="btn sm warn" id="toLabelBtn" hidden></button><button class="btn sm newbtn" id="newBtn" aria-label="New SA or start over">New SA</button></div>
     <div class="lgrid" id="lGrid" role="group" aria-label="Photo label"></div>
     <div class="row">
-      <button class="thumbbtn" id="galBtn" aria-label="Open this job's photos"><span class="badge" id="galCount"></span></button>
+      <button class="thumbbtn" id="galBtn" aria-label="Open these photos"><span class="badge" id="galCount"></span></button>
       <button class="shutter" id="shutter" aria-label="Take photo"><i></i><svg class="scanic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2M8 8v8M11 8v8M14 8v8M17 8v8"/></svg></button>
       <button class="dlbtn" id="dlBtn" aria-label="Save new photos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 20h16"/></svg><span class="badge" id="dlCount"></span></button>
     </div>
@@ -655,19 +655,19 @@ html.fc-fs .fsctl::after{content:"";width:44px;height:44px}
 <div class="scrim" id="scrim"></div>
 
 <!-- Job sheet -->
-<section class="sheet" id="jobSheet" aria-label="Job">
-  <header><h2>This job</h2><button class="btn" data-close>Done</button></header>
+<section class="sheet" id="jobSheet" aria-label="SA">
+  <header><h2>This SA</h2><button class="btn" data-close>Done</button></header>
   <div class="body">
     <div><label for="inRefEdit">SA-#######</label><div class="refrow"><span class="fk-inwrap"><input id="inRefEdit" class="refin" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="numeric" placeholder="SA-1234567"><button type="button" class="fk-pastein" data-paste="inRefEdit" aria-label="Paste SA number" title="Paste"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg></button></span></div></div>
     <div class="picker" id="sheetPicker"></div>
     <div class="picker" id="sheetOutcome"></div>
     <div id="fkSlots" hidden></div>
-    <div id="snBlock" hidden><label>Serial numbers (stamped on this job’s photos)</label><div id="snList" class="snlist"></div></div>
+    <div id="snBlock" hidden><label>Serial numbers (stamped on this SA’s photos)</label><div id="snList" class="snlist"></div></div>
     <p class="hint" id="jobEditHint"></p>
-    <div class="btnrow"><button class="btn primary" id="finishBtn">Start a New Job</button><button class="btn danger" id="cancelJobBtn">Cancel this job</button></div>
+    <div class="btnrow"><button class="btn primary" id="finishBtn">Start a New SA</button><button class="btn danger" id="cancelJobBtn">Cancel this SA</button></div>
     <div class="warnbox" id="cancelConfirm" hidden>
       <p id="cancelMsg"></p>
-      <div class="btnrow"><button class="btn danger" id="cancelYes">Delete and Start Over</button><button class="btn" id="cancelNo">Keep this job</button></div>
+      <div class="btnrow"><button class="btn danger" id="cancelYes">Delete and Start Over</button><button class="btn" id="cancelNo">Keep this SA</button></div>
     </div>
     <div class="warnbox" id="finishConfirm" hidden>
       <div id="finishMsg" style="display:grid;gap:6px"></div>
@@ -686,24 +686,24 @@ html.fc-fs .fsctl::after{content:"";width:44px;height:44px}
 </section>
 
 <!-- Outcome, asked before saving if the tech hasn't picked it yet -->
-<section class="sheet" id="outSheet" aria-label="Job outcome">
+<section class="sheet" id="outSheet" aria-label="SA outcome">
   <header><h2>What was the outcome?</h2><button class="btn" data-close>Cancel</button></header>
   <div class="body">
-    <p class="hint">Tap one. It goes on every photo’s info band and sets which photos the job needs.</p>
+    <p class="hint">Tap one. It goes on every photo’s info band and sets which photos the SA needs.</p>
     <div class="picker" id="outPicker"></div>
   </div>
 </section>
 
 <!-- New job / start over: one tap from the camera screen -->
-<section class="sheet" id="newSheet" aria-label="New job">
-  <header><h2>New Job</h2><button class="btn" data-close>Cancel</button></header>
+<section class="sheet" id="newSheet" aria-label="New SA">
+  <header><h2>New SA</h2><button class="btn" data-close>Cancel</button></header>
   <div class="body">
     <div id="newMsg" style="display:grid;gap:8px"></div>
     <div class="btnrow" style="flex-direction:column">
       <button class="btn warn big" id="newLabel" hidden>Label photos first</button>
-      <button class="btn primary big" id="newSave" hidden>Save Photos, Then Start New Job</button>
-      <button class="btn primary big" id="newGo">Start New Job</button>
-      <button class="btn danger" id="newOver">Start Over (delete this job’s photos)</button>
+      <button class="btn primary big" id="newSave" hidden>Save Photos, Then Start New SA</button>
+      <button class="btn primary big" id="newGo">Start New SA</button>
+      <button class="btn danger" id="newOver">Start Over (delete these photos)</button>
     </div>
     <div class="warnbox" id="newOverConfirm" hidden>
       <p id="newOverMsg"></p>
@@ -713,11 +713,11 @@ html.fc-fs .fsctl::after{content:"";width:44px;height:44px}
 </section>
 
 <!-- After everything is saved -->
-<section class="sheet" id="doneSheet" aria-label="Job saved">
+<section class="sheet" id="doneSheet" aria-label="SA saved">
   <header><h2 id="doneTitle">All photos saved ✓</h2></header>
   <div class="body">
     <p class="hint" id="doneMsg"></p>
-    <div class="btnrow" style="flex-direction:column"><button class="btn primary big" id="doneNext">Start Next Job</button><button class="btn" id="doneKeep">Keep shooting</button></div>
+    <div class="btnrow" style="flex-direction:column"><button class="btn primary big" id="doneNext">Start Next SA</button><button class="btn" id="doneKeep">Keep shooting</button></div>
   </div>
 </section>
 
@@ -726,7 +726,7 @@ html.fc-fs .fsctl::after{content:"";width:44px;height:44px}
   <header><h2>Settings</h2><button class="btn" data-close>Done</button></header>
   <div class="body">
     <div hidden><label>Appearance</label><div class="seg two" id="themeSeg" role="group"><button type="button" data-t="dark"><b>Dark</b><span>Black, saves battery</span></button><button type="button" data-t="light"><b>Light</b><span>Easier in bright sun</span></button></div></div>
-    <div><label>Photo size</label><div class="seg" id="sizeSeg" role="group"><button type="button" data-z="500"><b>500 KB</b><span>Best for low signal</span></button><button type="button" data-z="1000"><b>1 MB</b><span>More detail</span></button><button type="button" data-z="full"><b>Full quality</b><span>3–6 MB each</span></button></div><p class="hint" style="margin-top:6px">Applies to photos taken from now on. The HQ button still switches one job to full quality.</p></div>
+    <div><label>Photo size</label><div class="seg" id="sizeSeg" role="group"><button type="button" data-z="500"><b>500 KB</b><span>Best for low signal</span></button><button type="button" data-z="1000"><b>1 MB</b><span>More detail</span></button><button type="button" data-z="full"><b>Full quality</b><span>3–6 MB each</span></button></div><p class="hint" style="margin-top:6px">Applies to photos taken from now on. The HQ button still switches one SA to full quality.</p></div>
     <div><label>Grid lines</label><div class="seg two" id="gridSeg" role="group"><button type="button" data-g="on"><b>On</b><span>Thirds, for straight, even framing</span></button><button type="button" data-g="off"><b>Off</b><span>Clear picture</span></button></div></div>
     <div><label>SA start &amp; end cards</label><div class="seg two" id="divSeg" role="group"><button type="button" data-d="on"><b>On</b><span>Saved around each SA’s photos</span></button><button type="button" data-d="off"><b>Off</b><span>Photos only</span></button></div></div>
     <div hidden><label>Text size</label><div class="seg two" id="textSeg" role="group"><button type="button" data-x="normal"><b>Normal</b></button><button type="button" data-x="large"><b>Large</b><span>Bigger text and buttons</span></button></div></div>
@@ -740,7 +740,7 @@ html.fc-fs .fsctl::after{content:"";width:44px;height:44px}
 
 <!-- Gallery sheet -->
 <section class="sheet" id="galSheet" aria-label="Photos">
-  <header><h2 id="galTitle">This job</h2><button class="btn" data-close>Done</button></header>
+  <header><h2 id="galTitle">Photos</h2><button class="btn" data-close>Done</button></header>
   <div class="body">
     <div class="gtools"><span class="stats" id="galStats"></span><button class="btn sm" id="selAllBtn">Select all</button></div>
     <div class="grid" id="grid"></div>
@@ -756,7 +756,7 @@ html.fc-fs .fsctl::after{content:"";width:44px;height:44px}
       <div class="btnrow"><button class="btn danger" id="delYes">Delete</button><button class="btn" id="delNo">Keep</button></div>
     </div>
     <p class="hint" id="saveHint"></p>
-    <div id="prevBlock" hidden><h3>Previous jobs</h3><div id="prevList"></div></div>
+    <div id="prevBlock" hidden><h3>Previous photos</h3><div id="prevList"></div></div>
   </div>
 </section>
 
@@ -795,12 +795,12 @@ html.fc-fs .fsctl::after{content:"";width:44px;height:44px}
       <div style="min-width:0"><div class="rjob" id="resumeJob"></div><div class="rmeta" id="resumeMeta"></div></div>
       <button class="btn primary" id="resumeBtn">Continue</button>
     </div>
-    <h2 id="newJobH">New job</h2>
+    <h2 id="newJobH">New SA</h2>
     <div id="refRow"><label for="inRef" id="refLbl">SA-#######</label><div class="refrow"><span class="fk-inwrap"><input id="inRef" class="refin" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="numeric" placeholder="SA-1234567"><button type="button" class="fk-pastein" data-paste="inRef" aria-label="Paste SA number" title="Paste"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg></button></span></div><p class="hint" style="margin-top:6px">Type the 7 digits or paste the full SA number.</p></div>
     <div class="picker" id="startPicker"></div>
     <div id="startOutRow"><label>Outcome <span style="text-transform:none;letter-spacing:0">(can be changed later)</span></label><button type="button" class="btn startout" id="startOutBtn" disabled>Select later</button></div>
     <div class="install" id="installTip" hidden></div>
-    <div class="startbar"><p class="err" id="startErr" hidden></p><button class="btn primary big" id="startBtn">Start Job</button></div>
+    <div class="startbar"><p class="err" id="startErr" hidden></p><button class="btn primary big" id="startBtn">Start SA</button></div>
     <p class="verline" id="verLine" hidden></p>
   </div>
 </div>
@@ -1075,7 +1075,7 @@ const isLevelShot = (label, j = curJob()) => photosOf(j).some(p => p[0] === labe
 const isQuick = j => !!(j && j.quick);
 function jobTitle(j) {
   if (isQuick(j)) return "Photos";
-  if (!j || !j.work || !("plat" in j)) return "Earlier job";
+  if (!j || !j.work || !("plat" in j)) return "Earlier SA";
   const base = `${byId(JOB_TYPES, j.work).name} · ${platName(j)}`;
   if (!outcomeSet(j)) return base;
   return `${base} · ${byId(OUTCOMES, j.outcome).name}${j.reason ? " · " + j.reason : ""}`;
@@ -2528,8 +2528,8 @@ async function downloadPhotos(items) {
 }
 $("dlBtn").addEventListener("click", () => {
   const ps = curPhotos(), und = ps.filter(p => !p.downloaded);
-  if (!ps.length) return toast("No photos in this job yet.");
-  if (!und.length) return toast("Every photo in this job is saved. Use Save all in the gallery to save them again.", 3200);
+  if (!ps.length) return toast("No photos yet.");
+  if (!und.length) return toast("Every photo is saved. Use Save all in the gallery to save them again.", 3200);
   requestSave(und);
 });
 /* Saving a job's photos: every photo must be labelled first (the sorter opens, then saving carries on),
@@ -2567,7 +2567,7 @@ function requestSave(items) {
     return;
   }
   if (!outcomeSet(curJob()) && fkJob()) { toast("Set the outcome on the SA page first.", 2600); return; }   // 1.20.162
-  if (!outcomeSet(curJob())) { saveIds = items.map(p => p.id); toast("Pick the job outcome first.", 2200); openOutcomeSheet(); return; }
+  if (!outcomeSet(curJob())) { saveIds = items.map(p => p.id); toast("Pick the SA outcome first.", 2200); openOutcomeSheet(); return; }
   if (!missingShots().length && !items.some(p => p.pending)) { saveIds = null; return downloadPhotos(items).then(ok => { if (ok) afterSave(); return ok; }); }
   saveIds = items.map(p => p.id); openSaveSheet();
 }
@@ -2586,7 +2586,7 @@ function afterSave() {
   const ps = curPhotos();
   if (!current || !ps.length || ps.some(p => !p.downloaded || isUnl(p)) || missingShots().length) return;
   const j = curJob();
-  $("doneMsg").textContent = `${plural(ps.length, "photo")} for ${j && j.ref ? j.ref + " · " : ""}${jobShort(j).replace(j && j.ref ? j.ref + " · " : "", "")} are saved. They stay on this phone under Previous jobs.`;
+  $("doneMsg").textContent = `${plural(ps.length, "photo")} for ${j && j.ref ? j.ref + " · " : ""}${jobShort(j).replace(j && j.ref ? j.ref + " · " : "", "")} are saved. They stay on this phone under Previous photos.`;
   setTimeout(() => openSheet("doneSheet"), 400);
 }
 $("doneNext").addEventListener("click", () => {
@@ -2601,7 +2601,7 @@ function renderSaveSheet() {
   const items = saveItems(), miss = missingShots(), busy = items.some(p => p.pending);
   $("saveTitle").textContent = miss.length ? "Photos missing" : `Save ${plural(items.length, "photo")}`;
   $("saveMsg").innerHTML = miss.length
-    ? `<div class="warnbox"><p><b>No photo yet for:</b></p><p>${miss.map(esc).join("<br>")}</p></div><p class="hint">The job form needs these. Take them now, or save what you have.</p>`
+    ? `<div class="warnbox"><p><b>No photo yet for:</b></p><p>${miss.map(esc).join("<br>")}</p></div><p class="hint">The SA needs these. Take them now, or save what you have.</p>`
     : `<p class="hint">All labelled and every required photo taken ✓</p>`;
   $("saveGo").textContent = busy ? "Updating stamps…" : miss.length ? `Save ${plural(items.length, "photo")} anyway` : `Save ${plural(items.length, "photo")}`;
   $("saveGo").disabled = busy || !items.length;
@@ -2621,7 +2621,7 @@ function renderGallery() {
   const list = curPhotos().sort((a, b) => b.created - a.created);
   for (const id of [...S.selected]) if (!list.some(p => p.id === id)) S.selected.delete(id);
   const total = list.reduce((a, p) => a + p.blob.size, 0), und = list.filter(p => !p.downloaded).length;
-  $("galTitle").textContent = S.selected.size ? `${S.selected.size} selected` : fkJob() ? "This SA" : "This job";
+  $("galTitle").textContent = S.selected.size ? `${S.selected.size} selected` : fkJob() ? "This SA" : "Photos";
   $("galStats").textContent = list.length ? `${plural(list.length, "photo")} · ${kb(total)} · ${und ? und + " not saved" : "all saved"}` : "";
   $("selAllBtn").hidden = !list.length;
   $("selAllBtn").textContent = S.selected.size === list.length && list.length ? "Clear" : "Select all";
@@ -2631,7 +2631,7 @@ function renderGallery() {
   const unl = list.filter(isUnl).length;
   $("galLabel").hidden = !unl; $("galLabel").textContent = `Label ${plural(unl, "photo")}`;
   $("grid").innerHTML = list.length ? list.map(p => `<div class="tile${S.selected.has(p.id) ? " selected" : ""}${isUnl(p) ? " unl" : ""}" data-id="${p.id}"><img src="${thumbURL(p)}" alt="${esc(dispLabel(p))}" loading="lazy">${p.downloaded ? '<span class="ok" title="Saved">✓</span>' : ""}${p.qflag ? `<span class="qf" title="${esc(flagText(p))}">!</span>` : ""}<span class="lab">${esc(dispLabel(p))}</span><button class="sel" data-sel="${p.id}" aria-label="Select"></button></div>`).join("")
-    : `<div class="empty" style="grid-column:1/-1">No photos in this job yet.</div>`;
+    : `<div class="empty" style="grid-column:1/-1">No photos yet.</div>`;
   renderPrev();
 }
 function renderPrev() {
@@ -2728,7 +2728,7 @@ async function makeDetector() {
   } catch { return null; }
 }
 async function startScan() {
-  if (!scanAllowed()) return toast("Serial numbers are only recorded on Complete jobs.");
+  if (!scanAllowed()) return toast("Serial numbers are only recorded on Complete SAs.");
   hideSnack();
   if (SC.bd === undefined) SC.bd = await makeDetector();
   if (!SC.bd && !SC.reader) {
@@ -2797,7 +2797,7 @@ async function scanOnce() {
   if (!text) return fail(`No barcode read. Fill the box with the barcode (about a hand’s width away, or zoom 2×), keep still, tap again. <small style="opacity:.6">[${SC.bd ? "built-in" + (SC.reader ? " + ZXing" : "") : SC.reader ? "ZXing" : "no reader"} · ${v0w()}]</small>`);
   const code = snKey(text), j = curJob();
   if (snIsMac(code)) return fail("That’s the MAC address. Scan the S/N barcode.");
-  if ((j.serials || []).some(x => x.code === code)) return fail(`<b>${esc(code)}</b> is already on this job.`);
+  if ((j.serials || []).some(x => x.code === code)) return fail(`<b>${esc(code)}</b> is already on this SA.`);
   const item = snItem(code);
   j.serials = [...(j.serials || []), { code, item }]; jobChanged();
   aimFlash("hit"); try { navigator.vibrate && navigator.vibrate(40); } catch {}
@@ -2828,7 +2828,7 @@ function renderSerials() {
   if (SC.on && !scanAllowed()) stopScan();
   if (fkRenderSlots(j)) { $("snBlock").hidden = true; return; }
   $("snBlock").hidden = !show || !list.length;
-  $("snList").innerHTML = list.map((x, i) => `<div class="sn"><div><b>${esc(x.code)}</b><span>${esc(x.item || "Item not recognised")}${j.outcome && j.outcome !== "OK" ? " · not stamped (job isn’t Complete)" : ""}</span></div><button class="btn sm danger" data-sndel="${i}">Remove</button></div>`).join("");
+  $("snList").innerHTML = list.map((x, i) => `<div class="sn"><div><b>${esc(x.code)}</b><span>${esc(x.item || "Item not recognised")}${j.outcome && j.outcome !== "OK" ? " · not stamped (SA isn’t Complete)" : ""}</span></div><button class="btn sm danger" data-sndel="${i}">Remove</button></div>`).join("");
 }
 $("snList").addEventListener("click", e => {
   const b = e.target.closest("[data-sndel]"); if (!b) return;
@@ -3001,7 +3001,7 @@ function renderJobPicker(el, sel, onChange) {
   if (sel.plat !== "VAS") sel.vas = null;
   const m = /^Fibre \((.+)\)$/.exec(sel.plat || ""), drop = m ? m[1] : null;
   const fams = PICK_FAMS.map(f => ({ ...f, off: !!sel.work && !plats.some(p => platFamily(p) === f.id) }));
-  el.innerHTML = `<div><label>Job type</label>${segHTML("work", JOB_TYPES, sel.work, " four")}</div>
+  el.innerHTML = `<div><label>SA type</label>${segHTML("work", JOB_TYPES, sel.work, " four")}</div>
     <div><label>Platform</label>${segHTML("fam", fams, fam, " two")}</div>
     ${fam === "Fibre" && drops.length ? `<div><label>Drop</label>${segHTML("drop", PICK_DROPS.map(d => ({ id:d, name:d, off:!plats.includes(`Fibre (${d})`) })), drop)}</div>` : ""}
     ${sel.plat === "VAS" ? `<div><label>Technology</label>${segHTML("vas", VAS_TYPES, sel.vas)}</div>` : ""}`;
@@ -3031,7 +3031,7 @@ function renderOutcomePicker(el, sel, onChange, later) {
     const rs = reasonsFor(sel, o.id);
     if (!rs.length) return row(o.id, "", o.name);
     return `<div class="ogrp o-${o.id}"><h4>${esc(o.name)}</h4>${rs.map(r => row(o.id, r, r)).join("")}</div>`;
-  }).join("")}${later ? `<button type="button" class="orow later" data-later="1"><b>Select later</b><span>Pick it during the job</span><i aria-hidden="true">${sel.outcome ? "" : "✓"}</i></button>` : ""}</div>`;
+  }).join("")}${later ? `<button type="button" class="orow later" data-later="1"><b>Select later</b><span>Pick it during the SA</span><i aria-hidden="true">${sel.outcome ? "" : "✓"}</i></button>` : ""}</div>`;
   el.onclick = e => {
     if (e.target.closest("[data-later]")) { startOut = { outcome:null, reason:null }; startOutLater = true; drawStartOut(); setTimeout(closeSheets, 120); return; }
     const b = e.target.closest("[data-o]"); if (!b) return;
@@ -3059,7 +3059,7 @@ function renderTop() {
     sh = esc(base);   // 1.20.135 (Curtis): no outcome here (it was cut off); it's on the outcome chip on the picture
   }
   $("jobRef").textContent = j && j.ref ? j.ref : ""; $("jobRef").hidden = !(j && j.ref);   // 1.20.31: the back arrow no longer shows the SA-#, so the bar does   // in a Field Kit job the SA-# is on the back button
-  $("jobTxt").innerHTML = j ? sh : "No job";
+  $("jobTxt").innerHTML = j ? sh : "No SA";
   $("jobNeed").hidden = true;   // the outcome button lives by the shutter now
   $("jobProg").textContent = j && req.length ? `${req.filter(l => counts[l]).length}/${req.length}` : "";
 }
@@ -3109,7 +3109,7 @@ function renderLabels() {
     ob.classList.toggle("need", !set);
     const ro = fkJob();   // 1.20.162 (Curtis): inside an SA the outcome is changed on the SA page, so the chip only shows it
     ob.innerHTML = set ? `<i class="oc o-${j.outcome}"></i>${esc(j.reason || byId(OUTCOMES, j.outcome).name)}${ro ? "" : ` <span class="ochev" aria-hidden="true">▾</span>`}` : "Set outcome";
-    ob.setAttribute("aria-label", set ? `Outcome: ${byId(OUTCOMES, j.outcome).name}${j.reason ? ", " + j.reason : ""}.${ro ? "" : " Tap to change."}` : "Set the job outcome");
+    ob.setAttribute("aria-label", set ? `Outcome: ${byId(OUTCOMES, j.outcome).name}${j.reason ? ", " + j.reason : ""}.${ro ? "" : " Tap to change."}` : "Set the SA outcome");
   }
 }
 $("outBtn").addEventListener("click", () => { if (fkJob()) { toast("Change the outcome on the SA page.", 2200); return; } saveIds = null; openOutcomeSheet(); });
@@ -3170,7 +3170,7 @@ function tapLabel(l, add = false) {
 $("hqBtn").addEventListener("click", () => {
   const j = curJob(); if (!j) return;
   j.full = !j.full; save(); renderLabels();
-  toast(j.full ? "<b>Full quality on</b><br>Photos aren’t compressed (about 3–6 MB each). Turns off for the next job." : "Full quality off · photos compressed for low signal", 2800);
+  toast(j.full ? "<b>Full quality on</b><br>Photos aren’t compressed (about 3–6 MB each). Turns off for the next SA." : "Full quality off · photos compressed for low signal", 2800);
 });
 $("toLabelBtn").addEventListener("click", () => openSorter(curPhotos().filter(isUnl).sort((a, b) => a.created - b.created).map(p => p.id)));
 /* "Other": ask what the photo is of; the text becomes the label (stamp + file name) */
@@ -3312,9 +3312,9 @@ $("jobBtn").addEventListener("click", e => {
   $("sheetPicker").hidden = $("sheetOutcome").hidden = fkJob();
   $("inRefEdit").value = j.ref || "";
   const n = curPhotos().length;
-  $("jobEditHint").textContent = fkJob() ? "The job type and outcome are changed on the SA page." : n
+  $("jobEditHint").textContent = fkJob() ? "The SA type and outcome are changed on the SA page." : n
     ? `${plural(n, "photo")} taken. Changes here update the photo list and the info band on photos not saved yet.`
-    : "Pick the outcome once you know it. Everything here can be changed at any point during the job.";
+    : "Pick the outcome once you know it. Everything here can be changed at any point during the SA.";
   $("finishConfirm").hidden = true; $("cancelConfirm").hidden = true;
   openSheet("jobSheet");
 });
@@ -3352,15 +3352,15 @@ function finishJob() {
 // New job button (by the shutter): finish this job and start the next, or start over
 function openNewSheet() {
   const ps = curPhotos(), und = ps.filter(p => !p.downloaded).length, unl = ps.filter(isUnl).length, miss = ps.length ? missingShots() : [], msgs = [];
-  if (!ps.length) msgs.push(`<p class="hint">No photos taken in this job yet.</p>`);
-  else if (!und) msgs.push(`<p class="hint">All ${plural(ps.length, "photo")} in this job are saved ✓</p>`);
+  if (!ps.length) msgs.push(`<p class="hint">No photos taken yet.</p>`);
+  else if (!und) msgs.push(`<p class="hint">All ${plural(ps.length, "photo")} are saved ✓</p>`);
   if (unl) msgs.push(`<p><b>${plural(unl, "photo")} still to label.</b></p>`);
-  if (und) msgs.push(`<p><b>${plural(und, "photo")} not saved yet.</b> Starting a new job without saving keeps ${und === 1 ? "it" : "them"} on this phone (not in the gallery) until it clears them.</p>`);
+  if (und) msgs.push(`<p><b>${plural(und, "photo")} not saved yet.</b> Starting a new SA without saving keeps ${und === 1 ? "it" : "them"} on this phone (not in the gallery) until it clears them.</p>`);
   if (und && miss.length) msgs.push(`<p class="hint">No photo yet for: ${miss.map(esc).join(", ")}.</p>`);
   $("newMsg").innerHTML = msgs.join("");
   $("newLabel").hidden = !unl;
   $("newSave").hidden = !und || !!unl;
-  $("newGo").textContent = und ? "Start New Job Without Saving" : "Start New Job";
+  $("newGo").textContent = und ? "Start New SA Without Saving" : "Start New Job";
   $("newGo").className = und ? "btn big" : "btn primary big";
   $("newOver").hidden = !ps.length;
   $("newOverConfirm").hidden = true;
@@ -3368,10 +3368,10 @@ function openNewSheet() {
 }
 $("newBtn").addEventListener("click", () => { hideSnack(); openNewSheet(); });
 $("newLabel").addEventListener("click", () => { closeSheets(); openSorter(curPhotos().filter(isUnl).sort((a, b) => a.created - b.created).map(p => p.id)); });
-$("newSave").addEventListener("click", () => { closeSheets(); requestSave(curPhotos().filter(p => !p.downloaded)); });   // same checks as Save; ends on "Start next job"
+$("newSave").addEventListener("click", () => { closeSheets(); requestSave(curPhotos().filter(p => !p.downloaded)); });   // same checks as Save; ends on "Start next SA"
 $("newGo").addEventListener("click", finishJob);
 $("newOver").addEventListener("click", () => {
-  $("newOverMsg").textContent = `This deletes the ${plural(curPhotos().length, "photo")} taken in this job from the phone and goes back to the start screen.`;
+  $("newOverMsg").textContent = `This deletes the ${plural(curPhotos().length, "photo")} taken from the phone and goes back to the start screen.`;
   $("newOverConfirm").hidden = false; $("newOverConfirm").scrollIntoView({ block:"nearest", behavior:"smooth" });
 });
 $("newOverNo").addEventListener("click", () => { $("newOverConfirm").hidden = true; });
@@ -3381,7 +3381,7 @@ $("cancelJobBtn").addEventListener("click", () => {
   $("finishConfirm").hidden = true;
   const n = curPhotos().length;
   if (!n) return cancelJob();
-  $("cancelMsg").textContent = `This deletes the ${plural(n, "photo")} taken in this job from the phone and goes back to the start screen. To keep them, use Start a new job instead.`;
+  $("cancelMsg").textContent = `This deletes the ${plural(n, "photo")} taken from the phone and goes back to the start screen. To keep them, use Start a new SA instead.`;
   $("cancelConfirm").hidden = false;
   $("cancelConfirm").scrollIntoView({ block:"nearest", behavior:"smooth" });
 });
@@ -3394,7 +3394,7 @@ async function cancelJob() {
   delete jobs[id];
   current = null; S.sel = []; S.selected.clear(); S.note = ""; save();
   closeSheets(); showStart();
-  toast("Job cancelled");
+  toast("Photos deleted");
 }
 
 async function renderStorage() {
@@ -3436,13 +3436,13 @@ function showStart() {
   if (j) {
     const ps = curPhotos();
     // SA-# on top, the job underneath (wraps instead of cutting off), then photos and start time
-    $("resumeJob").innerHTML = `${esc(j.ref || "Current job")}<span>${esc(jobTitle(j))}</span>`;
+    $("resumeJob").innerHTML = `${esc(j.ref || "Current SA")}<span>${esc(jobTitle(j))}</span>`;
     const st = new Date(j.started);
     $("resumeMeta").innerHTML = `${plural(ps.length, "photo")} · <span>${esc(st.toLocaleDateString("en-CA", { month:"short", day:"numeric" }))}, ${esc(st.toLocaleTimeString("en-US", { hour:"numeric", minute:"2-digit" }))}</span>`;
   }
   const quick = !fkJob();   // from the Field Kit menu without an SA: photos only, no job type or outcome
   $("start").classList.toggle("quick", quick);
-  $("newJobH").textContent = quick ? (j ? "Or start new photos" : "Photos without an SA") : j ? "Or start a new job" : "New job";
+  $("newJobH").textContent = quick ? (j ? "Or start new photos" : "Photos without an SA") : j ? "Or start a new SA" : "New job";
   $("refLbl").innerHTML = quick ? 'SA-# <span style="text-transform:none;letter-spacing:0">(optional)</span>' : "SA-#######";
   startSel = { work:null, plat:null, vas:null }; startOut = { outcome:null, reason:null }; startOutLater = false;
   $("inRef").value = fkJob() && FieldKit.job.active() ? FieldKit.job.active().sa || "" : "";
@@ -3654,7 +3654,7 @@ function fkRenderSlots(j) {
   const box = $("fkSlots");
   if (!fkJob() || !j) { box.hidden = true; return false; }
   const m = fkModel(j), allSaved = curPhotos().length && curPhotos().every(p => p.downloaded);
-  if (m.off) { box.hidden = false; box.innerHTML = `<label>Equipment Deployed</label><p class="hint">None. Equipment is only deployed on Complete jobs.</p>`; return true; }
+  if (m.off) { box.hidden = false; box.innerHTML = `<label>Equipment Deployed</label><p class="hint">None. Equipment is only deployed on Complete SAs.</p>`; return true; }
   if (!m.has && !m.extras.length && !m.canRecover) { box.hidden = true; return true; }
   box.hidden = false;
   box.innerHTML = `<label>Equipment${m.canRecover ? "" : " Deployed"}${m.total ? ` · ${m.done} of ${m.total}` : ""}</label>` +
