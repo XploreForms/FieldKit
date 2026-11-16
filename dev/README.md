@@ -39,3 +39,4 @@ Not an organised suite: grab the ones near what you changed.
 - `tjobrow`: Comments in an SA, Job and Outcome lines with Change (1.20.204)
 - `tcardout`: home SA card outcome pill (1.20.206)
 - `toutgrp`: Change Outcome groups start collapsed (1.20.208)
+- `tsakeys`: New SA bar above the keyboard (simulated) (1.20.211)

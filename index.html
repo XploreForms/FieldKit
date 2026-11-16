@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover,interactive-widget=resizes-content">
 <style>:root{box-sizing:border-box;padding-top:var(--fk-sa-top,env(safe-area-inset-top,0px));padding-bottom:var(--fk-sa-bottom,env(safe-area-inset-bottom,0px))}body{margin:0}[hidden]{display:none!important}</style>
 
 <title>Field Kit</title>
@@ -1156,6 +1156,18 @@ details.grp .btn{margin-bottom:12px}
     ["newjob", "lobby"].forEach(function (id) { var v = $(id); if (v && !v.hidden) v.style.minHeight = Math.max(320, Math.floor(h)) + "px"; });   // New SA and the SA summary (1.20.48)
   }
   ["resize", "orientationchange", "pageshow"].forEach(function (ev) { addEventListener(ev, sizeNewJob); });
+  /* 1.20.211 (Curtis): typing the SA-# scrolled the page far up, leaving a big gap above the keyboard. The page now
+     shrinks with the keyboard (interactive-widget=resizes-content, Android), and once the keyboard is up the New SA
+     screen is scrolled just enough that the SA-# bar (the last thing on it) sits right above the keyboard. */
+  function keepBarAboveKeys() {
+    var a = document.activeElement; if (!a || a.id !== "njRef" || $("newjob").hidden) return;
+    var bar = document.querySelector("#newjob .njgo"); if (!bar) return;
+    var vv = window.visualViewport, bottom = vv ? vv.offsetTop + vv.height : window.innerHeight, r = bar.getBoundingClientRect();
+    var d = r.bottom - bottom; if (Math.abs(d) > 2) window.scrollBy(0, d);
+  }
+  if (window.visualViewport) visualViewport.addEventListener("resize", function () { setTimeout(keepBarAboveKeys, 30); });
+  addEventListener("resize", function () { setTimeout(keepBarAboveKeys, 30); });
+  document.addEventListener("focusin", function (e) { if (e.target && e.target.id === "njRef") [150, 400].forEach(function (t) { setTimeout(keepBarAboveKeys, t); }); });
   function fitPick() {
     var m = $("menu"); if (!m || m.hidden) return;
     var cs = getComputedStyle(document.documentElement), vv = window.visualViewport;

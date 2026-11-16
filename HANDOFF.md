@@ -318,3 +318,5 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 - (1.20.209, Curtis) SA page: removed the help lines "Changes the photo list, the comments and what's logged in Field Stock." (under Change Outcome) and "Deployed inventory is synced with Field Stock." (Equipment).
 
 - (1.20.210, Curtis) Comments in an SA: Job / Outcome / reason lines tighter (label right on its line, 10px between lines, Change 32px tall; `.sa-row-field` on the reason).
+
+- (1.20.211, Curtis) New SA: tapping the SA-# box scrolled the page far up on Android, leaving a big gap above the keyboard. index.html's viewport now has `interactive-widget=resizes-content` (the page shrinks with the keyboard, so the sticky SA bar sits right above it), plus `keepBarAboveKeys()` (on focus and viewport resize, scrolls so the bar's bottom meets the visible bottom). Only the simulation could be tested here (window shrunk): `dev/tests/tsakeys.py`. Check on the Samsung.
