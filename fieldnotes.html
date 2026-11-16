@@ -1488,7 +1488,8 @@ function yesNoReasonC(o) {
 }
 
 /* ---------- fibre ---------- */
-function nidC() {
+function nidC(dflt) {   // dflt (1.20.194, Curtis): Drop Required starts on Installed New (the tech can still change it)
+  if (dflt && !STATE.nid) STATE.nid = dflt;
   return {
     id: 'nid',
     render: function () {
@@ -2494,11 +2495,11 @@ var FORMS = {
       S('Confirmations', [lawnC()])];
   },
   'New Install|Fibre (Drop Required)': function () {
-    return [S('Drop', dropComps()), S('Structure - Outdoor', [connectorC()]), S('Indoor', [ontC(), routerC()]), vasSection(), commentsSection(),
+    return [S('Drop', dropComps()), S('Structure - Outdoor', [nidC('Installed New'), connectorC()]), S('Indoor', [ontC(), routerC()]), vasSection(), commentsSection(),
       S('Confirmations', [xapC(FIBRE_XAP), lawnC()])];
   },
   'Conversion|Fibre (Drop Required)': function () {
-    return [S('Drop', dropComps()), S('Structure - Outdoor', [connectorC()]), S('Indoor', [ontC(), routerC()]), vasSection(), commentsSection(),
+    return [S('Drop', dropComps()), S('Structure - Outdoor', [nidC('Installed New'), connectorC()]), S('Indoor', [ontC(), routerC()]), vasSection(), commentsSection(),
       S('Confirmations', [lawnC()])];
   },
   'New Install|Fibre (Drop Only)': function () { return [S('Drop', dropComps(true)), commentsSection()]; },
@@ -2627,7 +2628,9 @@ function migrateJob(st) {
 }
 
 var JOB_KEYS = ['job_type', 'job_plat', 'job_outcome', 'job_drop', 'job_svc', 'job_tech'];
-function answersBesidesJob(st) { var c = {}; Object.keys(st || {}).forEach(function (k) { if (JOB_KEYS.indexOf(k) < 0) c[k] = st[k]; }); return hasAnswers(c); }
+function answersBesidesJob(st) { var c = {}; Object.keys(st || {}).forEach(function (k) { if (JOB_KEYS.indexOf(k) < 0) c[k] = st[k]; });
+  if (st && st.job_drop === 'Drop Required' && c.nid === 'Installed New') delete c.nid;   // 1.20.194: Drop Required's own starting answer, not the tech's
+  return hasAnswers(c); }
 /* changing the job clears the answers (Undo brings them back), so a value from another form can never slip into this one */
 function setJob(key, value) {
   if (STATE[key] === value || SOON[value]) return;

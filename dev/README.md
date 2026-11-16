@@ -28,3 +28,4 @@ Not an organised suite: grab the ones near what you changed.
 
 - `tstore`: Settings > Space used on this phone (1.20.189)
 - `thistspace`: SA history kept until photos are cleared for space (1.20.191)
+- `tniddrop`: Comments, NID on Drop Required starts Installed New (1.20.194)

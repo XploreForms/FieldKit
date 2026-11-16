@@ -288,3 +288,5 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 - (1.20.192) Space limit slider restyled (Curtis): no input box, thick rounded track filled to the thumb (`--p`, `limPct()`), big white thumb with a green ring.
 
 - (1.20.193) Home SA card chip says **Equipment** (was Equip.); under 380px wide the chips use slightly smaller text so "Pictures 14/14" and "Equipment 6/6" still fit.
+
+- (1.20.194, Curtis) Comments: Fibre **Drop Required** (install and conversion) asks **NID** too, starting on **Installed New** (`nidC('Installed New')`; the tech can change it, and Pre-Installed brings the Pre-Spliced tick like Existing Drop). That starting answer alone doesn't count as answers when switching jobs (`answersBesidesJob`). Test: `dev/tests/tniddrop.py`.
