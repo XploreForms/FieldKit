@@ -2396,9 +2396,9 @@ function outOfCoverage() { return STATE.no_coverage === true; }
 function noCoverageC() {
   return {
     id: 'no_coverage',
-    render: function () { var w = el('div', { class: 'field', 'data-field-id': 'no_coverage' }); w.appendChild(miniCheck('no_coverage', 'Not In Coverage Area')); return w; },
+    render: function () { var w = el('div', { class: 'field', 'data-field-id': 'no_coverage' }); w.appendChild(miniCheck('no_coverage', 'Customer not within open Compass coverage footprint')); return w; },
     check: function () {},
-    out: function () { return outOfCoverage() ? ['Coverage: Premise not within open fixed wireless coverage footprint'] : []; }
+    out: function () { return outOfCoverage() ? ['Coverage: Customer not within open Compass coverage footprint'] : []; }
   };
 }
 function towerTestsC() {
