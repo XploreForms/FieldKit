@@ -128,10 +128,10 @@
       trimast: { name: "Trimast", opts: [["Deployed", ["1140662"]], ["Reused existing", []], ["Pole mount", ["FK-SATPOLE"]]] },
       azel: { name: "AzEl", opts: [["Deployed", ["1172770"]], ["Reused existing", []]] },
       dish: { name: "Dish", opts: [["Deployed", ["1172769-004"]], ["Reused existing", []]] },
-      radio: { name: "Radio", skus: inGroup("5G & fixed wireless", "LTE") },
-      ont: { name: "ONT", skus: inGroup("Fibre ONTs") },
+      radio: { name: "Radio", skus: ["O5-100M1", "O5M-NA", "B5-100M", "B5-100M1", "O5 PRO MAX", "735060", "FWCAT12-2.5M", "FWCAT12-3.5M", "OA-335 B38/41", "OA-335 B42/43"] },   // 1.20.212: listed (categories are now Manual Order sections)
+      ont: { name: "ONT", skus: ["1287835F1", "1287987F1", "3FE49328AA", "3TN00665AA", "3TN01554AA"] },
       router: { name: "Router", skus: ["854-V6", "ARIA3321V-XPL", "EMG6726-B10A-MT"] },
-      modem: { name: "Modem", skus: ["RM4100N-043"] },
+      modem: { name: "Modem", skus: ["RM4100N-043", "FK-SB2PLUS"] },
       tria: { name: "TRIA", skus: ["X01012000A001"] },
       xwh: { name: "XWH", skus: ["834-V6", "WAP6804-MT"], multi: "xwh" },
       xtv: { name: "XTV", skus: ["EVOFORCE1", "9988030065MFG"], multi: "tv" }

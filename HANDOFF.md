@@ -188,7 +188,7 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 ## Open items
 
 **Waiting on Curtis**
-- **The refined inventory list.** He has `FieldKit_Inventory_List.xlsx` (59 items; he edits Plain name, Category, Notes). When he returns it and says "apply the inventory list": update `name` / `group` (and `GROUPS` order) in `fieldkit-catalog.js` from the sheet, never change an `id`, add new rows as new items, test Field Stock + an SA + the order form, bump, push.
+- (Done 1.20.212 from his "Field Stock item list" Sheet instead; see below.) **The refined inventory list.** He had `FieldKit_Inventory_List.xlsx` (59 items; he edits Plain name, Category, Notes). When he returns it and says "apply the inventory list": update `name` / `group` (and `GROUPS` order) in `fieldkit-catalog.js` from the sheet, never change an `id`, add new rows as new items, test Field Stock + an SA + the order form, bump, push.
 - **Real part numbers** for the placeholders (ids starting `FK-`): Bi-pod Mount, Gable Mount, Tripod Mount, 10ft Pole, 5ft Pole, Side Stays, Satellite Pole Mount, 1000M drop. Changing an id later orphans old entries.
 
 **Not done yet (he asked to wait)**
@@ -320,3 +320,5 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 - (1.20.210, Curtis) Comments in an SA: Job / Outcome / reason lines tighter (label right on its line, 10px between lines, Change 32px tall; `.sa-row-field` on the reason).
 
 - (1.20.211, Curtis) New SA: tapping the SA-# box scrolled the page far up on Android, leaving a big gap above the keyboard. index.html's viewport now has `interactive-widget=resizes-content` (the page shrinks with the keyboard, so the sticky SA bar sits right above it), plus `keepBarAboveKeys()` (on focus and viewport resize, scrolls so the bar's bottom meets the visible bottom). Only the simulation could be tested here (window shrunk): `dev/tests/tsakeys.py`. Check on the Samsung.
+
+- (1.20.212, Curtis's "Field Stock item list" Sheet, tab "Manual Order order") **Item order and categories**: `GROUPS` = Wi-Fi, TV, Fibre, Fixed Wireless, Jupiter, Viasat (the Manual Order sections, satellite split by platform); `SKUS` are in his order (that's the picker order everywhere). Renamed: XTV Quick Start Guide (Bundle of 50), Trimast (Jupiter), eTRIA. New: **SurfBeam 2+** (`FK-SB2PLUS`, placeholder id, serialized, also in the Modem slot). Not on his list, so hidden: Fiber Drop Cable (older entries) and **Satellite Pole Mount** (`FK-SATPOLE`, still logged by the Trimast slot's "Pole mount"). The Radio and ONT slots now list their SKUs instead of reading categories. Test: `dev/tests/tcatorder.py`.
