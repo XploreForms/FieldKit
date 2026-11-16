@@ -310,3 +310,5 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 - (1.20.204, Curtis) Comments inside an SA: the Job Type / Platform / Technology / Outcome (/ Drop) buttons collapse to two read-only lines, **Job** (`Install · Fibre (Drop Required) · FTX`) and **Outcome**, each with **Change**: Job opens Change SA (`index.html#job-change`, returns to Comments), Outcome opens the SA page's Change Outcome. The full buttons still show when the job isn't fully picked. Test: `dev/tests/tjobrow.py`.
 
 - (1.20.205, Curtis) Comments in an SA: Job / Outcome / reason lines evenly spaced (`.job-section.sa-rows`: no collapsed field margin) and a lower-profile Change button (36px tall, smaller text).
+
+- (1.20.206, Curtis picked option B) Home SA card: the pill beside the SA-# shows the **outcome** (Complete green / Cannot Complete warn tint / Not Required grey, same colours as the SA page's dots) instead of In progress / Reopened. Test: `dev/tests/tcardout.py`.

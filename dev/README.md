@@ -37,3 +37,4 @@ Not an organised suite: grab the ones near what you changed.
 - `tnrreasons`: Not Required reasons per platform (1.20.200)
 - `tsrnm`: Signal Requirements Not Met speeds in Best Option Found (1.20.201)
 - `tjobrow`: Comments in an SA, Job and Outcome lines with Change (1.20.204)
+- `tcardout`: home SA card outcome pill (1.20.206)
