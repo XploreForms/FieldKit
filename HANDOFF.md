@@ -338,3 +338,5 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 - (1.20.219, Curtis) Names are **Bipod** and **Tri-Mast** everywhere (reverses 1.20.218's Bi-pod / Trimast): Field Stock catalogue (Bipod Mount, Tri-Mast, Tri-Mast - Viasat; famName Tri-Mast), SA page mount button and the Tri-Mast slot, Comments' mount options (answers saved as Bi-pod / Trimast are renamed back), Manual Order (Bipod line, Tri-Mast item; an order in progress loses those lines' counts).
 
 - (1.20.220, Curtis: too much room) Field Stock's log form hides the GPS line while GPS is fine (captured, checking, or captured on save); it only shows, with Retry, when location is blocked or failed (`paintLoc`). GPS is still captured and saved with every entry.
+
+- (1.20.221, Curtis) Field Stock's Note box starts one line tall (46px) and grows to fit what's typed or spoken (up to 220px, then scrolls); it shrinks back when cleared after saving (the box's `value` setter refits it).

@@ -153,6 +153,7 @@ h3{margin:0;font:600 1rem/1.2 var(--f-display);letter-spacing:.01em}
 .field>label,.lbl{font-size:.82rem;font-weight:600;color:var(--muted)}
 input[type=text],input[type=search],input[type=number],input[type=email],select,textarea{width:100%;border:0;background:var(--surface);border-radius:var(--r-sm);padding:12px;box-shadow:inset 0 0 0 1px var(--line);min-width:0}
 textarea{resize:vertical;min-height:64px}
+#noteIn{min-height:0;height:46px;resize:none;overflow:hidden;line-height:1.35}   /* 1.20.221 (Curtis): one line until there's more to show; grows with what's typed or spoken */
 input:focus,select:focus,textarea:focus{outline:none;box-shadow:inset 0 0 0 2px var(--accent)}
 .row{display:flex;gap:8px;align-items:stretch}
 .row>input{flex:1}
@@ -1367,6 +1368,13 @@ async function refreshLocation(force){
 }
 $("locRetry").addEventListener("click",()=>refreshLocation(true));
 
+/* 1.20.221: the Note box starts one line tall and grows to fit (typing, Speak, or cleared after saving) */
+(function(){ const ta=$("noteIn"); if(!ta) return;
+  const fit=()=>{ ta.style.height="46px"; if(ta.value) ta.style.height=Math.min(Math.max(46, ta.scrollHeight), 220)+"px"; ta.style.overflowY=ta.scrollHeight>220?"auto":"hidden"; };
+  const d=Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,"value");
+  Object.defineProperty(ta,"value",{configurable:true, get(){ return d.get.call(this); }, set(v){ d.set.call(this,v); fit(); }});
+  ta.addEventListener("input",fit); addEventListener("resize",fit); fit();
+})();
 /* ---------- save an entry ---------- */
 let saving=false;
 $("logForm").addEventListener("submit", async e=>{
