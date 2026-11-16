@@ -2277,7 +2277,7 @@ function saReasonC(base, key, map) {
     id: key,
     render: function () {
       return fieldWrap(key, base.label || 'Reason', false, null, [el('div', { class: 'sa-reason' }, [el('b', { text: name }),
-        el('button', { type: 'button', class: 'choice sa-reason-btn', onclick: goSaOutcome }, [el('span', { text: 'Change on SA page' })])])]);
+        el('button', { type: 'button', class: 'choice sa-reason-btn', onclick: goSaOutcome, 'aria-label': 'Change the reason on the SA page' }, [el('span', { text: 'Change' })])])]);
     },
     check: function () {},
     out: function (m) { var opt = optFind(base.opts || [], STATE[key]); return [(base.outName || 'Reason') + ': ' + (opt ? optOut(opt) : STATE[key])]; }
