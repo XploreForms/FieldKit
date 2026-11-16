@@ -1292,7 +1292,7 @@ details.grp .btn{margin-bottom:12px}
     var pr = FK.prefs();
     var seg = function (name, opts, cur) { return '<div class="seg" style="--n:' + opts.length + '" role="group" aria-label="' + name + '">' + opts.map(function (o) { return '<button type="button" data-' + pre + '-' + name + '="' + o[0] + '" aria-pressed="' + (o[0] === String(cur)) + '">' + o[1] + "</button>"; }).join("") + "</div>"; };
     return '<div class="field"><span class="lbl">Theme</span>' + seg("theme", [["light", "Light"], ["dark", "Dark"], ["black", "Black"]], pr.theme) +
-      '<small class="hint">Used in Field Kit, Field Cam, Field Stock and Field Notes. Black uses true black, which saves battery on most iPhones.</small></div>';   // grid lines: in Field Cam's own settings
+      '<small class="hint">Applies to every tool. Black saves battery on most phones.</small></div>';   // grid lines: in Field Cam's own settings
   }
   /* 1.20.187 (Curtis): how long SA history is kept, default 4 weeks (fieldkit.prefs.histWeeks; fieldkit-jobs.js clears older SAs when a page opens) */
   function histHTML() {
