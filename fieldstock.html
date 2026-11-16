@@ -1572,12 +1572,12 @@ const ORDER_LIST=[
     oI("Drop Cable",[oG("FTX, ATX, CTX",["100M","200M","300M","500M","750M","1000M"].map(m=>oL(m+" Evolv PushLok")))]) ]),
   oS("Fixed Wireless",[ oI("Radio",[oL("FWN"), oG("LTE",[oL("CAT12 2.5GHz"),oL("CAT12 3.5GHz")]), oG("High Gain",[oL("Pro Max","",10)])]),
     oI("Surge",[oL("FWN, LTE")]),
-    oI("Mount",[oG("FWN, LTE",[oL("J-Arm","",10),oL("Gable Mount"),oL("Bi-pod"),oL("10ft Pole")])]) ]),
+    oI("Mount",[oG("FWN, LTE",[oL("J-Arm","",10),oL("Gable Mount"),oL("Bipod"),oL("10ft Pole")])]) ]),
   oS("Satellite",[ oI("Modem",[oL("HTV"),oL("HV2"),oL("HT2000","HTJ, HJ2"),oL("HT3000","HJ2, HJ3")]),
     oI("TRIA",[oL("HTV"),oL("HV2"),oL("1 Watt","HTJ"),oL("2 Watt","HTJ, HJ2, HJ3")]),
     oI("Antenna",[oL("HTV, HV2"),oL("Dish - 74cm","HTJ"),oL("Dish - 90cm","HJ2, HJ3")]),
     oI("AzEl",[oL("HTV, HV2"),oL("AzEl - 74cm","HTJ"),oL("AzEl - 90cm","HJ2, HJ3")]),
-    oI("Trimast",[oL("HTV, HV2"),oL("HTJ, HJ2, HJ3")]) ])
+    oI("Tri-Mast",[oL("HTV, HV2"),oL("HTJ, HJ2, HJ3")]) ])
 ];
 // every orderable line, with a stable key (section/item/heading/label) and how it reads in the email
 const ORDER_LINES=ORDER_LIST.flatMap(sc=>sc.items.flatMap(it=>it.parts.flatMap(p=>(p.lines?p.lines.map(l=>[p.head,l]):[["",p]]).map(([head,l])=>({

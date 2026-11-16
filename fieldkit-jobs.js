@@ -125,7 +125,7 @@
          Deployed or Reused existing. "Not Needed" saved before this reads as Reused existing. */
       nid: { name: "NID", opts: [["Deployed", ["FTH602A010XP"]], ["Reused existing", []]] },
       drop: { name: "Drop", opts: DROPS },
-      trimast: { name: "Trimast", opts: [["Deployed", ["1140662"]], ["Reused existing", []], ["Pole mount", ["FK-SATPOLE"]]] },
+      trimast: { name: "Tri-Mast", opts: [["Deployed", ["1140662"]], ["Reused existing", []], ["Pole mount", ["FK-SATPOLE"]]] },
       azel: { name: "AzEl", opts: [["Deployed", ["1172770"]], ["Reused existing", []]] },
       dish: { name: "Dish", opts: [["Deployed", ["1172769-004"]], ["Reused existing", []]] },
       radio: { name: "Radio", skus: ["O5-100M1", "O5M-NA", "B5-100M", "B5-100M1", "O5 PRO MAX", "735060", "FWCAT12-2.5M", "FWCAT12-3.5M", "OA-335 B38/41", "OA-335 B42/43"] },   // 1.20.212: listed (categories are now Manual Order sections)
@@ -187,7 +187,7 @@
       deployedCount: rows.filter(function (r) { return r.kind === "serial" ? !!r.item : r.value && r.value !== "Not Needed" && r.value !== "Reused existing" && r.value !== "No new mount"; }).length + extras.length, has: ids.length > 0 };
   }
   // mount answers saved before the mount slot changed (and Field Notes' Mount Type names)
-  var MOUNT_SHOW = { "Bipod": "Bi-pod" };   // 1.20.218 (Curtis): shown as in Field Stock; the saved value stays "Bipod"
+  var MOUNT_SHOW = {};   // 1.20.219 (Curtis): Bipod is the name everywhere (1.20.218 showed Bi-pod)
   var MOUNT_OLD = { "J-arm": "J-Arm", "J-Arm + Side Stays": "J-Arm", "Bi-pod": "Bipod", "Bipod + 5ft Pole": "Bipod", "Gable mount + 10ft pole": "Gable Mount + 10ft Pole",
     "Tripod + 10ft pole": "Tripod + 10ft Pole", "Tower": "No new mount", "Tower Leg": "No new mount", "Not Needed": "No new mount", "No": "No new mount" };
   // the items a job's choice slots deploy: [{slot, sku}]
