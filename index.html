@@ -924,7 +924,10 @@ details.grp .btn{margin-bottom:12px}
     J.setOutcome(j, b.getAttribute("data-out"), b.getAttribute("data-r"));
     outOpen = false; paintLobby();
     toast("Outcome changed to " + outName(J.active()) + (J.active().reason ? ": " + J.active().reason : ""));
+    var ret = null; try { ret = sessionStorage.getItem("fieldkit.outReturn"); sessionStorage.removeItem("fieldkit.outReturn"); } catch (e2) {}
+    if (ret) setTimeout(function () { if (FK.go) FK.go(ret); else location.href = ret; }, 450);   // 1.20.198: back to Comments
   });
+  document.addEventListener("click", function (e) { if (e.target.closest("#lbOutBtn,#lbBack")) { try { sessionStorage.removeItem("fieldkit.outReturn"); } catch (e2) {} } }, true);
   function paintLobbyNotes(j) {
     var c = j.notes && j.notes.comment, stale = !!(c && j.notes.stale);
     lobbyState.notesOk = !!c && !stale;
@@ -1588,6 +1591,10 @@ details.grp .btn{margin-bottom:12px}
       var sr = ""; try { sr = sessionStorage.getItem("fieldkit.syncResult") || ""; sessionStorage.removeItem("fieldkit.syncResult"); } catch (e) {}
       if (sr === "ok") toast("Google Sheet is up to date"); else if (sr) $("sErr").innerHTML = '<div class="err">' + esc(sr) + '</div>';
       return;
+    }
+    if (/^#job-outcome/.test(location.hash) && J.active()) {   // 1.20.198: from Comments (Change on SA page / an outcome tap)
+      history.replaceState(null, "", "#job"); outOpen = true; paintLobby(); showView("lobby");
+      setTimeout(function () { var o = $("lbOut"); if (o) o.scrollIntoView({ block: "center" }); }, 60); return;
     }
     if (/^#job-change/.test(location.hash) && J.active()) { history.replaceState(null, "", "#job"); openChangeJob(true); return; }   // 1.20.140: from Comments
     if (/^#job/.test(location.hash) && J.active()) { paintLobby(); showView("lobby"); return; }

@@ -736,6 +736,9 @@ header.app-header .header-top img.yawn { transform-origin: 50% 100%; animation: 
 .rt-tools { display: flex; gap: 0.5rem; margin-top: 0.8rem; padding-top: 0.6rem; border-top: 1px solid #E3EEE7; }
 .rt-tool { flex: 1 1 0; min-height: 2.5rem; font-family: var(--xp-font); font-weight: 600; font-size: 0.85rem; border: 0; border-radius: 0.6rem; background: #EEF5F0; color: var(--xp-dark); cursor: pointer; }
 .rt-tool:active { background: var(--xp-green); }
+.sa-reason{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.sa-reason b{font-size:1rem}
+.sa-reason .sa-reason-btn{flex:none;width:auto;min-height:44px;padding:0 14px}
 </style>
 <link rel="preload" href="fonts/Barlow-Regular.woff" as="font" type="font/woff" crossorigin>
 <link rel="preload" href="fonts/Barlow-SemiBold.woff" as="font" type="font/woff" crossorigin>
@@ -2249,6 +2252,33 @@ var CC_REASONS = ['More Time Required', 'Charges Dispute - Extras', 'Charges Dis
   'Bucket Truck Required', 'Flaggers Required', 'Network Issue (FDH/MPT/ONT)', 'Splicing at House Required', 'Install Issue'];
 var CC_NO_SHOW = 'Unable to Contact Customer / Customer Not Home';
 var CC_DROP = ['Aerial Drop Required', 'Buried Drop Required', 'Temp Drop Required'];
+/* 1.20.198 (Curtis): inside an SA the outcome and its reason are picked once, on the SA page. Comments shows them
+   and works from them (follow-up questions, comment text). The SA's reason names are matched to Comments' own
+   where they mean the same thing; any other reason is printed as named on the SA. */
+var SA_CC = { 'Customer No Show': 'Unable to Contact Customer / Customer Not Home', 'Flagging Required': 'Flaggers Required', 'Unsafe Work Conditions': 'Weather / Unsafe Work Conditions' };
+var SA_NR = { 'No Serviceable Signal': 'NLOS - No Serviceable Signal', 'NLOS': 'NLOS - No Clear Line of Sight', 'Installation Objection': 'Equipment / Install Objection' };
+function saJob() { try { return WIP_IN_SA ? FieldKit.job.active() : null; } catch (err) { return null; } }
+function saReason() { var j = saJob(); return j && j.reason ? j.reason : ''; }
+function goSaOutcome() {
+  try { sessionStorage.setItem('fieldkit.outReturn', 'fieldnotes.html#job'); } catch (err) {}
+  wipSaveNow();
+  if (window.FieldKit && FieldKit.go) FieldKit.go('index.html#job-outcome'); else location.href = 'index.html#job-outcome';
+}
+/* the reason question, read-only in an SA that has one: the SA's reason, and a button to change it there */
+function saReasonC(base, key, map) {
+  var name = saReason();
+  if (!name) return base;
+  STATE[key] = map[name] || name;
+  return {
+    id: key,
+    render: function () {
+      return fieldWrap(key, base.label || 'Reason', false, null, [el('div', { class: 'sa-reason' }, [el('b', { text: name }),
+        el('button', { type: 'button', class: 'choice sa-reason-btn', onclick: goSaOutcome }, [el('span', { text: 'Change on SA page' })])])]);
+    },
+    check: function () {},
+    out: function (m) { var opt = optFind(base.opts || [], STATE[key]); return [(base.outName || 'Reason') + ': ' + (opt ? optOut(opt) : STATE[key])]; }
+  };
+}
 function ccNoShow() { return STATE.cc_reason === CC_NO_SHOW; }
 function ccDrop() { return CC_DROP.indexOf(STATE.cc_reason) >= 0; }
 function ccTempAsked() { return ccDrop() && STATE.cc_reason !== 'Temp Drop Required'; }
@@ -2280,7 +2310,7 @@ function siteTimesC() {
 function cannotCompleteForm() {
   return [
     S('Cannot Complete', [
-      choiceC({ id: 'cc_reason', label: 'Cannot Complete Reason', options: CC_REASONS, cols: 'list', out: 'Reason', gap: 'Reason' }),
+      saReasonC(Object.assign(choiceC({ id: 'cc_reason', label: 'Cannot Complete Reason', options: CC_REASONS, cols: 'list', out: 'Reason', gap: 'Reason' }), { label: 'Cannot Complete Reason', opts: CC_REASONS }), 'cc_reason', SA_CC),
       textC({ id: 'cc_desc', label: 'Detailed Description', out: 'Description', multi: true })]),
     S('Customer No Show', [
       checklistC({ id: 'cc_noshow', label: 'Customer No Show Checklist', show: ccNoShow, out: 'No Show Checklist', allOut: 'All steps completed', whatMissing: "A few steps aren't ticked.", items: [
@@ -2428,9 +2458,9 @@ function notRequiredForm() {
   function srnm() { return STATE.nr_reason === NR_SRNM; }
   return [
     S('Not Required', [
-      { id: 'nr_reason', render: function () { return choiceC({ id: 'nr_reason', label: 'Not Required Reason', options: nrReasons(), cols: 'list', out: 'Reason', gap: 'Reason' }).render(); },
+      saReasonC(Object.assign({ id: 'nr_reason', render: function () { return choiceC({ id: 'nr_reason', label: 'Not Required Reason', options: nrReasons(), cols: 'list', out: 'Reason', gap: 'Reason' }).render(); },
         check: function (need, issues) { choiceC({ id: 'nr_reason', label: 'Not Required Reason', options: nrReasons(), out: 'Reason', gap: 'Reason' }).check(need, issues); },
-        out: function (m) { return choiceC({ id: 'nr_reason', label: 'Not Required Reason', options: nrReasons(), out: 'Reason', gap: 'Reason' }).out(m); } },
+        out: function (m) { return choiceC({ id: 'nr_reason', label: 'Not Required Reason', options: nrReasons(), out: 'Reason', gap: 'Reason' }).out(m); } }, { label: 'Not Required Reason', opts: nrReasons() }), 'nr_reason', SA_NR),
       choiceC({ id: 'nr_qoi', label: 'QOI Met For', options: SPEEDS.slice(0, 6), cols: 3, show: srnm }),
       choiceC({ id: 'nr_min', label: 'Minimum Speed Customer Will Accept', out: 'Minimum Speed Accepted', options: SPEEDS.slice(1), cols: 3, show: srnm }),
       { id: 'nr_desc', show: function () { return !nrFwSignal(); },
@@ -2621,6 +2651,7 @@ function answersBesidesJob(st) { var c = {}; Object.keys(st || {}).forEach(funct
 function setJob(key, value) {
   if (STATE[key] === value || SOON[value]) return;
   // 1.20.140 (Curtis): inside an SA, changing the job type, platform, technology or drop goes through Change SA (with a reason)
+  if (WIP_IN_SA && key === 'job_outcome' && STATE.job_outcome) { goSaOutcome(); return; }   // 1.20.198 (Curtis): the outcome is changed on the SA page
   if (WIP_IN_SA && STATE[key] && ['job_type', 'job_plat', 'job_tech', 'job_drop'].indexOf(key) >= 0) {
     try { sessionStorage.setItem('fieldkit.changeFrom', JSON.stringify({ key: key, value: value, ret: 'fieldnotes.html#job' })); } catch (err) {}
     wipSaveNow();
