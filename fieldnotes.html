@@ -2033,16 +2033,14 @@ function vasComps() {
 }
 
 /* ---------- confirmations ---------- */
-var FIBRE_XAP = [
-  ['Account holder was not present on site', 'Not completed - account holder was not present on site'],
-  ['Customer chose to complete it independently', 'Not completed - customer chose to complete it independently'],
-  ['Completed except the payment method section', 'Completed, excluding the payment method section'],
-  'Other'];
-var FW_XAP = ['Account holder not on site', 'Account holder did not have a payment method available', 'Customer preferred to complete it on their own later', 'Provisioning issues delaying activation', 'Other'];
-var SAT_XAP = ['Account holder not on site', 'Account holder did not have a payment method available', 'Other'];
-function xapC(reasons) { return yesNoReasonC({ id: 'xap', label: 'XAP Completed On-Site', out: 'XAP', reasons: reasons, yesOut: 'Completed on-site', noOut: function (r) { return 'Not completed - ' + r; } }); }
-var LAWN_REASONS = ['Customer declined', 'No viable install location', 'Did not offer to customer', 'Out of stock'];   // 1.20.117 order (Curtis)
-var LAWN_REASONS_FW = ['Customer declined', 'Ground frozen', 'No viable install location', 'Did not offer to customer', 'Out of stock'];
+/* 1.20.197 (Curtis): one XAP reason list for every platform (was a different list for Fibre, Fixed Wireless and Satellite) */
+var XAP_REASONS = ['Account holder not on site', 'Account holder did not have a payment method available', 'Customer preferred to complete it on their own later',
+  ['Completed except the payment method section', 'Completed, excluding the payment method section'], 'Provisioning issues delaying activation', 'Other'];
+var XAP_OLD = { 'Account holder was not present on site': 'Account holder not on site', 'Customer chose to complete it independently': 'Customer preferred to complete it on their own later' };   // Fibre answers saved before 1.20.197
+var FIBRE_XAP = XAP_REASONS, FW_XAP = XAP_REASONS, SAT_XAP = XAP_REASONS;
+function xapC(reasons) { if (XAP_OLD[STATE.xap_reason]) STATE.xap_reason = XAP_OLD[STATE.xap_reason]; return yesNoReasonC({ id: 'xap', label: 'XAP Completed On-Site', out: 'XAP', reasons: reasons, yesOut: 'Completed on-site', noOut: function (r) { return 'Not completed - ' + r; } }); }
+var LAWN_REASONS = ['Customer declined', 'Ground frozen', 'No viable install location', 'Did not offer to customer', 'Out of stock'];   // 1.20.117 order; 1.20.197 (Curtis): Ground frozen on every form (was Fixed Wireless installs only)
+var LAWN_REASONS_FW = LAWN_REASONS;
 function lawnC(reasons) { return yesNoReasonC({ id: 'lawn', label: 'Lawn Sign Deployed', out: 'Lawn Sign', reasons: reasons || LAWN_REASONS, yesOut: 'Deployed', noOut: function (r) { return 'Unable to deploy, ' + r; } }); }
 function photosC(items) { return checklistC({ id: 'photos', label: 'Required Pictures Checklist', items: items, out: 'Pictures', allOut: 'All required pictures uploaded to FSL', whatMissing: "A few photos aren't ticked." }); }
 function commentsC() {
