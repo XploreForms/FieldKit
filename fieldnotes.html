@@ -738,7 +738,8 @@ header.app-header .header-top img.yawn { transform-origin: 50% 100%; animation: 
 .rt-tool:active { background: var(--xp-green); }
 .sa-reason{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .sa-reason b{font-size:1rem;flex:1;min-width:0;line-height:1.3}
-.sa-reason .sa-reason-btn{flex:none;width:auto;min-height:44px;padding:0 14px}
+.sa-reason .sa-reason-btn{flex:none;width:auto;min-height:36px;height:36px;padding:0 12px;border-radius:10px;font-size:.85rem}   /* 1.20.205: lower profile (Curtis) */
+html:root[data-fn-theme] .job-section.sa-rows,.job-section.sa-rows{margin-bottom:0} .job-section.sa-rows>.field{margin-bottom:9px!important}   /* 1.20.205: the reason line below sits as close as the Job / Outcome lines */
 </style>
 <link rel="preload" href="fonts/Barlow-Regular.woff" as="font" type="font/woff" crossorigin>
 <link rel="preload" href="fonts/Barlow-SemiBold.woff" as="font" type="font/woff" crossorigin>
@@ -2723,7 +2724,7 @@ function jobSection() {
         el('div', { class: 'sa-reason' }, [el('b', { text: value }), el('button', { type: 'button', class: 'choice sa-reason-btn', onclick: onTap, 'aria-label': aria }, [el('span', { text: 'Change' })])])];
     };
     row('Job', jobLine, goChange, 'Change the job type or platform on the SA page').concat(row('Outcome', STATE.job_outcome, goSaOutcome, 'Change the outcome on the SA page')).forEach(function (n) { wrap.appendChild(n); });
-    return el('section', { class: 'form-section job-section', 'data-sec': 'Job' }, [wrap]);
+    return el('section', { class: 'form-section job-section sa-rows', 'data-sec': 'Job' }, [wrap]);
   }
   wrap.appendChild(el('p', { class: 'sub-q first', text: 'Job Type' }));
   wrap.appendChild(group('job_type', PICK_TYPES, 4));
