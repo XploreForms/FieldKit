@@ -550,8 +550,12 @@ details.grp .btn{margin-bottom:12px}
     $("links").innerHTML = items.filter(function (l) { return !paired[l.name]; }).map(function (l) {
       var x = tileA(l), mate = PAIR[l.name] && byName[PAIR[l.name]];
       if (mate) return '<li class="tile split">' + x.html + tileA(mate).html + '</li>';
-      return '<li class="tile' + (l.quiet ? " quiet" : "") + (x.busy ? " busy" : "") + (l.name === "Manual Order Request" ? " wide" : "") + '">' + x.html + x.restart + '</li>';
-    }).join("");    placeNew();   // every repaint (including the 4 s reset after one tap) puts New back over the camera icon's mirror spot
+      return '<li class="tile' + (l.quiet ? " quiet" : "") + (x.busy ? " busy" : "") + '">' + x.html + x.restart + '</li>';
+    }).join("");
+    // 1.20.182 (Curtis): planned tool, left of Manual Order: greyed out, Coming Soon, does nothing yet
+    $("links").insertAdjacentHTML("afterbegin", '<li class="tile planned"><a role="link" aria-disabled="true" tabindex="-1" data-soon="flha" aria-label="FLHA, Field Level Hazard Assessment, coming soon">' +
+      '<i aria-hidden="true">' + svg('<path d="M12 3 2.5 20h19L12 3z"/><path d="M12 10v4.5M12 17.5v.01"/>') + '</i><b>FLHA</b>' +
+      '<small>Field level hazard assessment</small><em class="live">Coming soon</em></a></li>');    placeNew();   // every repaint (including the 4 s reset after one tap) puts New back over the camera icon's mirror spot
   }
   /* Compass is installed on the phone as its own web app. On Android the link goes out as a "view this address" request to the
      phone itself (not an in-app browser tab): the installed Compass app takes it if it's there, otherwise the phone's normal
@@ -1607,7 +1611,10 @@ details.grp .btn{margin-bottom:12px}
 #menu.home .banner{padding:8px 8px 8px 14px}#menu.home .banner b{margin:0}
 #menu.home .eyebrow{margin:4px 2px -4px}
 .tiles{flex:1;min-height:0;list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:10px;overflow:hidden}
-.tiles .tile.wide{grid-column:1 / -1}   /* 1.20.178: Manual Order across the top */
+.tiles .tile.wide{grid-column:1 / -1}   /* 1.20.178: Manual Order across the top (1.20.182: not used, FLHA sits beside it) */
+.tiles .tile.planned a{cursor:default;background:var(--surface-2);box-shadow:none;opacity:.6}   /* 1.20.182: planned tool */
+.tiles .tile.planned a:active{background:var(--surface-2)}
+.tiles .tile.planned .live{background:var(--muted);color:var(--surface)}
 html body #menu .tiles .tile.wide a{grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto;justify-items:stretch;column-gap:14px;row-gap:4px}
 html body #menu .tiles .tile.wide i{grid-row:1 / span 2;grid-column:1}
 html body #menu .tiles .tile.wide b{grid-row:1;grid-column:2;align-self:end}

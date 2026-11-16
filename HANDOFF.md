@@ -250,6 +250,8 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 
 - (1.20.181) SA page Equipment: "New mount not required" is a tick under the mount buttons (after "Deployed 10ft pole"), not on the right of the Mount heading (Curtis).
 
+- (1.20.182) Home: a planned **FLHA** (Field Level Hazard Assessment) tile sits left of Manual Order, greyed out with a COMING SOON pill; tapping does nothing (`.tile.planned`, `data-soon="flha"`). Manual Order is no longer full width. Note: `.soon` is already a pill class, don't reuse it for tiles.
+
 **Things only a real phone can confirm** (the test browser has no camera or GPS)
 - Compass on Android (with and without the Compass web app installed; if Android shows an "open with" chooser instead of going straight in, adjust).
 - A real scan from the SA page returning correctly, and a real photo ticking its SN tile.
