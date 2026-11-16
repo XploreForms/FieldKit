@@ -1351,6 +1351,8 @@ function getLocation(){
 }
 function paintLoc(){
   $("locDot").className="dot"+(LOC.status==="ok"?" ok":LOC.status==="pending"?" wait":"");
+  // 1.20.220 (Curtis): the line took too much room; it only shows when GPS has a problem (blocked or failed)
+  $("locLine").hidden = ["ok","pending","none"].includes(LOC.status);
   $("locRetry").hidden = !(LOC.status!=="ok" && LOC.status!=="pending" && LOC.status!=="none");
   $("locTxt").textContent = LOC.status==="ok" ? `GPS captured` :
     LOC.status==="pending" ? "Getting GPS location…" :
