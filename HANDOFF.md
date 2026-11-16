@@ -201,7 +201,7 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 - **Google Sheets backup is skippable "for now"** (see Profile and setup). Make it required again at final rollout.
 
 **To confirm with Curtis**
-- (Answered Nov 15, 1.20.184) Comments' Cannot Complete keeps "Temp Drop Required" (Curtis). Fibre Drop Only: MPT and Drop Route are each their own photo; Fibre Existing Drop: Install Overview is its own photo (`PHOTO_RULES`); the SA summary header tile is the truck icon (same as home's SA card).
+- (Answered Nov 15, 1.20.184) Comments' Cannot Complete keeps "Temp Drop Required" (Curtis). Fibre Drop Only: MPT and Drop Route are each their own photo; Fibre Existing Drop: Install Overview is its own photo (`PHOTO_RULES`); the SA summary header tile was the truck icon (replaced in 1.20.217).
 
 - (1.20.125) Comments: no section labels on the form (SIGNAL, MOUNT, INDOOR…; also gone from the loading placeholders); each question has its own label. Additional Comments keeps its title. The copied FSL comment keeps its headings. Mount Type = Tower hides (and clears) Reused existing mount. Test: `dev/tests/ttower.py`.
 
@@ -330,3 +330,5 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 - (1.20.215, Curtis: the pill said Sign in but settings showed him signed in, just waiting) Why: Google's sign-in token (Google Identity Services token client, no server) lasts about an hour and can only be renewed from a tap, so background syncs after that stop with `gsErr = "auth"`. Now: that state's pill reads **Tap to sync** (or Synced if nothing is waiting), and with changes waiting **tapping the pill syncs right there** (the tap lets Google renew the token, usually without asking anything) instead of opening settings. Saving an entry still renews too (`gsGestureRefresh`). Fully automatic background sync would need a small server holding a refresh token.
 
 - (1.20.216, Curtis: a scroll starting on Pick an item opened it) The item selects now take no touches (`pointer-events:none`); a swipe scrolls the page, and only a real tap (a click whose point is on a select, `iselAt()`) opens the item sheet. Tests tap by position (`tisheet.py`, which also checks a swipe doesn't open it).
+
+- (1.20.217, Curtis picked option C) The SA symbol (home SA card and SA page header tile) is a **work order with a map pin** instead of the truck.

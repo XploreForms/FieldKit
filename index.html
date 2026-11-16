@@ -431,7 +431,7 @@ details.grp .btn{margin-bottom:12px}
   <div class="lhead fk-row">
     <a class="fk-back" href="index.html" id="lbBack" aria-label="Back to Field Kit"><span class="fk-chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4.5 7.5 12l7.5 7.5"/></svg></span></a>
     <header class="fk-head">
-      <div class="fk-tile" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17H2V5h12v12"/><path d="M8 17h7"/><path d="M19 17h3v-4.5L18.5 8H14"/><circle cx="6" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 9h6M5 12.5h4"/></svg></div>
+      <div class="fk-tile" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4"/><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M14 3l5 5v2"/><path d="M8.5 12h4M8.5 15.5h2"/><path d="M17.5 21s3.5-2.8 3.5-5.3a3.5 3.5 0 0 0-7 0c0 2.5 3.5 5.3 3.5 5.3z"/><circle cx="17.5" cy="15.7" r="1"/></svg></div>
       <div class="fk-head-txt"><h1 class="fk-title" id="lbRef"></h1><p class="fk-sub" id="lbSub"></p></div>
     </header>
     <!-- 1.20.131 (Curtis): change the job type / platform inside the SA (e.g. Repair to Conversion, Satellite to Fixed Wireless) -->
@@ -798,7 +798,7 @@ details.grp .btn{margin-bottom:12px}
       $("jobArea").innerHTML = '<button class="gobig" type="button" id="jobStart">' + PLUS + '<span>Start New SA</span></button>';   // 1.20.69: SA-# box only on New SA (Curtis)
     } else {
       $("jobArea").innerHTML = '<div class="jobwrap busy"><button class="job" type="button" id="jobGo"><i aria-hidden="true">' +
-        svg('<path d="M4 17H2V5h12v12"/><path d="M8 17h7"/><path d="M19 17h3v-4.5L18.5 8H14"/><circle cx="6" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 9h6M5 12.5h4"/>', 2.2) +   // truck roll with its work order
+        svg('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4"/><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M14 3l5 5v2"/><path d="M8.5 12h4M8.5 15.5h2"/><path d="M17.5 21s3.5-2.8 3.5-5.3a3.5 3.5 0 0 0-7 0c0 2.5 3.5 5.3 3.5 5.3z"/><circle cx="17.5" cy="15.7" r="1"/>', 2.2) +   // 1.20.217 (Curtis, option C): the SA symbol is a work order with a map pin
         '</i><div><b>' + esc(a.sa || "New SA") + ' <em class="live o-' + esc(a.outcome || "OK") + '">' + esc(({ CC: "Cannot Complete", NR: "Not Required" })[a.outcome] || (a.status === "complete" ? "Reopened" : "In progress")) + '</em></b><span>' + esc(a.base || (a.title ? a.title.split(" · ").slice(0, 2).join(" · ") : "SA details not set yet")) + '</span></div><em class="chev" aria-hidden="true">›</em>' + jobProgress(a) + '</button>' +
         '<div class="jacts"><button class="btn primary" type="button" data-open-sa>Continue SA</button><button class="newbtn" type="button" id="jobNew" aria-label="Replace with a new SA. This one stays in SA history." title="Start over with a new SA"><span>New SA</span></button></div></div>';   // 1.20.178 (Curtis): "+ New SA" (the circular arrow read as undo)
     }
