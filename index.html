@@ -110,7 +110,7 @@ h3{margin:0;font:700 1.1rem/1.2 var(--f-display)}
 .jobwrap .newbtn:active{filter:brightness(.95)}
 .jobwrap .newbtn.sure{background:var(--warn-bg);color:var(--warn)}
 .live{display:inline-block;padding:3px 6px;border-radius:99px;background:var(--btn);color:var(--btn-ink);font:600 .62rem/1 var(--f-body);font-style:normal;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
-/* job history: last N weeks (Settings, default 4), quieter than the tools */
+/* job history: kept until photos are cleared for space (1.20.191), quieter than the tools */
 .hist{list-style:none;margin:8px 0 0;padding:0;border-radius:var(--r);background:var(--surface);box-shadow:var(--shadow);overflow:hidden}
 .hist li+li{border-top:1px solid var(--line)}
 .hist button{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;width:100%;border:0;background:none;text-align:left;padding:10px 14px;min-height:56px;cursor:pointer}
@@ -322,13 +322,15 @@ html:not(.fk-slim) .lhead.fk-row .njtitle{font-size:1.2rem!important}
 /* segmented choices */
 .seg{display:grid;grid-template-columns:repeat(var(--n,4),minmax(0,1fr));gap:4px;padding:4px;border-radius:12px;background:var(--surface-2)}
 .seg button{border:0;border-radius:9px;padding:10px 4px;background:transparent;color:var(--muted);font-weight:600;font-size:.9rem;cursor:pointer}
-.store{margin-top:12px;padding-top:10px;border-top:1px solid var(--line, rgba(0,0,0,.08))}
+.store{}
 .store .used{margin:10px 0 2px;font-size:.92rem;color:var(--muted)}
 .store .used b{color:var(--fg)}
 .store .bar{display:block;height:8px;margin-top:6px;border-radius:99px;background:var(--surface-2);overflow:hidden}
 .store .bar i{display:block;height:100%;border-radius:99px;background:var(--btn)}
-#sStore .seg button{white-space:nowrap;padding:10px 2px;min-height:44px;font-size:min(.9rem,3.7vw)}
-#sHist .seg button{white-space:nowrap;padding:10px 2px;min-height:44px;font-size:min(.9rem,3.7vw)}   /* 1.20.187: "2 weeks" on one line on small phones */
+.limrow{display:flex;align-items:baseline;justify-content:space-between}
+.limrow b{font-size:1rem;font-variant-numeric:tabular-nums}
+#sLim{width:100%;height:44px;margin:0;accent-color:var(--btn);cursor:pointer}
+.limends{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);margin-top:-6px}
 .seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 
 /* setup */
@@ -470,9 +472,8 @@ details.grp .btn{margin-bottom:12px}
     <h3 id="sLookH">Appearance</h3>
     <div id="sLook"></div>
   </section>
-  <section class="card" aria-labelledby="sHistH">
-    <h3 id="sHistH">SA history</h3>
-    <div id="sHist"></div>
+  <section class="card" aria-labelledby="sStoreH">
+    <h3 id="sStoreH">Storage</h3>
     <div class="store" id="sStore" aria-live="polite"></div>
   </section>
   <section class="card" id="backup" aria-labelledby="sGsH">
@@ -774,7 +775,6 @@ details.grp .btn{margin-bottom:12px}
     } catch (e) {}
     return '<div class="jprog">' + out.join("") + '</div>';
   }
-  function histSpan() { var w = J.keepWeeks ? J.keepWeeks() : 4; return w === 1 ? "week" : w + " weeks"; }
   function paintJobs() {
     var a = J.active();
     if (!a) {
@@ -787,7 +787,7 @@ details.grp .btn{margin-bottom:12px}
     }
     var act = a ? a.id : "", hist = J.list().filter(function (j) { return j.id !== act; });
     var shown = hist;
-    $("histCount").textContent = hist.length ? hist.length + " SA" + (hist.length === 1 ? "" : "s") + " in the last " + histSpan() + ". Tap one to open it." : "No other SAs in the last " + histSpan() + ".";
+    $("histCount").textContent = hist.length ? hist.length + " SA" + (hist.length === 1 ? "" : "s") + " on this phone. Tap one to open it." : "No other SAs on this phone.";
     $("hist").hidden = !hist.length;
     $("hist").innerHTML = shown.map(function (j) {
       var done = j.status === "complete";
@@ -988,7 +988,7 @@ details.grp .btn{margin-bottom:12px}
     $("lbRef").textContent = j.sa || "New job";
     $("lbSub").textContent = (j.base || jobName(j)) + (j.status === "complete" ? " · Completed " + when(j.completedAt) : "");
     $("lbDone").textContent = j.status === "complete" ? "Close SA" : "Complete SA";
-    $("lbHelp").textContent = j.status === "complete" ? "This SA is in SA history for " + histSpan() + " from its last change." : ""; $("lbHelp").hidden = j.status !== "complete";
+    $("lbHelp").textContent = j.status === "complete" ? "This SA stays in SA history until its photos are cleared to stay under the space limit in Settings." : ""; $("lbHelp").hidden = j.status !== "complete";
     lobbySure = false; $("lbWarn").innerHTML = ""; lobbyState.photosReady = false;
     $("lbStart").innerHTML = svg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', 2) + '<span class="lsl">Started</span><span class="lst">' + esc(when(j.created)) + '</span>'; $("lbStart").innerHTML = '<div class="lout">' + $("lbStart").innerHTML + '</div>';
     if (j.status === "complete" && j.completedAt) $("lbStart").innerHTML += '<div class="lout" style="margin-top:10px">' + svg('<circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.5 2.5L16 9.5"/>', 2) + '<span class="lsl">Finished</span><span class="lst">' + esc(when(j.completedAt)) + '</span></div>';   // 1.20.133
@@ -1301,13 +1301,6 @@ details.grp .btn{margin-bottom:12px}
     return '<div class="field"><span class="lbl">Theme</span>' + seg("theme", [["light", "Light"], ["dark", "Dark"], ["black", "Black"]], pr.theme) +
       '<small class="hint">Applies to every tool. Black saves battery on most phones.</small></div>';   // grid lines: in Field Cam's own settings
   }
-  /* 1.20.187 (Curtis): how long SA history is kept, default 4 weeks (fieldkit.prefs.histWeeks; fieldkit-jobs.js clears older SAs when a page opens) */
-  function histHTML() {
-    var cur = FK.prefs().histWeeks || 4, o = [[1, "1 week"], [2, "2 weeks"], [4, "4 weeks"], [8, "8 weeks"]];
-    return '<div class="field"><span class="lbl">Keep SAs for</span><div class="seg" style="--n:4" role="group" aria-label="Keep SAs for">' +
-      o.map(function (x) { return '<button type="button" data-hist-weeks="' + x[0] + '" aria-pressed="' + (x[0] === cur) + '">' + x[1] + '</button>'; }).join("") +
-      '</div><small class="hint">Completed SAs are removed from SA history this long after their last change. The SA in progress is always kept.</small></div>';
-  }
   /* 1.20.189 (Curtis): how much space Field Kit uses on this phone. Photos are Field Cam's copies in IndexedDB
      ("fieldcam" > photos: stamped photo + thumbnail, plus the clean copy kept until a set is finished);
      everything else (SAs, Comments, Field Stock, settings) is saved text in localStorage. */
@@ -1330,25 +1323,26 @@ details.grp .btn{margin-bottom:12px}
   }
   function textBytes(test) { var b = 0; try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (test(k)) b += (k.length + (localStorage.getItem(k) || "").length) * 2; } } catch (e) {} return b; }
   function paintStore() {
-    var box = $("sStore"), lim = FK.prefs().maxGB || 2, opts = [[0.5, "0.5 GB"], [1, "1 GB"], [2, "2 GB"], [4, "4 GB"]];
-    var seg = '<div class="seg" style="--n:4" role="group" aria-label="Space limit">' + opts.map(function (x) { return '<button type="button" data-max-gb="' + x[0] + '" aria-pressed="' + (x[0] === lim) + '">' + x[1] + '</button>'; }).join("") + '</div>';
-    var hint = '<small class="hint">When photos go over the limit, Field Kit clears the oldest saved ones. They stay in your Photos or Files.</small>';
-    box.innerHTML = '<div class="field"><span class="lbl">Space limit</span>' + seg + '<p class="used" id="sUsed">Checking space used…</p>' + hint + '</div>';
+    var box = $("sStore"), lim = FK.prefs().maxGB || 2;
+    box.innerHTML = '<div class="field"><div class="limrow"><label class="lbl" for="sLim">Space limit</label><b id="sLimV">' + lim + ' GB</b></div>' +
+      '<input type="range" id="sLim" min="0.5" max="10" step="0.5" value="' + lim + '" aria-valuetext="' + lim + ' GB"><div class="limends"><span>0.5 GB</span><span>10 GB</span></div>' +
+      '<p class="used" id="sUsed">Checking space used…</p>' +
+      '<small class="hint">Over the limit, Field Kit clears the oldest saved photos (they stay in your Photos or Files) and their SAs leave SA history.</small></div>';
     var allB = textBytes(function () { return true; });
-    photoBytes().then(function (ph) {
-      var tot = (ph ? ph.bytes : 0) + allB, pct = Math.min(100, Math.round(tot / (lim * 1073741824) * 100));
-      $("sUsed").innerHTML = '<span><b>' + mb(tot) + '</b> used of ' + lim + ' GB</span><i class="bar"><i style="width:' + Math.max(pct, tot ? 2 : 0) + '%"></i></i>';
-    });
+    photoBytes().then(function (ph) { STORE_B = (ph ? ph.bytes : 0) + allB; paintUsed(lim); });
   }
-  $("sStore").addEventListener("click", function (e) {
-    var b = e.target.closest("[data-max-gb]"); if (!b) return;
-    FK.setPrefs({ maxGB: +b.getAttribute("data-max-gb") }); paintStore(); toast("Space limit: " + b.textContent);
+  var STORE_B = null;
+  function paintUsed(lim) {
+    if (STORE_B == null || !$("sUsed")) return;
+    var pct = Math.min(100, Math.round(STORE_B / (lim * 1073741824) * 100));
+    $("sUsed").innerHTML = '<span><b>' + mb(STORE_B) + '</b> used of ' + lim + ' GB</span><i class="bar"><i style="width:' + Math.max(pct, STORE_B ? 2 : 0) + '%"></i></i>';
+  }
+  $("sStore").addEventListener("input", function (e) {
+    if (e.target.id !== "sLim") return; var v = +e.target.value;
+    $("sLimV").textContent = v + " GB"; e.target.setAttribute("aria-valuetext", v + " GB"); paintUsed(v);
   });
-  $("sHist").addEventListener("click", function (e) {
-    var b = e.target.closest("[data-hist-weeks]"); if (!b) return;
-    FK.setPrefs({ histWeeks: +b.getAttribute("data-hist-weeks") });
-    b.parentNode.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
-    toast("SA history keeps " + histSpan());
+  $("sStore").addEventListener("change", function (e) {
+    if (e.target.id !== "sLim") return; FK.setPrefs({ maxGB: +e.target.value }); toast("Space limit: " + FK.prefs().maxGB + " GB");
   });
   function applyTheme(t) { document.documentElement.setAttribute("data-theme", t); }
   function wireLook(box, pre) {
@@ -1535,7 +1529,7 @@ details.grp .btn{margin-bottom:12px}
     $("sAbout").innerHTML = ABOUT.map(function (k) { return fieldHTML("a", k); }).join("");
     $("sAcct").innerHTML = ACCT.map(function (k) { return fieldHTML("a", k); }).join("");
     fill("a", keysOf(ABOUT.concat(ACCT)));
-    $("sLook").innerHTML = lookHTML("a"); $("sHist").innerHTML = histHTML(); paintStore(); $("sErr").innerHTML = "";
+    $("sLook").innerHTML = lookHTML("a"); paintStore(); $("sErr").innerHTML = "";
     paintSettingsGoogle();
     $("sVer").textContent = verLine();
     showView("settings");

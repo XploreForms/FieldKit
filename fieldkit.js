@@ -160,10 +160,10 @@ if (!window.__fkFraming) (function () {
 
   /* ---------- appearance ---------- */
   // theme: light | dark | black (black = true black for OLED screens), the same in every tool. grid: Field Cam grid lines.
-  var THEMES = ["light", "dark", "black"], HIST_WEEKS = [1, 2, 4, 8], MAX_GB = [0.5, 1, 2, 4];   // maxGB: space Field Kit may use for photos (1.20.190, default 2)   // histWeeks: how long SA history is kept (1.20.187, default 4)
+  var THEMES = ["light", "dark", "black"], HIST_WEEKS = [1, 2, 4, 8], gbOk = function (g) { g = Math.round(+g * 2) / 2; return g >= 0.5 && g <= 10 ? g : 2; };   // maxGB: space Field Kit may use for photos (1.20.190, default 2; 1.20.191 slider 0.5-10 GB)   // histWeeks: how long SA history is kept (1.20.187, default 4)
   function prefs() {
     var p = get(K.prefs, null);
-    if (p) { p = Object.assign({ theme: "light", grid: false, histWeeks: 4, maxGB: 2 }, p); if (THEMES.indexOf(p.theme) < 0) p.theme = "light"; if (HIST_WEEKS.indexOf(+p.histWeeks) < 0) p.histWeeks = 4; p.histWeeks = +p.histWeeks; if (MAX_GB.indexOf(+p.maxGB) < 0) p.maxGB = 2; p.maxGB = +p.maxGB; return p; }
+    if (p) { p = Object.assign({ theme: "light", grid: false, histWeeks: 4, maxGB: 2 }, p); if (THEMES.indexOf(p.theme) < 0) p.theme = "light"; if (HIST_WEEKS.indexOf(+p.histWeeks) < 0) p.histWeeks = 4; p.histWeeks = +p.histWeeks; p.maxGB = gbOk(p.maxGB); return p; }
     // first launch: light, no grid lines (changed in Settings). Keeps what Field Stock already had on this phone.
     var t = raw("techstock.theme");
     return { theme: /^(light|dark|black)$/.test(t) ? t : "light", grid: false, histWeeks: 4, maxGB: 2 };
@@ -172,8 +172,8 @@ if (!window.__fkFraming) (function () {
     p = Object.assign(prefs(), p || {});
     if (THEMES.indexOf(p.theme) < 0) p.theme = "light";
     if (HIST_WEEKS.indexOf(+p.histWeeks) < 0) p.histWeeks = 4;
-    if (MAX_GB.indexOf(+p.maxGB) < 0) p.maxGB = 2;
-    set(K.prefs, { theme: p.theme, grid: !!p.grid, histWeeks: +p.histWeeks, maxGB: +p.maxGB });
+    p.maxGB = gbOk(p.maxGB);
+    set(K.prefs, { theme: p.theme, grid: !!p.grid, histWeeks: +p.histWeeks, maxGB: p.maxGB });
     setRaw("techstock.theme", p.theme);                                   // Field Stock: light | dark | black
     var cam = get("fieldcam.settings", {}); cam.theme = p.theme; set("fieldcam.settings", cam);   // Field Cam: same (grid lines are set in Field Cam itself)
     setRaw("xplore_fsl_theme", p.theme === "light" ? "light" : "dark");   // Field Notes: black is dark with OLED on

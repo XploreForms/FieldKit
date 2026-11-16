@@ -2767,14 +2767,13 @@ $("snList").addEventListener("click", e => {
   j.serials.splice(+b.dataset.sndel, 1); jobChanged(); renderSerials();
 });
 
-/* Auto-cleanup: Field Cam's own copies of photos that were SAVED more than CLEAN_DAYS ago are removed from
-   the app (the saved copies in Photos / Files are never touched). Unsaved photos and the current job's
-   photos are always kept. Runs when the app opens and when a job is finished. */
-const CLEAN_DAYS = 14;
+/* Auto-cleanup (1.20.191, Curtis: by space only, no longer after 14 days): while Field Cam's photos are over
+   Settings > Space limit, its own copies of the oldest SAVED photos are removed from the app (the saved copies in
+   Photos / Files are never touched). Unsaved photos and the current job's photos are always kept. Runs when the
+   app opens and when a job is finished. An SA whose photos are all cleared leaves SA history (fieldkit-jobs.js). */
 const pBytes = p => (p.blob ? p.blob.size : 0) + (p.thumb ? p.thumb.size : 0) + (p.raw ? p.raw.size : 0);
 async function autoCleanup() {
-  const cutoff = Date.now() - CLEAN_DAYS * 864e5, cur = current && current.id;
-  const old = S.photos.filter(p => p.downloaded && (p.savedAt || p.created) < cutoff && p.sessionId !== cur);
+  const cur = current && current.id, old = [];
   /* 1.20.190 (Curtis): Settings > Space limit (fieldkit.prefs.maxGB, default 2 GB). Over the limit, the oldest
      saved photos go first (never unsaved ones or the open set's); their copies stay in Photos / Files. */
   let lim = 2; try { lim = (FieldKit.prefs().maxGB || 2) * 1073741824; } catch {}
@@ -2787,8 +2786,7 @@ async function autoCleanup() {
   await removePhotos(old.map(p => p.id));
   for (const id of Object.keys(jobs)) if (id !== cur && !S.photos.some(p => p.sessionId === id)) delete jobs[id];   // jobs with nothing left
   save();
-  toast(over ? `Cleared ${plural(old.length, "older saved photo")} (${kb(bytes)}) to stay under your space limit. They’re still in your Photos / Files.`
-             : `Cleared ${plural(old.length, "saved photo")} older than ${CLEAN_DAYS} days (${kb(bytes)}). They’re still in your Photos / Files.`, 4200);
+  toast(`Cleared ${plural(old.length, "older saved photo")} (${kb(bytes)}) to stay under your space limit. They’re still in your Photos / Files.`, 4200);
   return old.length;
 }
 async function removePhotos(ids) {
@@ -3333,7 +3331,7 @@ async function renderStorage() {
   const total = S.photos.reduce((a, p) => a + p.blob.size + p.thumb.size, 0);
   let txt = `${plural(S.photos.length, "photo")} stored on this phone · ${kb(total)}`;
   try { const e = await navigator.storage.estimate(); if (e.quota) txt += ` · ${kb(e.quota)} available`; } catch {}
-  $("storageStats").textContent = txt + ` · saved photos are cleared from Field Cam after ${CLEAN_DAYS} days (they stay in Photos / Files)`;
+  $("storageStats").textContent = txt + ` · the oldest saved photos are cleared from Field Cam when over the space limit in Field Kit Settings (they stay in Photos / Files)`;
 }
 const SAVE_HINT = isIOS
   ? "Save opens the iPhone share sheet: tap “Save N Images” to put them in Photos (don’t use Save to Files). Then attach them in FSL from Photos."

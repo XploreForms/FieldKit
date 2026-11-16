@@ -11,7 +11,7 @@ async def main():
         await pg.evaluate("""()=>new Promise(res=>{const r=indexedDB.open('fieldcam',1);r.onupgradeneeded=()=>r.result.createObjectStore('photos',{keyPath:'id'});r.onsuccess=()=>{const st=r.result.transaction('photos','readwrite').objectStore('photos');for(let i=0;i<30;i++)st.put({id:'p'+i,blob:new Blob([new Uint8Array(400*1024)]),thumb:new Blob([new Uint8Array(25*1024)])});st.transaction.oncomplete=()=>{r.result.close();res()}}})""")
         await pg.locator('#openSettings').click(); await pg.wait_for_timeout(1200)
         print((await pg.locator('#sStore').inner_text()).replace('\n',' | '))
-        await pg.locator('[data-max-gb="0.5"]').click(); await pg.wait_for_timeout(800)
+        await pg.locator('#sLim').fill('6.5'); await pg.wait_for_timeout(800)
         print('prefs:', await pg.evaluate("localStorage.getItem('fieldkit.prefs')"), '|', await pg.locator('#sUsed').inner_text())
         await pg.locator('#sStore').screenshot(path='/tmp/store.png')
         print('errors', errs); await b.close()

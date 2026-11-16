@@ -26,5 +26,5 @@ Not an organised suite: grab the ones near what you changed.
 | Side by side (one-app rebuild) | `tside.py` (Field Cam / Comments inside an SA vs on their own, a second page loading alongside, migration), `thidden.py` (a page loaded in the background stays inert until shown), `tshell.py` (the shell: preload, instant switching, Back, SA flow, stale refresh, off switch), `tshell2.py` (1.20.82: Pictures/Comments kept and preloaded, no reloads going back and forth, outcome change reaches both, new/completed SA, camera paused and released while hidden). `tupright.py` (1.20.85: sideways turned back upright, no zoom, home fills its frame), `tios.py` (1.20.85: iPhone history, `window.__fkIOS=1`), `ttilt.py` (1.20.86: tilt readout only for Line of Sight). `tsa3.py` predates the platform rows and needs its New SA steps updated. Automated browsers get plain pages unless `fieldkit.shell` is `"test"` |
 | Other | `tchk.py` (prints page errors on load), `tsv.py` (checks every barcode on the test-serials page scans), `tsb.py`, `tsb2.py` (runs the preview in a sandboxed frame), `tnm.py`–`tnm3.py` (the old stock-names tool, obsolete), `tstate.py`, `shotset.py` |
 
-- `thistwk`: Settings > SA history length (1.20.187)
 - `tstore`: Settings > Space used on this phone (1.20.189)
+- `thistspace`: SA history kept until photos are cleared for space (1.20.191)

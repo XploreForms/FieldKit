@@ -1,7 +1,7 @@
 /* Field Kit jobs: the guided "Start New Job" flow.
    A job runs Field Cam (SA-#, job type, platform, photos, scanned equipment), then Field Notes (prefilled),
    then the job summary on the menu (photos, comments, deployed equipment, Complete Job).
-   A job stays open until Complete Job, and every job is kept in SA history for the weeks picked in Settings (default 4; was 7 days before 1.20.187).
+   A job stays open until Complete Job, and every job is kept in SA history until its photos are cleared to stay under Settings > Space limit (1.20.191).
 
    Tools know they're part of a job when their address ends in #job (fieldcam.html#job, fieldnotes.html#job).
    Each tool keeps working on its own data; this file swaps the job's work in and out around it:
@@ -26,8 +26,7 @@
 
   var K = { jobs: "fieldkit.jobs", active: "fieldkit.activeJob", camOwner: "fieldkit.camOwner", camSolo: "fieldkit.camStandalone",
             notesOwner: "fieldkit.notesOwner", notesSolo: "fieldkit.notesStandalone" };
-  function keepWeeks() { var p = get("fieldkit.prefs", null), w = p && +p.histWeeks; return [1, 2, 4, 8].indexOf(w) >= 0 ? w : 4; }   // 1.20.187 (Curtis): Settings > SA history
-  var WEEK = keepWeeks() * 7 * 864e5, WIP = "xplore_fsl_wip_v2";
+  var MAX_SAS = 300, WIP = "xplore_fsl_wip_v2";
 
   /* ---------- job store ---------- */
   function all() { return get(K.jobs, {}) || {}; }
@@ -44,10 +43,17 @@
   function list() { var a = all(); return Object.keys(a).map(function (k) { return a[k]; }).sort(function (x, y) { return y.created - x.created; }); }
   function complete(id) { var j = byId(id); if (!j) return; j.status = "complete"; j.completedAt = Date.now(); j.step = "lobby"; save(j); if (raw(K.active) === id) setActive(null); }
   function open(id) { var j = byId(id); if (j) setActive(id); return j; }
-  // SA history keeps keepWeeks() weeks from the last change; the job that's open is never removed
+  /* 1.20.191 (Curtis): SA history depends on space used, not age. An SA leaves history once Field Cam has cleared
+     all its photos to stay under Settings > Space limit (its Field Cam job is gone from fieldcam.jobs); SAs with
+     no photos stay. Safety cap: the newest MAX_SAS (saved text has a ~5 MB limit). The open SA is never removed. */
   (function purge() {
-    var a = all(), act = raw(K.active), changed = false, now = Date.now();
-    Object.keys(a).forEach(function (k) { if (k !== act && now - (a[k].updated || a[k].created) > WEEK) { delete a[k]; changed = true; } });
+    var a = all(), act = raw(K.active), cams = get("fieldcam.jobs", {}) || {}, changed = false;
+    var rest = Object.keys(a).filter(function (k) { return k !== act; }).sort(function (x, y) { return (a[y].updated || a[y].created) - (a[x].updated || a[x].created); });
+    rest.forEach(function (k, n) {
+      var j = a[k], ids = (j.camJobIds || []).concat(j.camJobId ? [j.camJobId] : []);
+      var cleared = j.status === "complete" && j.photos > 0 && ids.length && !ids.some(function (id) { return cams[id]; });
+      if (cleared || n >= MAX_SAS) { delete a[k]; changed = true; }
+    });
     if (changed) set(K.jobs, a);
   })();
 
@@ -662,6 +668,6 @@
   FK.job = {
     inMode: function () { return jobMode; }, camCur: camCur, setCamCur: setCamCur, notesKey: KN, active: active, get: byId, list: list, start: start, complete: complete, open: open, save: save, setActive: setActive,
     fromCam: fromCam, modelsFor: modelsFor, modelName: function (id) { return SKU[id] ? SKU[id].name : ""; }, pickModel: pickModel, stockNote: stockNote,
-    deployed: deployed, recoveredEvents: recoveredEvents, canRecover: canRecover, removeSerial: removeSerial, slotModel: slotModel, slotsHTML: slotsHTML, tempDrop: tempDrop, openSlot: openSlot, devicePhoto: devicePhoto, withTech: withTech, setSlot: setSlot, setOutcome: setOutcome, changeJob: changeJob, css: css, slotEntry: slotEntry, addSerial: addSerial, pasteInto: pasteInto, hasSlots: function (src) { return slotIds(src).length > 0; }, syncDeploys: syncDeploys, notesCopied: notesCopied, setStep: setStep, keepDays: keepWeeks() * 7, keepWeeks: keepWeeks
+    deployed: deployed, recoveredEvents: recoveredEvents, canRecover: canRecover, removeSerial: removeSerial, slotModel: slotModel, slotsHTML: slotsHTML, tempDrop: tempDrop, openSlot: openSlot, devicePhoto: devicePhoto, withTech: withTech, setSlot: setSlot, setOutcome: setOutcome, changeJob: changeJob, css: css, slotEntry: slotEntry, addSerial: addSerial, pasteInto: pasteInto, hasSlots: function (src) { return slotIds(src).length > 0; }, syncDeploys: syncDeploys, notesCopied: notesCopied, setStep: setStep, maxSas: MAX_SAS
   };
 })();
