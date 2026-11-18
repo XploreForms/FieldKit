@@ -2248,6 +2248,14 @@ function recoveryComps() {
 /* ---------- the jobs ---------- */
 function S(title, items, heading) { return { title: title, heading: heading === undefined ? title.toUpperCase() : heading, items: items }; }
 function vasSection() { return S('Value Added Services', vasComps()); }
+/* 1.20.222 (Curtis): Complete repairs ask whether the truck roll was preventable (could care have solved it remotely,
+   e.g. not locked to the right cell, cables plugged in wrong, an unplugged power supply or power bar). Yes asks what care
+   could have done; both go in the comment so care can learn from them. Near the bottom, before Additional Comments. */
+function preventableSection() {
+  return S('Preventable Truck Roll', [
+    choiceC({ id: 'preventable', label: 'Could Care Have Solved This Remotely?', cols: 2, out: 'Preventable Truck Roll', options: ['Yes', 'No'] }),
+    textC({ id: 'preventable_why', label: 'What Could Care Have Done Remotely?', out: 'How Care Could Have Solved It', multi: true, show: function () { return STATE.preventable === 'Yes'; } })]);
+}
 function commentsSection() { return { title: 'Additional Comments', heading: 'ADDITIONAL COMMENTS', optional: true, items: [commentsC()] }; }
 
 
@@ -2565,7 +2573,7 @@ var FORMS = {
     return [vasSection(), commentsSection(), S('Confirmations', [lawnC()])];
   },
   'Repair|Fibre': function () {
-    return [S('Repair', repairComps().concat([lightC()])), S('Indoor', [ontC(), routerC()]), commentsSection(), S('Confirmations', [lawnC()])];
+    return [S('Repair', repairComps().concat([lightC()])), S('Indoor', [ontC(), routerC()]), preventableSection(), commentsSection(), S('Confirmations', [lawnC()])];
   },
   'Repair|Fixed Wireless': function () {
     return [
@@ -2574,7 +2582,7 @@ var FORMS = {
       S('Signal', [pairC(towerC(), fwPlatC()), pairC(rsrpC(), sinrC(), 'trio', heightC()), cpeTypeC(true, true)]),
       S('Mount', [reuseMountC(FW_MOUNTS, true)].concat(mountPlaceComps(), [cpeAccessC(true)])),
       S('Cabling and Grounding', convCabling(true)),   // 1.20.172: same as conversions (surge may be reused)
-      S('Indoor', [powerC(), routerC()]), commentsSection(),
+      S('Indoor', [powerC(), routerC()]), preventableSection(), commentsSection(),
       S('Confirmations', [lawnC()])];
   },
   'Repair|Satellite': function () {
@@ -2588,11 +2596,11 @@ var FORMS = {
       S('Cabling and Grounding', [
         choiceC({ id: 'cabling', label: 'Cabling', cols: 2, otherLabel: 'Cabling Details', options: [['Up to Xplore Specs', 'Confirmed all cabling is up to Xplore specifications'], 'Other'] }),
         groundSourceC()]),
-      S('Indoor', [modemC(), routerC()]), commentsSection(),
+      S('Indoor', [modemC(), routerC()]), preventableSection(), commentsSection(),
       S('Confirmations', [lawnC()])];
   },
   'Repair|VAS': function () {
-    return [S('Repair', repairComps()), S('Equipment Serviced', vasRepairComps()), commentsSection(), S('Confirmations', [lawnC()])];
+    return [S('Repair', repairComps()), S('Equipment Serviced', vasRepairComps()), preventableSection(), commentsSection(), S('Confirmations', [lawnC()])];
   },
   'Recovery|Fibre': recoveryForm, 'Recovery|Fixed Wireless': recoveryForm, 'Recovery|Satellite': recoveryForm, 'Recovery|VAS': recoveryForm
 };
