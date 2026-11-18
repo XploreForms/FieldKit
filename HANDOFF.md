@@ -342,3 +342,5 @@ On Android the menu's Compass link is an `intent://` "view this address" link (`
 - (1.20.221, Curtis) Field Stock's Note box starts one line tall (46px) and grows to fit what's typed or spoken (up to 220px, then scrolls); it shrinks back when cleared after saving (the box's `value` setter refits it).
 
 - (1.20.222, Curtis) Comments, **Complete repairs** (Fibre, Fixed Wireless, Satellite, VAS): new card **Preventable Truck Roll** near the bottom, after the equipment cards and before Confirmations / Additional Comments (`preventableSection()`). "Could Care Have Solved This Remotely?" Yes / No (required); Yes asks "What Could Care Have Done Remotely?" (required, multi-line). Comment: a PREVENTABLE TRUCK ROLL section with `Preventable Truck Roll: Yes|No` and `How Care Could Have Solved It: …`. No cause list (Curtis: just the text box). Cannot Complete / Not Required repairs don't ask it. Test: `dev/tests/tprevent.py`.
+
+- (1.20.223, Curtis) Preventable Truck Roll questions in sentence case ("Could care have solved this remotely?", "What could care have done remotely?"), and that box has no "Each line becomes its own bullet." hint (`noHint` on textC).

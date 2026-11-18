@@ -1328,7 +1328,7 @@ function textC(o) {
       var inp = o.multi ? el('textarea', { 'aria-label': o.label }) : el('input', { type: 'text', 'aria-label': o.label, autocomplete: 'off', autocapitalize: o.words ? 'words' : 'sentences' });
       inp.value = STATE[o.id] || '';
       inp.addEventListener('input', function () { STATE[o.id] = inp.value; changed(o.id, false); });
-      return fieldWrap(o.id, o.label, false, o.multi ? 'Each line becomes its own bullet.' : null, [inp]);
+      return fieldWrap(o.id, o.label, false, o.multi && !o.noHint ? 'Each line becomes its own bullet.' : null, [inp]);
     },
     check: function (need) { need(o.id, o.label, !!str(STATE[o.id]), 'Please fill this in.'); },
     out: function (m) {
@@ -2253,8 +2253,8 @@ function vasSection() { return S('Value Added Services', vasComps()); }
    could have done; both go in the comment so care can learn from them. Near the bottom, before Additional Comments. */
 function preventableSection() {
   return S('Preventable Truck Roll', [
-    choiceC({ id: 'preventable', label: 'Could Care Have Solved This Remotely?', cols: 2, out: 'Preventable Truck Roll', options: ['Yes', 'No'] }),
-    textC({ id: 'preventable_why', label: 'What Could Care Have Done Remotely?', out: 'How Care Could Have Solved It', multi: true, show: function () { return STATE.preventable === 'Yes'; } })]);
+    choiceC({ id: 'preventable', label: 'Could care have solved this remotely?', cols: 2, out: 'Preventable Truck Roll', options: ['Yes', 'No'] }),
+    textC({ id: 'preventable_why', label: 'What could care have done remotely?', out: 'How Care Could Have Solved It', multi: true, noHint: true, show: function () { return STATE.preventable === 'Yes'; } })]);
 }
 function commentsSection() { return { title: 'Additional Comments', heading: 'ADDITIONAL COMMENTS', optional: true, items: [commentsC()] }; }
 
